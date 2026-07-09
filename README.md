@@ -1,4 +1,4 @@
-# Windpage Studio — MVP
+# NADAPROD v7 alpha
 
 Éditeur visuel de pages Tailwind par blocs, propulsé par Gemini Flash (latest) et un **générateur ultra-spécialisé par type de bloc** : chaque bloc (en-tête, hero, fonctionnalités, tarifs, témoignages, FAQ, CTA, footer) possède son propre prompt système expert, avec un contrat de sortie strict (fragment HTML Tailwind unique, responsive, accessible, sans lorem ipsum).
 
