@@ -1,4 +1,4 @@
-/* Windpage — éditeur injecté. Un seul fichier, aucun état côté page. */
+/* NADAPROD — éditeur injecté. Un seul fichier, aucun état côté page. */
 (function () {
   'use strict';
   if (window.__wp) return; // idempotent

@@ -33,7 +33,7 @@ tailwind.config = {
   }
 </style>
 </head>
-<body class="h-full bg-ink-950 text-ink-100 font-sans antialiased overflow-hidden select-none">
+<body class="h-full bg-black text-ink-100 font-sans antialiased overflow-hidden select-none">
 
 <div class="h-full flex flex-col">
 
@@ -86,7 +86,7 @@ tailwind.config = {
     </aside>
 
     <!-- ══════════ Canvas central ══════════ -->
-    <main class="flex-1 min-w-0 canvas-dots bg-ink-950 relative flex flex-col">
+    <main class="flex-1 min-w-0 canvas-dots bg-black relative flex flex-col">
       <div class="flex-1 min-h-0 overflow-auto scrollbar-thin p-6 grid place-items-start justify-center">
         <div id="frameShell" class="transition-all duration-300 w-full max-w-full rounded-xl overflow-hidden ring-1 ring-ink-700 shadow-2xl shadow-black/50 bg-white" style="height: calc(100vh - 8.5rem);">
           <iframe id="preview" title="Aperçu de la page" class="w-full h-full bg-white"></iframe>
@@ -235,7 +235,7 @@ const skeleton = (label) => `
 /* ───────────────────── Persistance ───────────────────── */
 function save() {
   try {
-    localStorage.setItem('windpage', JSON.stringify({
+    localStorage.setItem('nadaprod', JSON.stringify({
       page: S.page,
       brand: { name: $('#brandName').value, colors: $('#brandColors').value, tone: $('#brandTone').value },
     }));
@@ -243,7 +243,8 @@ function save() {
 }
 function restore() {
   try {
-    const d = JSON.parse(localStorage.getItem('windpage') || 'null');
+    // Migration : les projets sauvés sous l'ancienne clé « windpage » restent lisibles
+    const d = JSON.parse(localStorage.getItem('nadaprod') || localStorage.getItem('windpage') || 'null');
     if (!d) return;
     S.page = d.page || [];
     if (d.brand) {
