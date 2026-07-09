@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NADAPROD — Sites importés</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>
+tailwind.config = { theme: { extend: {
+  fontFamily: { display:['"Space Grotesk"','sans-serif'], sans:['Inter','sans-serif'], mono:['"JetBrains Mono"','monospace'] },
+  colors: { ink:{950:'#07090D',900:'#0A0C11',850:'#0E1117',800:'#131722',700:'#1C2230',600:'#2A3245',400:'#5C687F',300:'#8A94A8',200:'#B9C0CF',100:'#E7EAF1'}, vio:{500:'#8B5CF6',400:'#A78BFA',600:'#7C3AED'} }
+}}}
+</script>
+</head>
+<body class="h-full bg-ink-950 text-ink-100 font-sans antialiased overflow-hidden select-none">
+
+<div class="h-full flex flex-col">
+
+  <!-- Barre supérieure -->
+  <header class="h-14 shrink-0 flex items-center gap-3 px-4 border-b border-ink-700 bg-ink-900">
+    <a href="/sites" class="flex items-center gap-2.5 hover:opacity-90">
+        <img src="/gfx/logo.png" class="h-9" />
+    </a>
+    <span class="text-ink-600">/</span>
+    <p class="text-sm text-ink-300">Sites importés</p>
+
+    <!-- Contrôles visibles uniquement en édition -->
+    <div id="editControls" class="hidden mx-auto flex items-center gap-2">
+      <select id="pageSelect" class="h-9 rounded-lg bg-ink-800 border border-ink-600 text-xs px-2 outline-none focus:border-vio-500"></select>
+      <div class="flex items-center gap-1 rounded-lg bg-ink-800 p-1 border border-ink-700" role="group" aria-label="Mode d'édition">
+        <button data-mode="visual" class="mode-btn px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 text-ink-300 hover:text-ink-100" title="Édition visuelle assistée par IA">
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4l1.5 4L18 9.5 13.5 11 12 15l-1.5-4L6 9.5 10.5 8 12 4Z" stroke-linejoin="round"/></svg>Visuel · IA
+        </button>
+        <button data-mode="code" class="mode-btn px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 text-ink-300 hover:text-ink-100" title="Édition manuelle du code (Monaco)">
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M13 5l-2 14" stroke-linecap="round" stroke-linejoin="round"/></svg>Code
+        </button>
+      </div>
+      <button id="btnSave" class="h-9 px-4 rounded-lg text-xs font-semibold bg-gradient-to-r from-vio-600 to-indigo-600 hover:from-vio-500 hover:to-indigo-500 text-white shadow-lg shadow-vio-600/20">Enregistrer la page</button>
+      <span id="dirtyDot" class="hidden h-2 w-2 rounded-full bg-amber-400" title="Modifications non enregistrées"></span>
+    </div>
+
+    <div id="editRight" class="hidden flex items-center gap-2">
+      <input id="domainInput" placeholder="votre-domaine.fr" class="h-9 w-48 rounded-lg bg-ink-800 border border-ink-600 text-xs px-3 outline-none focus:border-vio-500 select-text">
+      <button id="btnDomain" class="h-9 px-3 rounded-lg text-xs font-medium border border-ink-600 hover:bg-ink-800">Brancher le domaine</button>
+      <button id="btnBack" class="h-9 px-3 rounded-lg text-xs font-medium text-ink-300 hover:text-ink-100">← Mes sites</button>
+    </div>
+  </header>
+
+  <!-- Vue liste -->
+  <main id="viewList" class="flex-1 min-h-0 overflow-y-auto p-8">
+    <div class="max-w-3xl mx-auto space-y-6">
+      <label for="fileInput" id="dropzone" style="
+          position: fixed;bottom: -15px; left:0;right:0; backdrop-filter:blur(13px); -webkit-backdrop-filter:blur(13px); background:#0008 !important"
+        class="block rounded-2xl border-2 border-dashed border-ink-600 hover:border-vio-500/70 bg-ink-900 p-10 text-center cursor-pointer transition-colors">
+        <div class="mx-auto h-12 w-12 rounded-2xl bg-ink-800 grid place-items-center mb-4">
+          <svg class="h-5 w-5 text-vio-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4m0 0 4 4m-4-4-4 4M4 17v1a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <p class="font-display font-semibold">Importer un site</p>
+        <p class="text-sm text-ink-400 mt-1">Déposez un <span class="font-mono text-ink-300">.zip</span> ou <span class="font-mono text-ink-300">.tar.gz</span> — n'importe quelle stack, du moment que ce sont des fichiers HTML.</p>
+        <p id="uploadStatus" class="text-xs font-mono text-vio-400 mt-3 hidden"></p>
+        <input id="fileInput" type="file" accept=".zip,.gz,.tgz,application/zip,application/gzip" class="hidden">
+      </label>
+      <div id="siteList" class="space-y-3" style="padding-bottom:200px"></div>
+    </div>
+  </main>
+
+  <!-- Vue édition -->
+  <div id="viewEdit" class="hidden flex-1 min-h-0 flex">
+    <main class="flex-1 min-w-0 bg-ink-950 p-4">
+      <div id="visualWrap" class="h-full rounded-xl overflow-hidden ring-1 ring-ink-700 shadow-2xl shadow-black/50 bg-white">
+        <iframe id="frame" title="Page en cours d'édition" class="w-full h-full"></iframe>
+      </div>
+      <div id="codeWrap" class="hidden h-full rounded-xl overflow-hidden ring-1 ring-ink-700 shadow-2xl shadow-black/50 bg-ink-850 select-text"></div>
+    </main>
+    <aside id="editAside" class="w-[22.5rem] shrink-0 border-l border-ink-700 bg-ink-900 flex flex-col min-h-0">
+      <div class="p-4 space-y-4 flex-1 overflow-y-auto">
+        <div>
+          <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400">Élément sélectionné</p>
+          <p id="selInfo" class="font-display font-semibold text-lg tracking-tight mt-0.5 text-ink-400">aucun</p>
+          <p class="text-xs text-ink-400 mt-1 leading-relaxed">Cliquez sur un élément dans la page pour le sélectionner, double-cliquez pour éditer son texte, <span class="font-mono">Échap</span> pour désélectionner.</p>
+        </div>
+        <div class="flex gap-2">
+          <button id="btnParent" disabled class="flex-1 h-9 rounded-lg text-xs font-medium border border-ink-600 hover:bg-ink-800 disabled:opacity-40">Parent ↰</button>
+          <button id="btnDelete" disabled class="flex-1 h-9 rounded-lg text-xs font-medium border border-red-500/40 text-red-400 hover:bg-red-500/10 disabled:opacity-40">Supprimer</button>
+        </div>
+        <div>
+          <label for="aiPrompt" class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2">Retoucher avec l'IA</label>
+          <textarea id="aiPrompt" rows="4" placeholder="Ex. : passe ce bouton en style outline violet, arrondi complet…"
+            class="w-full rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm p-3 placeholder:text-ink-400/70 resize-y select-text"></textarea>
+          <button id="btnAI" disabled class="mt-2 w-full h-11 rounded-xl bg-gradient-to-r from-vio-600 to-indigo-600 hover:from-vio-500 hover:to-indigo-500 text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            <svg id="aiSpin" class="h-4 w-4 animate-spin hidden" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.25" stroke-width="3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+            <span id="aiLabel">Modifier l'élément</span>
+          </button>
+        </div>
+        <div class="rounded-xl border border-ink-700 bg-ink-850 p-3">
+          <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 mb-2">Mise en ligne</p>
+          <p id="liveInfo" class="text-xs text-ink-300 leading-relaxed">Aucun domaine branché. Renseignez-le en haut à droite puis pointez un enregistrement <span class="font-mono">A</span> de votre DNS vers ce serveur : le site sera servi dès que l'hôte correspondra.</p>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 translate-y-16 opacity-0 transition-all duration-300 z-50 pointer-events-none">
+  <div class="px-4 py-2.5 rounded-xl bg-ink-800 border border-ink-600 text-sm shadow-2xl flex items-center gap-2">
+    <span id="toastDot" class="h-2 w-2 rounded-full bg-emerald-400"></span><span id="toastMsg"></span>
+  </div>
+</div>
+
+<script>
+'use strict';
+const $ = (s) => document.querySelector(s);
+const S = {
+  siteId: null, page: null, domain: '', dirty: false, hasSelection: false, aiBusy: false, saveResolve: null,
+  mode: 'visual',     // 'visual' (IA) ou 'code' (Monaco)
+  editor: null,       // instance Monaco, créée au premier passage en mode code
+  settingValue: false,// vrai pendant un setValue programmatique (à ne pas compter comme "dirty")
+  frameStale: false,  // vrai si le fichier a été réécrit pendant le mode code → recharger l'iframe
+};
+
+/* ───────── Monaco (chargé à la demande depuis le CDN) ───────── */
+const MONACO_CDN = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min';
+let monacoP = null;
+function loadMonaco() {
+  if (monacoP) return monacoP;
+  monacoP = new Promise((resolve, reject) => {
+    // Les workers Monaco ne se chargent pas cross-origin : on passe par un blob-proxy.
+    window.MonacoEnvironment = {
+      getWorkerUrl: () => URL.createObjectURL(new Blob(
+        ["self.MonacoEnvironment={baseUrl:'" + MONACO_CDN + "/'};importScripts('" + MONACO_CDN + "/vs/base/worker/workerMain.js');"],
+        { type: 'text/javascript' }
+      )),
+    };
+    const s = document.createElement('script');
+    s.src = MONACO_CDN + '/vs/loader.js';
+    s.onload = () => {
+      window.require.config({ paths: { vs: MONACO_CDN + '/vs' } });
+      window.require(['vs/editor/editor.main'], () => {
+        monaco.editor.defineTheme('nadaprod', {
+          base: 'vs-dark', inherit: true, rules: [],
+          colors: {
+            'editor.background': '#0E1117',
+            'editor.lineHighlightBackground': '#131722',
+            'editorGutter.background': '#0E1117',
+            'editorLineNumber.foreground': '#5C687F',
+            'editor.selectionBackground': '#2A3245',
+            'editorWidget.background': '#131722',
+            'editorCursor.foreground': '#A78BFA',
+          },
+        });
+        resolve(window.monaco);
+      });
+    };
+    s.onerror = () => { monacoP = null; reject(new Error('CDN Monaco inaccessible')); };
+    document.head.appendChild(s);
+  });
+  return monacoP;
+}
+
+let toastTimer;
+function toast(msg, ok = true) {
+  $('#toastMsg').textContent = msg;
+  $('#toastDot').className = 'h-2 w-2 rounded-full ' + (ok ? 'bg-emerald-400' : 'bg-red-400');
+  const t = $('#toast');
+  t.classList.remove('translate-y-16','opacity-0');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.add('translate-y-16','opacity-0'), 3200);
+}
+
+/* ───────── Vue liste ───────── */
+async function loadSites() {
+  const sites = await fetch('/api/sites').then(r => r.json()).catch(() => []);
+  $('#siteList').innerHTML = sites.length ? sites.map(s => `
+    <div class="rounded-2xl border border-ink-700 bg-ink-900 p-4 flex items-center gap-4">
+      <div class="h-10 w-10 rounded-xl bg-ink-800 grid place-items-center shrink-0">
+        <svg class="h-5 w-5 text-vio-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3Z"/></svg>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="font-display font-semibold truncate">${s.id}</p>
+        <p class="text-xs font-mono text-ink-400 truncate">${s.pages.length} page${s.pages.length>1?'s':''}${s.domain ? ' · <span class="text-emerald-400">'+s.domain+'</span>' : ''}</p>
+      </div>
+      <a href="/preview/${s.id}/" target="_blank" class="h-9 px-3 rounded-lg text-xs font-medium border border-ink-600 hover:bg-ink-800 grid place-items-center">Aperçu</a>
+      <button data-open="${s.id}" data-domain="${s.domain||''}" data-pages='${JSON.stringify(s.pages)}' class="h-9 px-4 rounded-lg text-xs font-semibold bg-gradient-to-r from-vio-600 to-indigo-600 hover:from-vio-500 hover:to-indigo-500 text-white">Éditer</button>
+      <button data-remove="${s.id}" class="h-9 w-9 rounded-lg border border-red-500/40 text-red-400 hover:bg-red-500/10 grid place-items-center" title="Supprimer le site" aria-label="Supprimer le site">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-9 0 1 13h8l1-13" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>`).join('')
+  : `<p class="text-sm text-ink-400 text-center">Aucun site pour l'instant — importez votre première archive ci-dessus.</p>`;
+}
+
+async function upload(file) {
+  const st = $('#uploadStatus');
+  st.classList.remove('hidden');
+  st.textContent = 'Import de ' + file.name + '…';
+  const fd = new FormData();
+  fd.append('archive', file);
+  try {
+    const res = await fetch('/api/sites', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erreur ' + res.status);
+    st.textContent = data.pages.length + ' pages importées';
+    toast('Site « ' + data.id + ' » importé');
+    await loadSites();
+  } catch (err) {
+    st.textContent = '';
+    toast(err.message, false);
+  } finally {
+    setTimeout(() => st.classList.add('hidden'), 2500);
+  }
+}
+
+$('#fileInput').addEventListener('change', (e) => e.target.files[0] && upload(e.target.files[0]));
+['dragover','dragleave','drop'].forEach(ev => $('#dropzone').addEventListener(ev, (e) => {
+  e.preventDefault();
+  $('#dropzone').classList.toggle('border-vio-500', ev === 'dragover');
+  if (ev === 'drop' && e.dataTransfer.files[0]) upload(e.dataTransfer.files[0]);
+}));
+
+/* ───────── Vue édition ───────── */
+function openEditor(id, pages, domain) {
+  S.siteId = id; S.domain = domain || ''; S.dirty = false;
+  S.mode = 'visual'; S.frameStale = false; renderMode();
+  $('#viewList').classList.add('hidden');
+  $('#viewEdit').classList.remove('hidden');
+  $('#viewEdit').classList.add('flex');
+  $('#editControls').classList.remove('hidden');
+  $('#editRight').classList.remove('hidden');
+  $('#domainInput').value = S.domain;
+  $('#pageSelect').innerHTML = pages.map(p => `<option value="${p}">${p}</option>`).join('');
+  updateLiveInfo();
+  loadPage(pages[0]);
+}
+function closeEditor() {
+  S.siteId = null;
+  $('#viewEdit').classList.add('hidden');
+  $('#viewEdit').classList.remove('flex');
+  $('#viewList').classList.remove('hidden');
+  $('#editControls').classList.add('hidden');
+  $('#editRight').classList.add('hidden');
+  loadSites();
+}
+async function loadPage(p) {
+  S.page = p; S.dirty = false; S.frameStale = false; setSelection(false, 'aucun');
+  $('#dirtyDot').classList.add('hidden');
+  $('#frame').src = '/edit/' + S.siteId + '/' + p;
+  if (S.mode === 'code' && S.editor) {
+    const html = await fetchRawPage();
+    if (html != null) setEditorValue(html);
+  }
+}
+function setSelection(has, label) {
+  S.hasSelection = has;
+  $('#selInfo').textContent = label;
+  $('#selInfo').classList.toggle('text-ink-400', !has);
+  $('#btnAI').disabled = !has || S.aiBusy;
+  $('#btnParent').disabled = !has;
+  $('#btnDelete').disabled = !has;
+}
+function updateLiveInfo() {
+  $('#liveInfo').innerHTML = S.domain
+    ? `Servi sur <span class="font-mono text-emerald-400">${S.domain}</span> dès que le DNS pointe ici (enregistrement <span class="font-mono">A</span>). Chaque « Enregistrer » est en ligne immédiatement.`
+    : `Aucun domaine branché. Renseignez-le en haut à droite puis pointez un enregistrement <span class="font-mono">A</span> de votre DNS vers ce serveur.`;
+}
+
+const frameWin = () => $('#frame').contentWindow;
+let lastSelectedHTML = '';
+
+/* ───────── Bascule Visuel · IA ⇄ Code (Monaco) ───────── */
+function renderMode() {
+  document.querySelectorAll('.mode-btn').forEach(b => {
+    const on = b.dataset.mode === S.mode;
+    b.classList.toggle('bg-ink-700', on);
+    b.classList.toggle('text-ink-100', on);
+  });
+  $('#visualWrap').classList.toggle('hidden', S.mode !== 'visual');
+  $('#codeWrap').classList.toggle('hidden', S.mode !== 'code');
+  $('#editAside').classList.toggle('hidden', S.mode === 'code');
+}
+
+function setEditorValue(html) {
+  S.settingValue = true;
+  S.editor.setValue(html);
+  S.settingValue = false;
+}
+
+/* Contenu brut du fichier sur disque (l'aperçu sert la page sans injection). */
+function fetchRawPage() {
+  return fetch('/preview/' + S.siteId + '/' + S.page, { cache: 'no-store' })
+    .then(r => r.ok ? r.text() : null).catch(() => null);
+}
+
+/* HTML courant de l'iframe, sérialisé sans artefacts d'édition. */
+function getVisualHTML() {
+  return new Promise((resolve) => {
+    S.saveResolve = resolve;
+    frameWin().postMessage({ type: 'wp:get-html' }, location.origin);
+    setTimeout(() => { if (S.saveResolve) { S.saveResolve(null); S.saveResolve = null; } }, 3000);
+  });
+}
+
+async function ensureEditor() {
+  if (S.editor) return;
+  const monaco = await loadMonaco();
+  S.editor = monaco.editor.create($('#codeWrap'), {
+    value: '', language: 'html', theme: 'nadaprod',
+    automaticLayout: true, minimap: { enabled: true }, wordWrap: 'on',
+    fontSize: 13, fontFamily: '"JetBrains Mono", monospace', tabSize: 2,
+    scrollBeyondLastLine: false, padding: { top: 12 },
+  });
+  S.editor.onDidChangeModelContent(() => { if (!S.settingValue) markDirty(); });
+  S.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, savePage);
+}
+
+async function enterCode() {
+  if (S.mode === 'code' || !S.siteId) return;
+  // Les retouches visuelles non enregistrées sont reprises telles quelles dans le code.
+  let html;
+  if (S.dirty) {
+    html = await getVisualHTML();
+    if (html == null) return toast('La page ne répond pas — enregistrez-la avant de passer en mode code', false);
+  } else {
+    html = await fetchRawPage();
+    if (html == null) return toast('Impossible de lire la page', false);
+  }
+  try { await ensureEditor(); } catch (_) { return toast('Éditeur de code indisponible (CDN Monaco inaccessible)', false); }
+  const wasDirty = S.dirty;
+  setEditorValue(html);
+  if (wasDirty) markDirty();
+  S.mode = 'code'; renderMode();
+  S.editor.layout(); S.editor.focus();
+}
+
+async function enterVisual() {
+  if (S.mode === 'visual') return;
+  if (S.dirty) {
+    if (!confirm('Enregistrer les modifications du code pour les voir en mode visuel ?')) return;
+    if (!await savePage()) return;
+  }
+  S.mode = 'visual'; renderMode();
+  if (S.frameStale) loadPage(S.page);
+}
+
+window.addEventListener('message', (e) => {
+  if (e.origin !== location.origin || !e.data || typeof e.data.type !== 'string') return;
+  switch (e.data.type) {
+    case 'wp:selected':
+      lastSelectedHTML = e.data.html;
+      setSelection(true, '<' + e.data.tag + '>');
+      break;
+    case 'wp:deselected':
+      setSelection(false, 'aucun');
+      break;
+    case 'wp:html':
+      if (S.saveResolve) { S.saveResolve(e.data.html); S.saveResolve = null; }
+      break;
+    case 'wp:dirty':
+      markDirty();
+      break;
+  }
+});
+
+/* Toute action dans l'iframe = page modifiée */
+$('#frame').addEventListener('load', () => { /* rien : l'état dirty vient des actions */ });
+function markDirty(){ S.dirty = true; $('#dirtyDot').classList.remove('hidden'); }
+
+async function savePage() {
+  if (!S.siteId || !S.page) return false;
+  const html = (S.mode === 'code' && S.editor) ? S.editor.getValue() : await getVisualHTML();
+  if (html == null) { toast('La page ne répond pas — rechargez-la', false); return false; }
+  const res = await fetch('/api/sites/' + S.siteId + '/file', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path: S.page, html }),
+  });
+  const data = await res.json();
+  if (!res.ok) { toast(data.error || 'Échec de la sauvegarde', false); return false; }
+  S.dirty = false;
+  $('#dirtyDot').classList.add('hidden');
+  if (S.mode === 'code') S.frameStale = true; // l'iframe visuelle montre encore l'ancien fichier
+  toast('Page enregistrée' + (S.domain ? ' — en ligne sur ' + S.domain : ''));
+  return true;
+}
+
+async function aiEdit() {
+  if (!S.hasSelection || S.aiBusy) return;
+  const prompt = $('#aiPrompt').value.trim();
+  if (!prompt) return toast('Décrivez la retouche souhaitée', false);
+  S.aiBusy = true;
+  $('#btnAI').disabled = true;
+  $('#aiSpin').classList.remove('hidden');
+  $('#aiLabel').textContent = 'Retouche en cours…';
+  try {
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ block: 'element', prompt, current_html: lastSelectedHTML, brand: {} }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erreur ' + res.status);
+    frameWin().postMessage({ type: 'wp:replace', html: data.html }, location.origin);
+    markDirty();
+    toast('Élément retouché — pensez à enregistrer');
+  } catch (err) {
+    toast(err.message, false);
+  } finally {
+    S.aiBusy = false;
+    $('#btnAI').disabled = !S.hasSelection;
+    $('#aiSpin').classList.add('hidden');
+    $('#aiLabel').textContent = 'Modifier l\u2019élément';
+  }
+}
+
+/* ───────── Écouteurs globaux ───────── */
+document.addEventListener('click', async (e) => {
+  const mode = e.target.closest('.mode-btn');
+  if (mode) return mode.dataset.mode === 'code' ? enterCode() : enterVisual();
+  const open = e.target.closest('[data-open]');
+  if (open) return openEditor(open.dataset.open, JSON.parse(open.dataset.pages), open.dataset.domain);
+  const rm = e.target.closest('[data-remove]');
+  if (rm && confirm('Supprimer définitivement ce site ?')) {
+    await fetch('/api/sites/' + rm.dataset.remove, { method: 'DELETE' });
+    toast('Site supprimé');
+    return loadSites();
+  }
+});
+$('#btnBack').addEventListener('click', () => {
+  if (S.dirty && !confirm('Modifications non enregistrées. Quitter quand même ?')) return;
+  closeEditor();
+});
+$('#pageSelect').addEventListener('change', (e) => {
+  if (S.dirty && !confirm('Modifications non enregistrées sur cette page. Changer quand même ?')) {
+    e.target.value = S.page; return;
+  }
+  loadPage(e.target.value);
+});
+$('#btnSave').addEventListener('click', savePage);
+$('#btnAI').addEventListener('click', aiEdit);
+$('#btnParent').addEventListener('click', () => frameWin().postMessage({ type: 'wp:parent' }, location.origin));
+$('#btnDelete').addEventListener('click', () => { frameWin().postMessage({ type: 'wp:delete' }, location.origin); markDirty(); });
+$('#btnDomain').addEventListener('click', async () => {
+  const domain = $('#domainInput').value.trim();
+  const res = await fetch('/api/sites/' + S.siteId + '/domain', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ domain }),
+  });
+  const data = await res.json();
+  if (!res.ok) return toast(data.error || 'Échec', false);
+  S.domain = data.domain;
+  updateLiveInfo();
+  toast(domain ? 'Domaine branché : ' + data.domain : 'Domaine débranché');
+});
+document.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 's' && S.siteId) { e.preventDefault(); savePage(); }
+});
+window.addEventListener('beforeunload', (e) => { if (S.dirty) e.preventDefault(); });
+
+loadSites();
+</script>
+</body>
+</html>

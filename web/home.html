@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NADAPROD | MAISON D'AUTOÉDITION</title>
+
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="L'outil définitif pour les artistes. Reprenez le contrôle total de votre art, de la création à la monétisation.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Core Theme - Defaulting to Light Mode */
+            --bg: #ffffff;
+            --surface: #f7f7f7;
+            --text-main: #0a0a0a;
+            --text-secondary: #555555;
+            --border: #d0d0d0;
+            --accent: #ccff00; /* Signature Acid Green */
+            --selection-bg: #0a0a0a;
+            --selection-text: #ffffff;
+            --logo-filter: invert(1);
+            --scanline-opacity: 0.03;
+            --shadow-hard: 6px 6px 0px rgba(0,0,0,0.15);
+
+            /* Typography & Animation */
+            --font-display: 'Bebas Neue', sans-serif;
+            --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+            --ease: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* OS Dark Mode Media Query */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #050505;
+                --surface: #121212;
+                --text-main: #f5f5f5;
+                --text-secondary: #999999;
+                --border: #333333;
+                --selection-bg: #ccff00;
+                --selection-text: #000000;
+                --logo-filter: none;
+                --scanline-opacity: 0.06;
+                --shadow-hard: 6px 6px 0px rgba(0,0,0,1);
+            }
+        }
+
+        /* Forced Theme Overrides */
+        html[data-theme="light"] {
+            --bg: #ffffff;
+            --surface: #f7f7f7;
+            --text-main: #0a0a0a;
+            --text-secondary: #555555;
+            --border: #d0d0d0;
+            --selection-bg: #0a0a0a;
+            --selection-text: #ffffff;
+            --logo-filter: invert(1);
+            --shadow-hard: 6px 6px 0px rgba(0,0,0,0.15);
+        }
+
+        html[data-theme="dark"] {
+            --bg: #050505;
+            --surface: #121212;
+            --text-main: #f5f5f5;
+            --text-secondary: #999999;
+            --border: #333333;
+            --selection-bg: #ccff00;
+            --selection-text: #000000;
+            --logo-filter: none;
+            --shadow-hard: 6px 6px 0px rgba(0,0,0,1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+
+        ::selection {
+            background: var(--selection-bg);
+            color: var(--selection-text);
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.5s var(--ease), color 0.5s var(--ease);
+            font-size: 16px;
+        }
+
+        /* Subtle CRT / Paper Texture Overlay */
+        .texture-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+            background-size: 100% 4px;
+            opacity: var(--scanline-opacity);
+            mix-blend-mode: overlay;
+        }
+
+        /* Main Layout */
+        main {
+            flex: 1;
+            position: relative;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            padding-top: 100px; /* Space for header */
+        }
+
+        section {
+            display: none;
+            min-height: 100%;
+            padding: 2rem 1.5rem 10rem 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            animation: fadeUp 0.7s var(--ease) forwards;
+        }
+
+        section.active { display: block; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        header {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: var(--bg);
+            border-bottom: 2px solid var(--border);
+            transition: background 0.5s var(--ease), border-color 0.5s var(--ease);
+        }
+
+        .header-logo {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            letter-spacing: 0.05em;
+            color: var(--text-main);
+            text-decoration: none;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: 2px solid var(--text-main);
+            color: var(--text-main);
+            height: 40px;
+            padding: 0 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            font-weight: 700;
+            font-family: var(--font-body);
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .icon-btn:hover {
+            background: var(--text-main);
+            color: var(--bg);
+            transform: translate(-2px, -2px);
+            box-shadow: 4px 4px 0px var(--accent);
+        }
+
+        h1, h2, h3 {
+            font-family: var(--font-display);
+            font-weight: 400;
+            text-transform: uppercase;
+            line-height: 0.85;
+            letter-spacing: 0.02em;
+        }
+
+        p {
+            line-height: 1.6;
+            font-weight: 400;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        strong {
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .display-text {
+            font-size: clamp(4rem, 8vw, 8rem);
+            margin: 0 0 2rem 0;
+            color: var(--text-main);
+            word-wrap: break-word;
+        }
+
+        .display-text span.outline {
+            color: transparent;
+            -webkit-text-stroke: 2px var(--text-main);
+        }
+
+        .section-intro {
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            max-width: 800px;
+            margin-bottom: 4rem;
+            color: var(--text-main);
+            line-height: 1.4;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .grid-item {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            padding: 2.5rem;
+            grid-column: span 4;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 380px;
+            transition: all 0.3s var(--ease);
+            position: relative;
+        }
+
+        .grid-item:hover {
+            border-color: var(--text-main);
+            background: var(--bg);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hard);
+            z-index: 2;
+        }
+
+        .grid-item.double { grid-column: span 8; }
+        .grid-item.full { grid-column: span 12; }
+
+        .grid-item h3 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-main);
+        }
+
+        .service-details {
+            font-size: 0.95rem;
+            margin-top: 2rem;
+            color: var(--text-main);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+            border-top: 2px solid var(--border);
+            padding-top: 1.5rem;
+            font-weight: 500;
+        }
+
+        .service-details span::before {
+            content: "→ ";
+            color: var(--accent);
+            font-weight: bold;
+            font-family: monospace;
+        }
+
+        .grid-tag {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--bg);
+            background: var(--text-main);
+            padding: 4px 12px;
+            align-self: flex-start;
+            margin-bottom: 2rem;
+            display: inline-block;
+        }
+
+        .marquee-wrapper {
+            width: 100vw;
+            margin-left: calc(-50vw + 50%);
+            border-top: 2px solid var(--text-main);
+            border-bottom: 2px solid var(--text-main);
+            margin-bottom: 4rem;
+            background: var(--accent);
+            overflow: hidden;
+            position: relative;
+            transform: rotate(-1deg) scale(1.02);
+            z-index: 10;
+        }
+
+        .marquee-track {
+            display: flex;
+            width: max-content;
+            animation: scroll 30s linear infinite;
+        }
+
+        .marquee-content {
+            white-space: nowrap;
+            padding: 1rem 0;
+            font-family: var(--font-display);
+            font-size: 2rem;
+            color: #000; /* Always black on acid green */
+            padding-right: 2rem;
+        }
+
+        @keyframes scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* Bottom Floating Navigation */
+        nav {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg);
+            padding: 8px;
+            display: flex;
+            gap: 8px;
+            z-index: 1000;
+            border: 2px solid var(--text-main);
+            box-shadow: var(--shadow-hard);
+            transition: all 0.3s;
+        }
+
+        .nav-item {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            letter-spacing: 0.05em;
+            transition: all 0.2s;
+        }
+
+        .nav-item.active {
+            background: var(--text-main);
+            color: var(--bg);
+        }
+
+        .nav-item:hover:not(.active) {
+            color: var(--text-main);
+            background: var(--surface);
+        }
+
+        /* Network Link List */
+        .link-list {
+            list-style: none;
+            margin-top: 0;
+        }
+
+        .link-list li {
+            border-bottom: 2px solid var(--border);
+        }
+
+        .link-list li a {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2rem 1rem;
+            text-decoration: none;
+            color: var(--text-main);
+            font-size: 2rem;
+            font-family: var(--font-display);
+            transition: all 0.3s;
+        }
+
+        .link-list li a:hover {
+            background: var(--text-main);
+            color: var(--bg);
+            padding-left: 2rem;
+            padding-right: 2rem;
+        }
+
+        .link-list li a .hidden {
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: all 0.3s;
+            color: var(--accent);
+        }
+
+        .link-list li a:hover .hidden {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        @media (max-width: 900px) {
+            .grid-container { grid-template-columns: 1fr; gap: 1rem; }
+            .grid-item { grid-column: span 1 !important; min-height: auto; padding: 1.5rem; }
+            .display-text { font-size: clamp(3rem, 12vw, 5rem); }
+            .section-intro { font-size: 1.1rem; }
+            nav { width: 92%; justify-content: space-between; bottom: 1.5rem; padding: 6px; }
+            .nav-item { padding: 0.8rem 0.5rem; font-size: 1rem; flex: 1; }
+            section { padding-top: 0; padding-bottom: 8rem; }
+            header { padding: 1rem; }
+            .service-details { grid-template-columns: 1fr; }
+        }
+	#tab-home { padding-top: 12vh; }
+        .logo-img { height: 48px; width: auto; filter: var(--logo-filter); display: block; }
+    </style>
+</head>
+<body>
+
+    <div class="texture-overlay"></div>
+
+    <header>
+        <a href="#" class="header-logo" onclick="switchTab('home')">
+            <img src="/gfx/logo.png" alt="NADAPROD" class="logo-img">
+        </a>
+
+        <div class="header-controls">
+            <button class="icon-btn" onclick="toggleLanguage()" id="lang-btn">FR</button>
+            <button class="icon-btn" onclick="toggleTheme()" aria-label="Toggle Theme">◐</button>
+        </div>
+    </header>
+
+    <main id="app">
+        <!-- TAB 1: ACCUEIL -->
+        <section id="tab-home" class="active">
+            <h1 class="display-text" id="hero-title">
+                <span class="outline">ARTISTES,</span><br>REPRENEZ LE CONTRÔLE.
+            </h1>
+
+            <p class="section-intro" data-i18n="home_intro">
+                Arrêtez de construire vos empires sur des terres louées. NADAPROD est la maison d'autoédition conçue pour l'indépendance absolue des créateurs.
+            </p>
+
+            <div class="grid-container">
+                <div class="grid-item double">
+                    <span class="grid-tag" data-i18n="newsletter_tag">Le Signal</span>
+                    <h3 data-i18n="newsletter_title">Désintermédiation.</h3>
+                    <p data-i18n="newsletter_sub" style="margin-bottom: 2rem;">L'algorithme vous censure. Les plateformes vous taxent. Rejoignez la liste pour découvrir comment sortir du système.</p>
+                    <form onsubmit="event.preventDefault(); alert('Subscribed!')" style="margin-top: auto; display: flex; border-bottom: 2px solid var(--text-main);">
+                        <input type="email" placeholder="email@artist.com" style="flex: 1; border: none; background: transparent; padding: 1rem 0; font-family: var(--font-body); font-size: 1.2rem; color: var(--text-main); outline: none;">
+                        <button type="submit" style="background: transparent; color: var(--text-main); border: none; font-family: var(--font-display); font-size: 2rem; cursor: pointer; padding: 0 1rem;">→</button>
+                    </form>
+                </div>
+
+                <div class="grid-item">
+                    <span class="grid-tag" data-i18n="who_tag">Contact</span>
+                    <h3>LIGNE<br>DIRECTE</h3>
+                    <a href="mailto:contact@nadaprod.com" style="font-family: var(--font-display); font-size: 2.5rem; color: var(--text-main); text-decoration: none; margin-top: auto; display: block; border-top: 2px solid var(--border); padding-top: 1rem;">
+                        CONTACT@<br>NADAPROD.COM
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: L'APP (Manifesto) -->
+        <section id="tab-app">
+            <h2 class="display-text" data-i18n="app_main_title">L'APPLICATION<br><span class="outline">DÉFINITIVE</span></h2>
+            <p class="section-intro" data-i18n="app_intro">
+                Nous avons condensé le manifeste en une technologie. Tout ce dont un artiste a besoin pour exister, diffuser et monétiser, réuni dans une seule interface. Vous créez. L'app fait le reste.
+            </p>
+
+            <div class="grid-container">
+                <!-- FEATURE 1: SITE -->
+                <div class="grid-item double">
+                    <span class="grid-tag" data-i18n="f1_tag">01. Votre Espace</span>
+                    <h3 data-i18n="f1_title">Le QG Numérique</h3>
+                    <p data-i18n="f1_desc">Fini les templates rigides et les plateformes qui dictent votre design. Déployez un espace immersif, ultra-rapide et qui vous appartient à 100%. L'outil s'efface, l'œuvre respire.</p>
+                    <div class="service-details">
+                        <span data-i18n="f1_d1">Vitrine Sur-Mesure</span>
+                        <span data-i18n="f1_d2">Indépendant des Réseaux</span>
+                        <span data-i18n="f1_d3">Zéro Maintenance</span>
+                        <span data-i18n="f1_d4">Vitesse Maximale</span>
+                    </div>
+                </div>
+
+                <!-- FEATURE 2: AUDIENCE -->
+                <div class="grid-item">
+                    <span class="grid-tag" data-i18n="f2_tag">02. Votre Audience</span>
+                    <h3 data-i18n="f2_title">Lien Direct</h3>
+                    <p data-i18n="f2_desc">Si les réseaux ferment, vous perdez tout. Gérez votre propre base de fans et communiquez sans aucun filtre algorithmique.</p>
+                </div>
+
+                <!-- FEATURE 3: MONETIZATION -->
+                <div class="grid-item">
+                    <span class="grid-tag" data-i18n="f3_tag">03. Vos Revenus</span>
+                    <h3 data-i18n="f3_title">Boutique Intégrée</h3>
+                    <p data-i18n="f3_desc">Vendez votre musique, vos œuvres ou vos billets directement. 100% de la valeur va au créateur.</p>
+                </div>
+
+                <!-- FEATURE 4: ADMIN -->
+                <div class="grid-item double">
+                    <span class="grid-tag" data-i18n="f4_tag">04. Votre Liberté</span>
+                    <h3 data-i18n="f4_title">Pilotez votre carrière</h3>
+                    <p data-i18n="f4_desc">Automatisez tout ce qui freine la création. De la gestion des factures à la diffusion de vos dossiers de presse (EPK), centralisez votre industrie personnelle.</p>
+                    <div class="service-details">
+                        <span data-i18n="f4_d1">0% de Commission</span>
+                        <span data-i18n="f4_d2">Outils Pro (EPK, Fiches techniques)</span>
+                        <span data-i18n="f4_d3">Paiements Instantanés</span>
+                        <span data-i18n="f4_d4">Propriété Totale des Données</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: SERVICES IRL -->
+        <section id="tab-services">
+            <h2 class="display-text" data-i18n="services_title">LA RÉALITÉ<br><span class="outline">PHYSIQUE</span></h2>
+            <p class="section-intro" data-i18n="services_subtitle">Le digital ne suffit pas. L'art s'incarne. La maison d'autoédition vous accompagne pour matérialiser vos projets dans le monde réel.</p>
+
+            <div class="marquee-wrapper">
+                <div class="marquee-track">
+                    <span class="marquee-content" data-i18n="marquee">CRÉEZ L'ART. ON GÈRE LE RESTE. / SOUVERAINETÉ TOTALE. / AUCUNE CONCESSION. / </span>
+                    <span class="marquee-content" data-i18n="marquee">CRÉEZ L'ART. ON GÈRE LE RESTE. / SOUVERAINETÉ TOTALE. / AUCUNE CONCESSION. / </span>
+                    <span class="marquee-content" data-i18n="marquee">CRÉEZ L'ART. ON GÈRE LE RESTE. / SOUVERAINETÉ TOTALE. / AUCUNE CONCESSION. / </span>
+                </div>
+            </div>
+
+            <div class="grid-container">
+                <div class="grid-item double">
+                    <span class="grid-tag" data-i18n="svc_irl_tag">Production</span>
+                    <h3 data-i18n="svc_prod_title">Matérialisation</h3>
+                    <p data-i18n="svc_prod_desc">De l'usine à la main de vos fans. Nous gérons la production physique pour que votre art existe en dehors des écrans.</p>
+                    <div class="service-details">
+                        <span data-i18n="svc_prod_d1">Pressage Vinyle & CD</span>
+                        <span data-i18n="svc_prod_d2">Édition & Reliure de Livres</span>
+                        <span data-i18n="svc_prod_d3">Design & Prod de Merch</span>
+                    </div>
+                </div>
+
+                <div class="grid-item">
+                    <span class="grid-tag" data-i18n="svc_log_tag">Diffusion</span>
+                    <h3 data-i18n="svc_log_title">Logistique & Événementiel</h3>
+                    <p data-i18n="svc_log_desc">Concerts, expositions, expéditions mondiales. L'infrastructure d'un label major, à votre service exclusif.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: NETWORK -->
+        <section id="tab-network">
+            <h2 class="display-text" data-i18n="nav_network">LE<br><span class="outline">RÉSEAU</span></h2>
+            <p class="section-intro" data-i18n="network_intro">Le collectif autogéré. Les artistes et entités qui soutiennent et opèrent sur notre infrastructure.</p>
+
+            <ul class="link-list">
+                <li><a href="https://clh.do" target="_blank">CLH <span class="hidden">DESIGN & DÉVELOPPEMENT</span></a></li>
+                <li><a href="https://youtube.com/@conymeprod" target="_blank">Connexion Anonyme <span class="hidden">PRODUCTION VIDÉO</span></a></li>
+                <li><a href="https://fredj.art" target="_blank">FREDJ<span class="hidden">ARTISTE</span></a></li>
+                <li><a href="https://ideeschauves.com" target="_blank">Idées Chauves<span class="hidden">CRÉATION</span></a></li>
+                <li><a href="https://modular-station.com/" target="_blank">Modular Station<span class="hidden">WEBRADIO</span></a></li>
+                <li><a href="https://modulisme.com/" target="_blank">Modulisme<span class="hidden">LABEL</span></a></li>
+                <li><a href="https://oliver-night.com" target="_blank">Oliver Night<span class="hidden">ARTISTE</span></a></li>
+                <li><a href="/pp/" target="_blank">Philippe Petit<span class="hidden">ARTISTE</span></a></li>
+            </ul>
+        </section>
+    </main>
+
+    <nav>
+        <button class="nav-item active" onclick="switchTab('home')" data-i18n="nav_home">Accueil</button>
+        <button class="nav-item" onclick="switchTab('app')" data-i18n="nav_app">L'App</button>
+        <button class="nav-item" onclick="switchTab('services')" data-i18n="nav_services">Services</button>
+        <button class="nav-item" onclick="switchTab('network')" data-i18n="nav_network">Réseau</button>
+    </nav>
+
+    <script>
+        const translations = {
+            fr: {
+                nav_home: "Accueil",
+                nav_app: "L'App",
+                nav_services: "Physique",
+                nav_network: "Réseau",
+
+                home_intro: "Arrêtez de construire vos empires sur des terres louées. NADAPROD est la maison d'autoédition conçue pour l'indépendance absolue des créateurs.",
+                newsletter_tag: "Le Signal",
+                newsletter_title: "Désintermédiation.",
+                newsletter_sub: "L'algorithme vous censure. Les plateformes vous taxent. Rejoignez la liste pour découvrir comment sortir du système.",
+                who_tag: "Contact",
+
+                app_main_title: "L'APPLICATION<br><span class=\"outline\">DÉFINITIVE</span>",
+                app_intro: "Nous avons condensé le manifeste en une technologie. Tout ce dont un artiste a besoin pour exister, diffuser et monétiser, réuni dans une seule interface. Vous créez. L'app fait le reste.",
+
+                f1_tag: "01. Votre Espace",
+                f1_title: "Le QG Numérique",
+                f1_desc: "Fini les templates rigides et les plateformes qui dictent votre design. Déployez un espace immersif, ultra-rapide et qui vous appartient à 100%. L'outil s'efface, l'œuvre respire.",
+                f1_d1: "Vitrine Sur-Mesure",
+                f1_d2: "Indépendant des Réseaux",
+                f1_d3: "Zéro Maintenance",
+                f1_d4: "Vitesse Maximale",
+
+                f2_tag: "02. Votre Audience",
+                f2_title: "Lien Direct",
+                f2_desc: "Si les réseaux ferment, vous perdez tout. Gérez votre propre base de fans et communiquez sans aucun filtre algorithmique.",
+
+                f3_tag: "03. Vos Revenus",
+                f3_title: "Boutique Intégrée",
+                f3_desc: "Vendez votre musique, vos œuvres ou vos billets directement. 100% de la valeur va au créateur.",
+
+                f4_tag: "04. Votre Liberté",
+                f4_title: "Pilotez votre carrière",
+                f4_desc: "Automatisez tout ce qui freine la création. De la gestion des factures à la diffusion de vos dossiers de presse (EPK), centralisez votre industrie personnelle.",
+                f4_d1: "0% de Commission",
+                f4_d2: "Outils Pro (EPK, Fiches tech)",
+                f4_d3: "Paiements Instantanés",
+                f4_d4: "Propriété Totale des Données",
+
+                services_title: "LA RÉALITÉ<br><span class=\"outline\">PHYSIQUE</span>",
+                services_subtitle: "Le digital ne suffit pas. L'art s'incarne. La maison d'autoédition vous accompagne pour matérialiser vos projets dans le monde réel.",
+                marquee: "CRÉEZ L'ART. ON GÈRE LE RESTE. / SOUVERAINETÉ TOTALE. / AUCUNE CONCESSION. / ",
+
+                svc_irl_tag: "Production",
+                svc_prod_title: "Matérialisation",
+                svc_prod_desc: "De l'usine à la main de vos fans. Nous gérons la production physique pour que votre art existe en dehors des écrans.",
+                svc_prod_d1: "Pressage Vinyle & CD",
+                svc_prod_d2: "Édition & Reliure de Livres",
+                svc_prod_d3: "Design & Prod de Merch",
+
+                svc_log_tag: "Diffusion",
+                svc_log_title: "Logistique & Événementiel",
+                svc_log_desc: "Concerts, expositions, expéditions mondiales. L'infrastructure d'un label major, à votre service exclusif.",
+
+                network_intro: "Le collectif autogéré. Les artistes et entités qui soutiennent et opèrent sur notre infrastructure."
+            },
+            en: {
+                nav_home: "Home",
+                nav_app: "The App",
+                nav_services: "Physical",
+                nav_network: "Network",
+
+                home_intro: "Stop building your empires on rented land. NADAPROD is the self-publishing house built for absolute creator independence.",
+                newsletter_tag: "The Signal",
+                newsletter_title: "Disintermediation.",
+                newsletter_sub: "Algorithms censor you. Platforms tax you. Join the list to find out how to exit the system.",
+                who_tag: "Contact",
+
+                app_main_title: "THE DEFINITIVE<br><span class=\"outline\">APPLICATION</span>",
+                app_intro: "We condensed the manifesto into technology. Everything an artist needs to exist, broadcast, and monetize, packed into one interface. You create. The app does the rest.",
+
+                f1_tag: "01. Your Space",
+                f1_title: "Digital HQ",
+                f1_desc: "No more rigid templates or platforms dictating your design. Deploy an immersive, ultra-fast space that you own 100%. The tool fades, the art breathes.",
+                f1_d1: "Custom Showcase",
+                f1_d2: "Network Independent",
+                f1_d3: "Zero Maintenance",
+                f1_d4: "Maximum Speed",
+
+                f2_tag: "02. Your Audience",
+                f2_title: "Direct Link",
+                f2_desc: "If the networks shut down, you lose everything. Manage your own fanbase and communicate without any algorithmic filter.",
+
+                f3_tag: "03. Your Revenue",
+                f3_title: "Built-in Shop",
+                f3_desc: "Sell your music, artworks, or tickets directly. 100% of the value goes to the creator.",
+
+                f4_tag: "04. Your Freedom",
+                f4_title: "Drive Your Career",
+                f4_desc: "Automate everything that slows down creation. From invoicing to Electronic Press Kits (EPK), centralize your personal industry.",
+                f4_d1: "0% Commission",
+                f4_d2: "Pro Tools (EPK, Tech Riders)",
+                f4_d3: "Instant Payouts",
+                f4_d4: "Total Data Ownership",
+
+                services_title: "PHYSICAL<br><span class=\"outline\">REALITY</span>",
+                services_subtitle: "Digital is not enough. Art embodies itself. The self-publishing house helps materialize your projects in the real world.",
+                marquee: "CREATE THE ART. WE HANDLE THE REST. / TOTAL SOVEREIGNTY. / NO COMPROMISE. / ",
+
+                svc_irl_tag: "Production",
+                svc_prod_title: "Materialization",
+                svc_prod_desc: "From the factory to your fans' hands. We handle physical production so your art exists outside screens.",
+                svc_prod_d1: "Vinyl & CD Pressing",
+                svc_prod_d2: "Book Editing & Binding",
+                svc_prod_d3: "Merch Design & Prod",
+
+                svc_log_tag: "Distribution",
+                svc_log_title: "Logistics & Events",
+                svc_log_desc: "Concerts, exhibitions, worldwide shipping. The infrastructure of a major label, exclusively for you.",
+
+                network_intro: "The self-managed collective. Artists and entities that support and operate on our infrastructure."
+            }
+        };
+
+        const browserLang = navigator.language || navigator.userLanguage || 'en';
+        let currentLang = browserLang.startsWith('fr') ? 'fr' : 'en';
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'fr' ? 'en' : 'fr';
+            applyLanguage();
+        }
+
+        function applyLanguage() {
+            document.getElementById('lang-btn').textContent = currentLang.toUpperCase();
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[currentLang][key]) {
+                    el.innerHTML = translations[currentLang][key];
+                }
+            });
+            document.querySelectorAll('.marquee-content').forEach(el => {
+                el.textContent = translations[currentLang]['marquee'];
+            });
+        }
+
+        // Dynamic Hero Logic
+        const heroMessages = {
+            fr: [
+                { top: "ARTISTES,", bot: "REPRENEZ LE CONTRÔLE." },
+                { top: "ZÉRO ALGORITHME,", bot: "100% INDÉPENDANCE." },
+                { top: "CRÉEZ L'ART,", bot: "ON GÈRE LE RESTE." }
+            ],
+            en: [
+                { top: "ARTISTS,", bot: "TAKE BACK CONTROL." },
+                { top: "ZERO ALGORITHMS,", bot: "100% INDEPENDENCE." },
+                { top: "CREATE THE ART,", bot: "WE HANDLE THE REST." }
+            ]
+        };
+
+        let msgIndex = 0;
+        const heroTitle = document.getElementById('hero-title');
+
+        setInterval(() => {
+            const msgs = heroMessages[currentLang];
+            msgIndex = (msgIndex + 1) % msgs.length;
+            const nextMsg = msgs[msgIndex];
+
+            heroTitle.style.opacity = '0';
+            heroTitle.style.transform = 'translateY(15px)';
+            heroTitle.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+
+            setTimeout(() => {
+                heroTitle.innerHTML = `<span class="outline">${nextMsg.top}</span><br>${nextMsg.bot}`;
+                heroTitle.style.opacity = '1';
+                heroTitle.style.transform = 'translateY(0)';
+            }, 500);
+        }, 5000);
+
+        // Navigation Tab Logic
+        function switchTab(tabId) {
+            document.querySelectorAll('section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById('tab-' + tabId).classList.add('active');
+
+            const indexMap = { 'home': 0, 'app': 1, 'services': 2, 'network': 3 };
+            const buttons = document.querySelectorAll('.nav-item');
+            if(buttons[indexMap[tabId]]) buttons[indexMap[tabId]].classList.add('active');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Theme Setup & Toggle Logic
+        function initTheme() {
+            // First check if user has a forced preference stored
+            const storedTheme = localStorage.getItem('nadaprod-theme');
+            if (storedTheme) {
+                document.documentElement.setAttribute('data-theme', storedTheme);
+            }
+            // If not, CSS prefers-color-scheme will handle it naturally.
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            // Determine current actual theme
+            const isDark = window.getComputedStyle(document.body).backgroundColor === 'rgb(5, 5, 5)' || html.getAttribute('data-theme') === 'dark';
+
+            const nextTheme = isDark ? 'light' : 'dark';
+            html.setAttribute('data-theme', nextTheme);
+            localStorage.setItem('nadaprod-theme', nextTheme);
+        }
+
+        // Initialize App
+        initTheme();
+        applyLanguage();
+
+    </script>
+</body>
+</html>

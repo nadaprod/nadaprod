@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biography | Philippe Petit</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --punk-red: #da4444;
+            --punk-black: #1a1a1a;
+            --punk-cream: #f4f1ea;
+            --bg-texture: url("https://www.transparenttextures.com/patterns/paper-fibers.png");
+        }
+
+        body.dark {
+            --punk-cream: #121212;
+            --punk-black: #e5e5e5;
+            --punk-red: #ff4d4d;
+            background-image: url("https://www.transparenttextures.com/patterns/dark-matter.png");
+        }
+
+        body {
+            background-color: var(--punk-cream);
+            color: var(--punk-black);
+            font-family: 'Courier Prime', monospace;
+            background-image: var(--bg-texture);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        h1, h2, h3, .punk-title {
+            font-family: 'Special Elite', cursive;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+        }
+
+        .nav-link {
+            position: relative;
+            transition: all 0.2s;
+            display: inline-block;
+            padding: 2px 8px;
+        }
+        .nav-link:hover {
+            background: var(--punk-black);
+            color: var(--punk-cream);
+            transform: rotate(-1deg) scale(1.05);
+        }
+        .nav-link.active {
+            background: var(--punk-red);
+            color: white;
+            transform: rotate(1deg);
+        }
+
+        .collage-frame {
+            border: 2px solid var(--punk-black);
+            box-shadow: 8px 8px 0px var(--punk-black);
+            background: white;
+            padding: 10px;
+        }
+        body.dark .collage-frame {
+            background: #1a1a1a;
+            border-color: #333;
+            box-shadow: 8px 8px 0px #000;
+        }
+
+        .quote-block {
+            font-style: italic;
+            border-left: 6px solid var(--punk-red);
+            padding-left: 20px;
+            margin: 2rem 0;
+            font-size: 1.25rem;
+            line-height: 1.5;
+        }
+
+        .text-justified {
+            text-align: justify;
+            hyphens: auto;
+        }
+
+        .highlight-red {
+            color: var(--punk-red);
+            font-weight: bold;
+        }
+
+        .theme-toggle {
+            top: 23px;
+            position: fixed;
+            cursor: pointer;
+            padding: 5px;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .theme-toggle:hover {
+            background: var(--punk-black);
+            color: var(--punk-cream);
+        }
+        @media (max-width: 767px) {
+			.theme-toggle {
+				position: fixed;
+				top: 14px;
+				right: -2px;
+                align-items: end;
+    			justify-content: right;
+			}
+		}
+
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+
+    <!-- HEADER -->
+    <header class="max-w-6xl mx-auto mb-12 border-b-4 border-black pb-6 dark:border-white">
+        <div class="flex flex-col md:flex-row justify-between items-center md:items-end gap-6">
+            <div>
+                <h1><a href="./" class="text-4xl md:text-6xl font-bold leading-none">Philippe Petit</a></h1>
+                <p class="text-lg md:text-xl italic mt-2 text-gray-700 bg-black text-white inline-block px-2 dark:bg-red-600">a musical travel-agent</p>
+            </div>
+            
+            <nav>
+                <ul class="flex flex-wrap gap-4 text-sm md:text-base font-bold uppercase justify-center md:justify-end">
+                    <li><a href="biography.html" class="nav-link active">Biography</a></li>
+                    <li><a href="modulisme.html" class="nav-link">MODULISME</a></li>
+                    <li><a href="listen.html" class="nav-link">LISTEN / DISCOG</a></li>
+                    <li><a href="booking.html" class="nav-link">Contact/Booking</a></li>
+                    <li><a href="friends.html" class="nav-link">Friends</a></li>
+                    <button id="theme-switcher" class="theme-toggle" title="Switch Theme">
+                        <svg id="sun-icon" class="hidden w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.122-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 14.95a1 1 0 01-1.414 0l-.707-.707a1 1 0 011.414-1.414l.707.707a1 1 0 010 1.414zm-1.414-11.314a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM4 10a1 1 0 00-1-1H2a1 1 0 100 2h1a1 1 0 001-1z"></path></svg>
+                        <svg id="moon-icon" class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                    </button>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- MAIN -->
+    <main class="max-w-4xl mx-auto">
+        
+        <div class="mb-12">
+            <div class="collage-frame transform rotate-1">
+                <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/montage.jpg?1702443408" alt="Philippe Petit Montage" class="w-full filter contrast-125">
+            </div>
+        </div>
+
+        <div class="quote-block highlight-red">
+            ​For me music comes in terms of magic, you know that there is a trick but it doesn’t matter how it is done, if the illusion becomes visible the magic delusion is no longer interesting, the illusion works if the composer-magician and his audience want to play along.<br/>
+            All that we hear never corresponds to the reality of the sound, it is a question of aural trickery: «Earlusionnism»!
+        </div>
+
+        <div class="space-y-8 text-lg leading-relaxed text-justified">
+            <p>
+                I studied Electroacoustic music at the CNRR Conservatory where I  specialised in multi-channelled diffusion (Acousmatic spatialisation) and Modular Synthesis. Using Buchla System 200, Serge 73/75 and a modified EMS Synthi A analog Synthesizers to create my "Electronic abstractions" and Plastic sound-objects. <br>
+                Sculpting sound like a craftsman, without restraint or sometimes "on the tip of the hands", I am interested in the importance of the compositional gesture, to favor the live touch without repetitions, by impulse, in a very corporeal way. <span class="bg-black text-white px-2 dark:bg-red-600">VISCERALITY !</span>
+            </p>
+
+            <div class="text-center py-8">
+                <span class="punk-title text-3xl highlight-red">I am interested in the marriage of acoustics and electronics!</span>
+            </div>
+
+            <p>
+                I also play various instruments or devices, though most notably a Prepared Piano-Soundboard + an Electric Psalterion + Hackbrett Cymbalum + Guitars + turntables as well as Theremin + Soline and Roland Fantom G6 synths and computer to build up electronic layers, process acoustic and field recordings.<br/>
+                On top of those, I like to move various glasses, pieces of wood, stones, or percussive objects, as well as taking advantage of vinyl material to fondle released sounds engraved on unique vinyls in order to manipulate them manually on stage.
+            </p>
+
+            <p class="font-bold border-2 border-black p-4 dark:border-white transform -rotate-1">
+                Relying on electricity/amplification to produce, manipulate, work on sound-material, but trying my best to explore various genres and make sure that each of my albums differs from the previous one, trying to avoid routine and surprise my listeners.
+            </p>
+
+            <p class="highlight-red">
+                I strongly advocates the fact that the more we advance in the music that is close to us in time, the more we will have the impression of going backwards, and this is voluntary since the history of Art, like that of Humanity, is a succession of cycles. Consequently, there are periods in which Man needs, for historical and sociological reasons, an Art that is an Art of the future; and periods in which this need is less obvious, often out of a search for security, we need an Art with roots in the past. This is exactly where Petit's music lies, deeply influenced by the pioneers of electronic music while refusing any kind of passeism and deeply current: <br>
+                <span class="text-3xl punk-title block mt-2">I want my present to be retro-futuristic!</span>
+            </p>
+
+            <p>
+                Not musically trained/educated I lie outside the Classical genre but my scores incorporate traditional classical components in a predominantly unconventional manner which recently allowed me to being asked by Iancu Dumitrescu & Ana Maria Avram to join forces as a soloist in their Hyperion Ensemble + being invited by Jean-Paul Dessy (Musiques Nouvelles ensemble) and Raoul Lay (Ensemble Télémaque) to become in charge of electronics/turntables in their ambitious E. C. O. (European Chamber Orchestra) formation comprising of 33 musicians...
+            </p>
+
+            <div class="bg-white dark:bg-zinc-800 p-8 collage-frame">
+                <h3 class="punk-title text-2xl mb-4 underline">Collaborators & Dream-team</h3>
+                <p class="text-sm md:text-base">
+                    Fortunate enough to work with what people call a dream-team of collaborators: joining Lydia Lunch, Murcof, The E.C.O., Mark Cunningham (MARS), Cindytalk, Orkest De Ereprijs, Audrey Chen, Mia Zabelka, Hyperion Ensemble, Stephen O'Malley, Yannick Barman, PAS or Faust onstage and-or in studio. <br><br>
+                    Besides I did some recordings with: Eugene Robinson (Oxbow), Edward Ka-Spel (Legendary Pink Dots), Simon Fisher Turner, Kumo, Scott McCloud (Girls Against Boys), Cosey Fanni Tutti (Throbbing Gristle), My Brightest Diamond, Sybarite, Foetus, Pantaleimon, Graham Lewis (Wire), Barry Adamson, Andy Diagram, Scanner, Machinefabriek, Mira Calix, Kammerflimmer Kollektief, Justin K. Broadrick, James Johnston (Gallon Drunk/Bad Seeds/Faust), ASVA, Jarboe, Martin Dupont and many more...
+                </p>
+            </div>
+
+            <p>
+                I am also the founder (w/ Hervé Vincenti) of the international collective Strings Of Consciousness <br>
+                <a href="http://www.stringsofconsciousness.info" class="text-red-600 underline">http://www.stringsofconsciousness.info</a>
+            </p>
+
+            <p class="font-bold">
+                A journalist for various magazines and radio DJ since 1983, as well as a musical activist, I have celebrated 40 years of sharing/transmitting my musical passions. <br>
+                Since the early 2000s I have been introduced as a « musical travel agent » and been performing the world, playing festivals all over Europe, Russia, Poland, Canada, USA, Mexico, Australia & Asia…
+            </p>
+
+            <p class="text-sm">
+                Feeling lucky to release on several international labels such as Cronica Electronica, Oscillations, Aural Terrains, Opa-Loka, Southern UK, Monotype, Alrealon Musique, Beta Lactam Ring, Sub Rosa, HomeNormal, Important, HelloSquare, Public Eyesore, Utech, Staubgold, etc... (see the section "Friends/Collaborators" above in the Menu bar for a detailed list + links).
+            </p>
+            <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/1312180201.png" class="collage-frame w-full transition-all">
+
+            <div class="pt-8 space-y-4">
+                <p>
+                    I like to perform in galleries or other atypical (non-musical) places and acts like a sonographer. Thus my sound-designs have been heard in various F.R.A.C. in France, and also internationally, most notably in MOMA (New York), MACBA (Barcelone), E_Werk/Transmediale (Berlin), Center for Contemporary Arts (Glasgow), Galerie Moderno (Leeds), Ars Electronica (Linz), Synch Festival (Athèns), Société des Arts Technologiques (Montréal), Recycl'ART (Bruxelles), "Transcultural Mapping" @ RIXC from Riga, "Numeris Causa" Biche de Bere Gallery (Paris), Sintesi (Citta Della Scienza - Naples), Arborescence (Aix-en-Provence), Instituto Cultural Poblano (Puebla - Mexico), Eléctron (Genève), Alfa Art Gallery (New-York), CocART - CSW (Torun - Pologne), M.A.K. (Vienne), Reina Sofia National Museum (Madrid), Borusan Center For Arts (Istanbul), Tranzit Art Gallery (Bucharest), or Art-O-Rama the rendez-vous for Contemporary Art in France...
+                </p>
+                <p class="italic font-bold">
+                    I am also the man behind the cult labels Pandemonium Rdz. and BiP_HOp.
+                </p>
+            </div>
+        </div>
+
+        <!-- PORTRAIT IMAGES -->
+        <div class="grid grid-cols-2 gap-4 mt-16">
+            <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/6653687.jpg?40" class="collage-frame transition-all">
+            <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/6518891.jpg?120" class="collage-frame transition-all mt-4">
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="max-w-6xl mx-auto mt-24 pt-8 border-t-4 border-black dark:border-white text-xs uppercase font-bold flex flex-wrap justify-between gap-4">
+        <div>&copy; 2026 Philippe Petit</div>
+        <div class="flex gap-6 text-red-600">
+            <a href="https://philippepetitamusicaltravel-agent.bandcamp.com/" target="_blank" class="hover:underline">Bandcamp</a>
+            <a href="https://modulisme.info" class="hover:underline">Modulisme</a>
+        </div>
+    </footer>
+
+    <script>
+        const body = document.body;
+        const themeBtn = document.getElementById('theme-switcher');
+        const sunIcon = document.getElementById('sun-icon');
+        const moonIcon = document.getElementById('moon-icon');
+
+        themeBtn.addEventListener('click', () => {
+            body.classList.toggle('dark');
+            const isDark = body.classList.contains('dark');
+            sunIcon.classList.toggle('hidden', !isDark);
+            moonIcon.classList.toggle('hidden', isDark);
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
+
+        if (localStorage.getItem('theme') !== 'light') {
+            body.classList.add('dark');
+            sunIcon.classList.remove('hidden');
+            moonIcon.classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Philippe Petit | Le Courant Passe</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --punk-red: #da4444;
+            --punk-black: #1a1a1a;
+            --punk-cream: #f4f1ea;
+            --electric-blue: #00f3ff; /* Ajout d'une touche électrique */
+            --bg-texture: url("https://www.transparenttextures.com/patterns/paper-fibers.png");
+        }
+
+        body.dark {
+            --punk-cream: #121212;
+            --punk-black: #e5e5e5;
+            --punk-red: #ff4d4d;
+            background-image: url("https://www.transparenttextures.com/patterns/dark-matter.png");
+        }
+
+        body {
+            background-color: var(--punk-cream);
+            color: var(--punk-black);
+            font-family: 'Courier Prime', monospace;
+            background-image: var(--bg-texture);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        h1, h2, h3, .punk-title {
+            font-family: 'Special Elite', cursive;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+        }
+
+        .nav-link {
+            position: relative;
+            transition: all 0.2s;
+            display: inline-block;
+            padding: 2px 8px;
+            text-decoration: none;
+        }
+        .nav-link:hover {
+            background: var(--punk-black);
+            color: var(--punk-cream);
+            transform: rotate(-1deg) scale(1.05);
+        }
+        .nav-link.active {
+            background: var(--punk-red);
+            color: white;
+            transform: rotate(1deg);
+        }
+
+        /* Effet Électrique */
+        @keyframes flicker {
+            0%, 18%, 22%, 25%, 53%, 57%, 100% {
+                text-shadow: 
+                0 0 2px #fff,
+                0 0 5px var(--punk-red),
+                0 0 10px var(--punk-red);
+            }
+            20%, 24%, 55% {       
+                text-shadow: none;
+            }
+        }
+
+        .electric-title {
+            animation: flicker 4s infinite alternate;
+        }
+
+        .paper-sheet {
+            background: white;
+            box-shadow: 8px 8px 0px var(--punk-black);
+            padding: 2rem;
+            border: 3px solid var(--punk-black);
+            margin-bottom: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+        body.dark .paper-sheet {
+            background: #1a1a1a;
+            border-color: #333;
+            box-shadow: 8px 8px 0px #000;
+        }
+
+        .tape-strip {
+            position: absolute;
+            height: 40px;
+            width: 150px;
+            background: rgba(218, 68, 68, 0.2);
+            border: 1px dashed var(--punk-red);
+            transform: rotate(-45deg);
+            top: 20px;
+            left: -40px;
+            z-index: 10;
+        }
+
+        .chapter-number {
+            font-family: 'Special Elite', cursive;
+            font-size: 3rem;
+            color: var(--punk-black);
+            opacity: 0.1;
+            position: absolute;
+            top: 0;
+            right: 10px;
+            line-height: 1;
+        }
+
+        .wall-of-sound {
+            text-align: justify;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            word-spacing: -1px;
+            letter-spacing: -0.5px;
+            opacity: 0.8;
+            border-left: 2px solid var(--punk-red);
+            padding-left: 1rem;
+        }
+
+        .publisher-call {
+            border: 4px dashed var(--punk-red);
+            background: var(--punk-black);
+            color: var(--punk-cream);
+            transform: rotate(1deg);
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .high-voltage-box {
+            border: 2px solid var(--punk-black);
+            background: repeating-linear-gradient(
+                45deg,
+                var(--punk-cream),
+                var(--punk-cream) 10px,
+                #e5e5e5 10px,
+                #e5e5e5 20px
+            );
+            padding: 1rem;
+        }
+        body.dark .high-voltage-box {
+             background: repeating-linear-gradient(
+                45deg,
+                #1a1a1a,
+                #1a1a1a 10px,
+                #222 10px,
+                #222 20px
+            );
+        }
+
+        ::selection {
+            background: var(--electric-blue);
+            color: black;
+        }
+
+        .theme-toggle {
+            top: 23px;
+            position: fixed;
+            cursor: pointer;
+            padding: 5px;
+            border: 0;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .theme-toggle:hover {
+            background: var(--punk-black);
+            color: var(--punk-cream);
+        }
+        .theme-toggle svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+        @media (max-width: 767px) {
+			.theme-toggle {
+				position: fixed;
+				top: 14px;
+				right: -2px;
+                align-items: end;
+    			justify-content: right;
+			}
+		}
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+
+    <!-- HEADER -->
+    <header class="max-w-6xl mx-auto mb-16 border-b-4 border-black pb-6 dark:border-white">
+        <div class="flex flex-col md:flex-row justify-between items-end gap-0">
+            <div>
+                <h1><a href="./" class="text-4xl md:text-6xl font-bold leading-none">Philippe Petit</a></h1>
+                <p class="text-lg md:text-xl italic mt-2 text-gray-700 bg-black text-white inline-block px-2 dark:bg-red-600">a musical travel-agent</p>
+            </div>
+            
+            <nav>
+                <ul class="flex flex-wrap gap-4 text-sm md:text-base font-bold uppercase justify-center md:justify-end">
+                    <li><a href="biography.html" class="nav-link">Biography</a></li>
+                    <li><a href="modulisme.html" class="nav-link">MODULISME</a></li>
+                    <li><a href="listen.html" class="nav-link">LISTEN / DISCOG</a></li>
+                    <li><a href="booking.html" class="nav-link">Contact/Booking</a></li>
+					<li><a href="friends.html" class="nav-link">Friends</a></li>
+                    <button id="theme-switcher" class="theme-toggle" title="Switch Theme">
+                        <svg id="sun-icon" class="hidden" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.122-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 14.95a1 1 0 01-1.414 0l-.707-.707a1 1 0 011.414-1.414l.707.707a1 1 0 010 1.414zm-1.414-11.314a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM4 10a1 1 0 00-1-1H2a1 1 0 100 2h1a1 1 0 001-1z"></path></svg>
+                        <svg id="moon-icon" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                    </button>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="max-w-5xl mx-auto">
+
+        <!-- INTRO MANIFESTO -->
+        <section class="mb-20">
+            <div class="relative">
+                <h1 class="text-6xl md:text-9xl punk-title leading-none mb-4 electric-title" style="color: var(--punk-black);">
+                    LE COURANT <br><span style="color: var(--punk-red);">PASSE</span>
+                </h1>
+                
+                <div class="absolute top-0 right-0 transform rotate-12 bg-black text-white p-4 font-bold uppercase border-2 border-red-600 shadow-xl hidden md:block">
+                    Manuscrit<br>Disponible
+                </div>
+            </div>
+
+            <div class="text-xl md:text-2xl font-bold italic mb-12 border-l-8 border-black dark:border-white pl-6 py-2">
+                Une histoire des musiques rendues possibles grâce à l’invention de l’électricité mais celles qui nous font nous souvenir qu’elle fut un jour la foudre.
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 text-lg">
+                <p>
+                    Transmettre, partager ma passion, ouvrir un champ de forces, un réseau de tension entre la foudre originelle et le murmure du fil. 
+                    Un conte électrique du son et de ses secousses… 
+                    De la décharge expérimentale à la guitare sauvage, de la bobine à la bouche. 
+                    <strong>L’histoire des corps traversés.</strong>
+                </p>
+                <p>
+                    À la fois un portrait, une écoute, et une évocation qui souhaite donner envie au lecteur d’écouter, de découvrir. 
+                    <span class="bg-red-600 text-white px-1">Je veux qu’il sente le courant lui passer dans le corps…</span>
+                    <br><br>
+                    Et pour la première fois : tisser le lien entre électricité = mythe et musique = incarnation de ce mythe.
+                </p>
+            </div>
+        </section>
+
+        <!-- CALL TO ACTION (PUBLISHERS) -->
+        <section class="publisher-call mb-20 shadow-xl">
+            <h2 class="text-3xl md:text-5xl punk-title mb-4">À L'ATTENTION DES ÉDITEURS</h2>
+            <p class="text-xl md:text-2xl font-bold mb-6">Les livres sont écrits.</p>
+            <p class="text-lg mb-8 max-w-2xl mx-auto">Ce projet cherche sa maison. Une maison qui comprenne le parti-pris et l'engagement mis dans ces lignes.</p>
+            
+            <a href="booking.html" class="inline-block bg-white text-black font-bold text-xl px-8 py-4 uppercase hover:bg-red-600 hover:text-white transition-colors border-2 border-white transform hover:scale-105 hover:rotate-1 shadow-[4px_4px_0px_rgba(255,255,255,0.5)]">
+                Demander le Manuscrit
+            </a>
+        </section>
+
+        <!-- TOME 1 -->
+        <section class="paper-sheet transform -rotate-1">
+            <div class="tape-strip"></div>
+            <div class="chapter-number">I</div>
+            
+            <h2 class="text-4xl md:text-5xl punk-title mb-8 border-b-4 border-red-600 inline-block">TOME 1</h2>
+            
+            <div class="space-y-8">
+                <div>
+                    <h3 class="text-xl font-bold uppercase mb-2 bg-black text-white inline-block px-2">I. Avant la foudre. Génèse</h3>
+                    <p class="text-sm">Le tonnerre de Tesla, les éclairs de Frankenstein, les tubes de néon de Moholy-Nagy, Cahill, Russolo, Theremin, le Traité des objets musicaux comme rite initiatique… Moog et Buchla… Un câble, un aimant, un souffle de cuivre.</p>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-bold uppercase mb-2 bg-black text-white inline-block px-2">II. La foudre inventée</h3>
+                    <p class="text-sm">La légende, la mystique de l’électricité. Incantatoire, presque cosmogonique. Il n’était plus question d’entendre son grondement, mais de l’habiter. De se brancher sur sa propre lumière. C’est le secret de toute musique électrique.</p>
+                </div>
+
+                <div class="high-voltage-box">
+                    <h3 class="text-2xl font-bold uppercase mb-4 text-red-600 punk-title">IV. Les Électrices</h3>
+                    <p class="font-bold italic mb-4">Celles qui parlèrent à la foudre. Les magiciennes du voltage intérieur, le choeur du livre.</p>
+                    <div class="wall-of-sound font-mono text-xs md:text-sm">
+                        Delia Derbyshire, Pauline Oliveros, Bebe Barron, Alice Shields, Laurie Spiegel, Eliane Radigue, Suzanne Ciani, Daniela Casa, Meredith Monk, Caterina Barbieri, Ann Southam, Priscilla McLean, Beatriz Ferreyra, Jocy de Oliveira, Victoria Shen, Charmaine Lee, Maria Teresa Luciani, Micheline Coulombe Saint-Marcoux, France Jobin, Daria Semegen, Else Marie Pade, Daphné Oram, Françoise Barrière, Nicole Lachartre, Kali Malone, Maryanne Amacher, Annea Lockwood, Ruth Anderson, Joan La Barbara, Ruth White, Sig Valax, Sachiko M, Stéphanie Castonguay, Dorit Chrysler, Ocean Viva Silver, Kate Carr, Michèle Bokanowski, Hildegard Westerkamp, Christina Kubisch, Bérengère Maximin, Elsa Justel, Giulia Alessandroni, Natasha Barrett, Hanna Hartman, Ikue Mori, Ann McMillan, Maja S. Ratkje, Diamanda Galás, Cosey Fanni Tutti...
+                    </div>
+                    <p class="text-right text-xs font-bold mt-2 uppercase">Elles ne domptent pas la foudre, elles dialoguent avec elle.</p>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-bold uppercase mb-2 bg-black text-white inline-block px-2">III. Les Fulgurés & VII. Étincellements</h3>
+                    <p class="text-sm font-bold mb-2">Les Décharges primitives / Les Secousses Sixties / Les Incandescents</p>
+                    <div class="text-xs font-mono opacity-75">
+                        Kim Fowley, Syd Barrett, Hendrix, Captain Beefheart, The Stooges, MC5, New York Dolls, Patti Smith, Television, Suicide, The Velvet Underground, Lou Reed, Laurie Anderson... Stockhausen, Can, Neu!, Faust, Conrad Schnitzler, Roedelius, Kluster, Klaus Schulze, Kraftwerk.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TOME 2 -->
+        <section class="paper-sheet transform rotate-1">
+            <div class="tape-strip" style="right: -40px; left: auto; transform: rotate(45deg);"></div>
+            <div class="chapter-number">II</div>
+
+            <h2 class="text-4xl md:text-5xl punk-title mb-8 border-b-4 border-red-600 inline-block">TOME 2</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                
+                <div>
+                    <h3 class="text-xl font-bold uppercase mb-2">VIII. Les porteurs de foudre</h3>
+                    <p class="text-sm mb-2 italic">Ceux pour qui la musique devait passer par la peau.</p>
+                    <div class="wall-of-sound">
+                        Louis & Bebe Barron, Edgar Varese, Todd Dockstader, Pierre Henry, Parmegiani, The Cramps, Gun Club, The Birthday Party, Radio Birdman, The Scientists, Dum Dum Boys, The Dead Boys, No-Wave (Teenage Jesus & the Jerks, Mars, DNA), Blondie, Talking Heads, B-52’s, The Sparks, Les Rita Mitsouko, Metal Urbain...
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-bold uppercase mb-2">IX. Post Punk. Corps Conducteurs</h3>
+                    <div class="wall-of-sound">
+                        The Screamers, Liaisons Dangereuses, Malaria!, LiliPUT, The Slits, The Raincoats, Siouxsie, ESG, Kas Product, Killing Joke, The Normal, Fad Gadget, PIL, The Fall, The Pogues, The Wire, Gang of Four, The Pop Group, A Certain Ratio, Charles Hayward, Magazine, Marquis de Sade, Joy Division, Swans, Steve Albini...
+                    </div>
+                </div>
+
+                <div class="md:col-span-2 high-voltage-box">
+                    <h3 class="text-xl font-bold uppercase mb-2 text-red-600">X. L’Inflexion «Bruitale» & V. Mécanique des Rêves</h3>
+                    <p class="text-xs mb-2 font-bold uppercase">Orages Électriques / Voyage au Coeur de la Révolution Industrielle</p>
+                    <div class="wall-of-sound" style="column-count: 2; column-gap: 2rem;">
+                        Throbbing Gristle, Coil, Nurse With Wound, SPK, Foetus, DAF, Boyd Rice, Whitehouse, Cabaret Voltaire, Skinny Puppy, Ministry, NIN, Scanner, Felix Kubin.
+                        <br><br>
+                        Zeni Geva, Boredoms, Keiji Haino, Melt Banana, Ruins, Jesus Lizard, Fugazi, The Ex, Nirvana, Refused, Jon Spencer Blues Explosion, Yoko Ono, Lydia Lunch, Babes in Toyland, L7, Riot grrrls, PJ Harvey.
+                    </div>
+                </div>
+
+                <div class="md:col-span-2">
+                    <h3 class="text-xl font-bold uppercase mb-2">XI. L’électricité devient numérique</h3>
+                    <p class="text-sm mb-4">Violence idéologique (Atari Teenage Riot) — Glitch (Oval) — Algorithmie (Autechre, Aphex Twin) — Énergie brute (Pan Sonic, Ikeda) — Corps social instable (Death Grips, Dälek, Antipop Consortium, Saul Williams...).</p>
+                    <h3 class="text-xl font-bold uppercase mb-2">VI. L’Œil de l’Absurde</h3>
+                    <div class="text-xs font-mono text-gray-600">
+                        The Residents, Tuxedomoon, Minimal Compact, Negativland, John Oswald, Christian Marclay, Otomo Yoshihide, Naked City, Björk, Godspeed You! Black Emperor, Sonic Youth, My Bloody Valentine, The Butthole Surfers, Spacemen 3, Devo, Silver Apples.
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- TOME 3 -->
+        <section class="paper-sheet transform -rotate-1 bg-black text-white dark:bg-zinc-900 dark:border-white">
+            <div class="chapter-number text-white opacity-20">III</div>
+            
+            <h2 class="text-4xl md:text-5xl punk-title mb-8 border-b-4 border-white inline-block text-white">TOME 3</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+                <div class="md:col-span-2 space-y-6">
+                    <p class="text-lg font-bold">Cette trilogie part d’une intuition simple et radicale : l’électricité n’est pas neutre. Elle a une histoire, une mémoire, une fatigue, et peut-être même une volonté.</p>
+                    
+                    <p class="italic opacity-80">J’ai voulu écrire l’électricité comme on écrit un personnage, avec ses contradictions, ses colères, ses silences.</p>
+                    
+                    <div class="border-l-4 border-red-600 pl-4">
+                        <h3 class="text-2xl font-bold uppercase mb-2 text-red-500">ELECTRA</h3>
+                        <p class="text-sm">La Foudre devient une figure féminine. Femme-déesse parce que son histoire est celle d’une puissance utilisée, contenue, exploitée, puis rendue invisible.</p>
+                    </div>
+
+                    <p class="text-sm">Le courant passe s’affirme comme récit fragmenté, poétique et politique.</p>
+                </div>
+
+                <div class="border-2 border-white p-4 text-center transform rotate-2">
+                    <h4 class="font-bold uppercase border-b border-white pb-2 mb-2">Structure</h4>
+                    <ul class="text-sm space-y-2 font-mono">
+                        <li>Prologue</li>
+                        <li>Tome I (80p)</li>
+                        <li>Tome II (70p)</li>
+                        <li>Tome III (100p)</li>
+                        <li>Conclusion</li>
+                    </ul>
+                    <div class="mt-4 text-xl font-bold text-red-500">~280 Pages</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CALL TO ACTION (PUBLISHERS) -->
+        <section class="publisher-call mb-20 shadow-xl">
+            <h2 class="text-3xl md:text-5xl punk-title mb-4">À L'ATTENTION DES ÉDITEURS</h2>
+            <p class="text-xl md:text-2xl font-bold mb-6">Les livres sont écrits.</p>
+            <p class="text-lg mb-8 max-w-2xl mx-auto">Ce projet cherche sa maison. Une maison qui comprenne le parti-pris et l'engagement mis dans ces lignes.</p>
+            
+            <a href="booking.html" class="inline-block bg-white text-black font-bold text-xl px-8 py-4 uppercase hover:bg-red-600 hover:text-white transition-colors border-2 border-white transform hover:scale-105 hover:rotate-1 shadow-[4px_4px_0px_rgba(255,255,255,0.5)]">
+                Demander le Manuscrit
+            </a>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="max-w-6xl mx-auto mt-24 pt-8 border-t-4 border-black dark:border-white text-xs uppercase font-bold flex flex-wrap justify-between gap-4">
+        <div>&copy; 2026 Philippe Petit</div>
+        <div class="flex gap-6 text-red-600">
+            <a href="https://philippepetitamusicaltravel-agent.bandcamp.com/" target="_blank" class="hover:underline">Bandcamp</a>
+            <a href="https://modulisme.info" class="hover:underline">Modulisme</a>
+        </div>
+    </footer>
+
+    <script>
+        const body = document.body;
+        const themeBtn = document.getElementById('theme-switcher');
+        const sunIcon = document.getElementById('sun-icon');
+        const moonIcon = document.getElementById('moon-icon');
+
+        themeBtn.addEventListener('click', () => {
+            body.classList.toggle('dark');
+            const isDark = body.classList.contains('dark');
+            sunIcon.classList.toggle('hidden', !isDark);
+            moonIcon.classList.toggle('hidden', isDark);
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
+
+        if (localStorage.getItem('theme') !== 'light') {
+            body.classList.add('dark');
+            sunIcon.classList.remove('hidden');
+            moonIcon.classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

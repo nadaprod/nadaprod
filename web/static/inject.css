@@ -1,0 +1,4 @@
+/* Windpage — styles du mode édition. Injecté au service, retiré à la sauvegarde. */
+[data-wp-hover] { outline: 2px dashed #8B5CF6 !important; outline-offset: 2px; cursor: default !important; }
+[data-wp-selected] { outline: 2px solid #8B5CF6 !important; outline-offset: 2px; }
+[data-wp-selected][contenteditable="true"] { outline-color: #10B981 !important; }

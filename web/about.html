@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ABOUT / LEGAL | NADAPROD</title>
+    
+    <meta name="theme-color" content="#050505">
+    <meta name="robots" content="noindex, nofollow">
+
+    <!-- FONTS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- VARIABLES --- */
+        :root {
+            --accent: #ccff00;
+            --ease: cubic-bezier(0.16, 1, 0.3, 1);
+            --font-display: 'Bebas Neue', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            
+            --bg: #080808;
+            --surface: #141414;
+            --text-main: #f0f0f0;
+            --text-secondary: #888888;
+            --border: #444444;
+            --scanline-opacity: 0.05;
+        }
+
+        [data-theme="light"] {
+            --bg: #ffffff;
+            --surface: #f4f4f4;
+            --text-main: #111111;
+            --text-secondary: #666666;
+            --border: #e0e0e0;
+            --scanline-opacity: 0.02;
+        }
+
+        /* --- RESET --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            min-height: 100vh;
+            width: 100vw;
+            overflow-x: hidden;
+            transition: background-color 0.4s, color 0.4s;
+        }
+
+        /* --- FX --- */
+        .crt-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+            background-size: 100% 4px;
+            opacity: var(--scanline-opacity);
+            mix-blend-mode: overlay;
+        }
+
+        /* --- LAYOUT --- */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 4rem 1.5rem 8rem 1.5rem;
+        }
+
+        /* --- HEADER --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 3rem;
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            text-transform: uppercase;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: var(--text-main);
+            color: var(--bg);
+        }
+
+        /* --- TYPOGRAPHY --- */
+        h1 {
+            font-family: var(--font-display);
+            font-size: 4rem;
+            line-height: 0.9;
+            margin-bottom: 0.5rem;
+        }
+        
+        h2 {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            color: var(--text-main);
+            margin: 3rem 0 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        h2::before {
+            content: "§";
+            color: var(--accent);
+            font-family: var(--font-mono);
+        }
+
+        .subtitle {
+            font-family: var(--font-mono);
+            color: var(--accent);
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        p {
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+        }
+
+        ul {
+            list-style: none;
+            margin-bottom: 1rem;
+        }
+
+        li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-secondary);
+        }
+
+        li strong {
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        /* --- LEGAL BLOCK --- */
+        .legal-block {
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            background: var(--surface);
+            margin-bottom: 2rem;
+        }
+
+        a {
+            color: var(--text-main);
+            text-decoration: underline;
+            text-decoration-thickness: 1px;
+            text-underline-offset: 4px;
+        }
+        a:hover { color: var(--accent); }
+
+        /* --- CONTROLS --- */
+        .controls {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .control-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+        .control-btn:hover { color: var(--text-main); }
+
+    </style>
+</head>
+<body>
+
+    <div class="crt-overlay"></div>
+
+    <div class="container">
+        <header>
+            <a href="/" class="back-btn">← Back</a>
+            <div class="controls">
+                <button class="control-btn" onclick="toggleTheme()">◑ Theme</button>
+                <button class="control-btn" onclick="toggleLanguage()" id="lang-btn">FR</button>
+            </div>
+        </header>
+
+        <span class="subtitle" data-i18n="doc_ref">REF: LEGAL_DOC_V1.2</span>
+        <h1 data-i18n="title">MENTIONS LÉGALES</h1>
+        <p data-i18n="intro">Conformément aux dispositions de la loi n° 2004-575 du 21 juin 2004 pour la confiance en l'économie numérique.</p>
+
+        <!-- IDENTITE -->
+        <h2 data-i18n="id_title">1. Éditeur du Site</h2>
+        <div class="legal-block">
+            <ul>
+                <li><span data-i18n="lbl_company">Dénomination Sociale</span> <strong>INTELLIGENCES SAS</strong></li>
+                <li><span data-i18n="lbl_capital">Capital Social</span> <strong>1001 €</strong></li>
+                <li><span data-i18n="lbl_address">Siège Social</span> <strong>200 Rue de la Croix Nivert, 75015 Paris</strong></li>
+                <li><span data-i18n="lbl_rcs">RCS</span> <strong>Paris B 943 899 567</strong></li>
+                <li><span data-i18n="lbl_vat">Numéro TVA</span> <strong>FR12943899567</strong></li>
+                <li><span data-i18n="lbl_email">Contact</span> <strong>contact@nadaprod.com</strong></li>
+                <li><span data-i18n="lbl_director">Directeur de publication</span> <strong>La Direction</strong></li>
+            </ul>
+        </div>
+
+        <!-- HEBERGEMENT -->
+        <h2 data-i18n="host_title">2. Hébergement</h2>
+        <p data-i18n="host_desc">L'infrastructure technique est distribuée pour assurer la souveraineté des données.</p>
+        
+        <div class="legal-block">
+            <p style="margin-bottom: 0.5rem; font-weight: bold; color: var(--text-main);">OVH SAS</p>
+            <p style="font-size: 0.9rem;">2 rue Kellermann, 59100 Roubaix, France<br>Tél : 1007</p>
+            
+            <div style="height: 1px; background: var(--border); margin: 1rem 0;"></div>
+
+            <p style="margin-bottom: 0.5rem; font-weight: bold; color: var(--text-main);">AWS EMEA SARL</p>
+            <p style="font-size: 0.9rem;">38 Avenue John F. Kennedy, L-1855, Luxembourg</p>
+        </div>
+
+        <!-- PROPRIETE -->
+        <h2 data-i18n="ip_title">3. Propriété Intellectuelle</h2>
+        <p data-i18n="ip_text">
+            Sauf mention contraire, l'ensemble des éléments figurant sur ce site (textes, graphismes, logos, typographies, code source) sont la propriété exclusive de NADAPROD ou de ses partenaires. 
+            <br><br>
+            Toute reproduction, représentation, modification, publication, adaptation de tout ou partie des éléments du site, quel que soit le moyen ou le procédé utilisé, est interdite, sauf autorisation écrite préalable.
+        </p>
+
+        <!-- RGPD -->
+        <h2 data-i18n="privacy_title">4. Données Personnelles (RGPD)</h2>
+        <p data-i18n="privacy_text_1">
+            <strong>Philosophie :</strong> Nous minimisons la collecte de données. Nous ne vendons pas vos données.
+        </p>
+        <p data-i18n="privacy_text_2">
+            Les seules données collectées (via formulaire de newsletter ou contact) le sont avec votre consentement explicite pour les finalités suivantes : gestion de la relation commerciale, information sur nos services.
+        </p>
+        <p data-i18n="privacy_text_3">
+            Conformément au RGPD, vous disposez d'un droit d'accès, de rectification et de suppression de vos données. Pour l'exercer, envoyez un email à <a href="mailto:contact@nadaprod.com">contact@nadaprod.com</a>.
+        </p>
+
+        <!-- COOKIES -->
+        <h2 data-i18n="cookies_title">5. Cookies</h2>
+        <p data-i18n="cookies_text">
+            Ce site utilise uniquement des cookies techniques strictement nécessaires au fonctionnement du site (session, préférences de langue). Ces cookies sont exemptés de consentement. Aucun traceur publicitaire tiers n'est utilisé.
+        </p>
+
+    </div>
+
+    <script>
+        const translations = {
+            fr: {
+                doc_ref: "REF: LEGAL_DOC_V1.2",
+                title: "MENTIONS LÉGALES",
+                intro: "Conformément aux dispositions de la loi n° 2004-575 du 21 juin 2004 pour la confiance en l'économie numérique.",
+                
+                id_title: "1. Éditeur du Site",
+                lbl_company: "Dénomination Sociale",
+                lbl_capital: "Capital Social",
+                lbl_address: "Siège Social",
+                lbl_rcs: "RCS",
+                lbl_vat: "Numéro TVA",
+                lbl_email: "Contact",
+                lbl_director: "Directeur de publication",
+                
+                host_title: "2. Hébergement",
+                host_desc: "L'infrastructure technique est distribuée pour assurer la souveraineté des données.",
+                
+                ip_title: "3. Propriété Intellectuelle",
+                ip_text: "Sauf mention contraire, l'ensemble des éléments figurant sur ce site (textes, graphismes, logos, typographies, code source) sont la propriété exclusive de NADAPROD ou de ses partenaires. <br><br>Toute reproduction, représentation, modification, publication, adaptation de tout ou partie des éléments du site, quel que soit le moyen ou le procédé utilisé, est interdite, sauf autorisation écrite préalable.",
+                
+                privacy_title: "4. Données Personnelles (RGPD)",
+                privacy_text_1: "<strong>Philosophie :</strong> Nous minimisons la collecte de données. Nous ne vendons pas vos données.",
+                privacy_text_2: "Les seules données collectées (via formulaire de newsletter ou contact) le sont avec votre consentement explicite pour les finalités suivantes : gestion de la relation commerciale, information sur nos services.",
+                privacy_text_3: "Conformément au RGPD, vous disposez d'un droit d'accès, de rectification et de suppression de vos données. Pour l'exercer, envoyez un email à <a href='mailto:contact@nadaprod.com'>contact@nadaprod.com</a>.",
+                
+                cookies_title: "5. Cookies",
+                cookies_text: "Ce site utilise uniquement des cookies techniques strictement nécessaires au fonctionnement du site (session, préférences de langue). Ces cookies sont exemptés de consentement. Aucun traceur publicitaire tiers n'est utilisé."
+            },
+            en: {
+                doc_ref: "REF: LEGAL_DOC_V1.2_EN",
+                title: "LEGAL NOTICE",
+                intro: "In accordance with French Law No. 2004-575 of June 21, 2004 regarding trust in the digital economy.",
+                
+                id_title: "1. Site Publisher",
+                lbl_company: "Legal Name",
+                lbl_capital: "Share Capital",
+                lbl_address: "Headquarters",
+                lbl_rcs: "Trade Register",
+                lbl_vat: "VAT Number",
+                lbl_email: "Contact",
+                lbl_director: "Publication Director",
+                
+                host_title: "2. Hosting",
+                host_desc: "Technical infrastructure is distributed to ensure data sovereignty.",
+                
+                ip_title: "3. Intellectual Property",
+                ip_text: "Unless otherwise stated, all elements appearing on this site (texts, graphics, logos, typography, source code) are the exclusive property of NADAPROD or its partners. <br><br>Any reproduction, representation, modification, publication, adaptation of all or part of the elements of the site, whatever the means or process used, is prohibited without prior written permission.",
+                
+                privacy_title: "4. Personal Data (GDPR)",
+                privacy_text_1: "<strong>Philosophy:</strong> We minimize data collection. We do not sell your data.",
+                privacy_text_2: "The only data collected (via newsletter form or contact) is done so with your explicit consent for the following purposes: management of commercial relations, information on our services.",
+                privacy_text_3: "In accordance with GDPR, you have the right to access, rectify, and delete your data. To exercise this right, email <a href='mailto:contact@nadaprod.com'>contact@nadaprod.com</a>.",
+                
+                cookies_title: "5. Cookies",
+                cookies_text: "This site uses only technical cookies strictly necessary for the operation of the site (session, language preferences). These cookies are exempt from consent. No third-party advertising trackers are used."
+            }
+        };
+
+        let currentLang = 'fr';
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'fr' ? 'en' : 'fr';
+            document.getElementById('lang-btn').textContent = currentLang.toUpperCase();
+            
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[currentLang][key]) {
+                    el.innerHTML = translations[currentLang][key];
+                }
+            });
+        }
+        
+        function toggleTheme() {
+            const html = document.documentElement;
+            const current = html.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', next);
+        }
+    </script>
+</body>
+</html>

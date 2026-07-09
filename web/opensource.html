@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NADAPROD | MAISON D'AUTOÉDITION</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #050505;
+            --text: #ffffff;
+            --accent: #00ff41; /* Green Matrix/Terminal */
+            --border-thick: 3px;
+            --font-display: 'Bebas Neue', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+        }
+
+        /* --- RESET & ZINE FEEL --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            background: var(--bg) url('/gfx/stardust.png');
+            color: var(--text);
+            font-family: var(--font-mono);
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            height: 100vh;
+            line-height: 1.4;
+        }
+
+        /* --- LAYOUT BLOCKS --- */
+        section {
+            height: 100vh;
+            width: 100%;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            scroll-snap-align: start;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            width: 100%;
+            z-index: 2;
+        }
+
+        /* --- TYPOGRAPHY --- */
+        h1, h2, h3 { 
+            font-family: var(--font-display); 
+            text-transform: uppercase; 
+            line-height: 0.85;
+        }
+
+        .title-huge { font-size: clamp(3rem, 12vw, 10rem); margin-bottom: 1rem; }
+        .title-large { font-size: clamp(2rem, 7vw, 5rem); margin-bottom: 1.5rem; }
+        .hidden { display: none; }
+
+        .highlight {
+            background: var(--text);
+            color: var(--bg);
+            padding: 0 10px;
+            display: inline-block;
+            transform: rotate(-1deg);
+        }
+
+        .accent-text { color: var(--accent); }
+
+        /* --- PUNK ELEMENTS --- */
+        .tape {
+            background: #eee;
+            color: #000;
+            padding: 5px 15px;
+            font-weight: bold;
+            display: inline-block;
+            box-shadow: 3px 3px 0 rgba(255,255,255,0.2);
+            margin: 10px 0;
+            transform: rotate(1.5deg);
+        }
+        .tape.bis {
+            transform: rotate(-1deg);
+            margin-left: -17px;
+        }
+
+        .grid-arsenal {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .card {
+            border: var(--border-thick) solid var(--text);
+            padding: 1.5rem;
+            background: var(--bg);
+            transition: transform 0.2s;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card:hover {
+            background: var(--accent);
+            color: var(--bg);
+            transform: scale(1.02) rotate(-1deg);
+        }
+
+        .card:hover * { color: var(--bg); }
+
+        /* --- NAVIGATION --- */
+        nav {
+            position: fixed;
+            top: 1rem; right: 1rem;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .nav-link {
+            background: var(--text);
+            color: var(--bg);
+            text-decoration: none;
+            padding: 4px 10px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-align: right;
+        }
+
+        .nav-link:hover { background: var(--accent); }
+
+        /* --- CTA BUTTONS --- */
+        .btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            border: var(--border-thick) solid var(--text);
+            color: var(--text);
+            text-decoration: none;
+            font-family: var(--font-display);
+            font-size: 2rem;
+            margin-top: 2rem;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+            transform: skewX(-10deg);
+        }
+
+        .logo {
+            max-height: 79px;
+            display: block;
+        }
+
+        .grid-tools {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            font-size: 0.7rem;
+            background: var(--text);
+            color: var(--bg);
+            padding: 2px 6px;
+            font-weight: bold;
+            align-self: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        a { color: var(--accent); text-decoration: none; font-weight: bold; }
+        .card:hover a { color: var(--bg); text-decoration: underline; }
+
+
+        nav, section {
+            -webkit-animation: filter-animation 8s infinite;
+            animation: filter-animation 8s infinite;
+        }
+
+
+        /* --- RESPONSIVE FIXES --- */
+        @media (max-width: 768px) {
+            nav { display: none; }
+            section { padding: 2.3rem; justify-content: flex-start; padding-top: 4rem; overflow-y: auto; height: auto; }
+            .grid-arsenal, .grid-tools { grid-template-columns: 1fr; }
+        }
+
+        @-webkit-keyframes filter-animation {
+        0% {
+            -webkit-filter: hue-rotate(0deg);
+        }
+        
+        50% {
+            -webkit-filter: hue-rotate(100deg);
+        }
+        
+        100% {
+            -webkit-filter: hue-rotate(0deg);
+        }
+        }
+        @keyframes filter-animation {
+        0% {
+            filter: hue-rotate(0deg);
+        }
+        
+        50% {
+            filter: hue-rotate(100deg);
+        }
+        
+        100% {
+            filter: hue-rotate(0deg);
+        }
+        }
+
+
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--text); }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="#manifeste" class="nav-link">01. MANIFESTE</a>
+        <a href="#methode" class="nav-link">02. MÉTHODE</a>
+        <a href="#self-hosted" class="nav-link">03. AUTO-HÉBERGÉ</a>
+        <a href="#saas" class="nav-link">04. SERVICES LIBRES</a>
+        <a href="#systems" class="nav-link">05. SYSTÈMES</a>
+        <a href="#projects" class="nav-link">06. EN PROJET</a>
+        <a href="#contact" class="nav-link">07. REJOINDRE</a>
+    </nav>
+
+    <!-- SECTION 1: MANIFESTE -->
+    <section id="manifeste">
+        <div class="container">
+            <h1 class="hidden title-huge">NADA<br><span class="accent-text">PROD</span></h1>
+            <img src="/gfx/logo.png" class="logo" alt="NADAPROD" />
+            <div class="tape" style="margin-left:9px">maison d'(auto)édition</div>
+            <p style="font-size: 1.2rem; max-width: 600px; margin-top: 1rem;">
+                Les plateformes sont des prisons dorées.
+            </p>
+            <p style="font-size: 1.1rem; max-width: 700px; margin-top: 2rem;">
+                Nous listons des ressources utiles pour l'autonomisation de l'artiste en action directe, l'organisation collective et la communication souveraine. <br><br>
+                <span class="tape bis">PAS D'ALGORITHME. PAS DE SURVEILLANCE.</span> <br>
+                Juste du code pour changer le monde.
+            </p>
+        </div>
+    </section>
+
+    <!-- SECTION 2: MÉTHODE -->
+    <section id="methode">
+        <div class="container">
+            <h2 class="title-large">LA MÉTHODE</h2>
+            <p style="margin-bottom: 2rem;">Apprendre à faire soi-même pour ne plus dépendre de personne.</p>
+            
+            <div class="grid-arsenal">
+                <div class="card">
+                    <h3>01. Hébergement</h3>
+                    <p>Comment sortir de Wix/Squarespace et posséder son nom de domaine et ses fichiers.</p>
+                </div>
+                <div class="card">
+                    <h3>02. Mailing-List</h3>
+                    <p>La seule base de donnée qui vous appartient vraiment. Sans traqueur, sans censure.</p>
+                </div>
+                <div class="card">
+                    <h3>03. Sécurité</h3>
+                    <p>Protéger ses sources, ses fichiers et ses transactions. Open-source ou rien.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 3: AUTO-HÉBERGÉ -->
+    <section id="self-hosted">
+        <div class="container">
+            <h2 class="title-large">AUTO-HÉBERGÉ <span style="font-size: 1rem;">[SOUVERAINETÉ TOTALE]</span></h2>
+            <div class="grid-tools">
+                <!-- LE TRIO GOLANG / HAUT NIVEAU -->
+                <div class="card">
+                    <div class="tag">PUBLICATION</div>
+                    <h3>Hugo (GoLang)</h3>
+                    <p>Générateur de site statique ultra-rapide. Zéro base de données, sécurité absolue, fichiers simples. La référence.</p>
+                    <a href="https://gohugo.io/">Accéder →</a>
+                </div>
+                <div class="card">
+                    <div class="tag">INFRASTRUCTURE</div>
+                    <h3>Gitea / Forgejo</h3>
+                    <p>Forge logicielle légère en Go. Hébergez votre code sans dépendre de GitHub ou GitLab. Rapide et souverain.</p>
+                    <a href="https://forgejo.org/">Accéder →</a>
+                </div>
+                <div class="card">
+                    <div class="tag">DIFFUSION</div>
+                    <h3>Listmonk (GoLang)</h3>
+                    <p>Gestionnaire de mailing-lists et newsletters moderne. Binaire unique en Go, ultra-performant, respect de la vie privée.</p>
+                    <a href="https://listmonk.app/">Accéder →</a>
+                </div>
+                <!-- SUITE -->
+                <div class="card">
+                    <div class="tag">SOCIAL</div>
+                    <h3>Mobilizon</h3>
+                    <p>Organisation d'événements et de groupes fédérés. Sortez de l'emprise des réseaux sociaux commerciaux.</p>
+                    <a href="https://joinmobilizon.org">Accéder →</a>
+                </div>
+                <div class="card">
+                    <div class="tag">MAPPING</div>
+                    <h3>Ushahidi</h3>
+                    <p>Cartographie de crise et gestion de données citoyennes en temps réel. Puissant pour le terrain.</p>
+                    <a href="https://www.ushahidi.com/">Accéder →</a>
+                </div>
+                <div class="card">
+                    <div class="tag">BROADCAST</div>
+                    <h3>Spoke</h3>
+                    <p>Campagnes de SMS massives et coordonnées pour mobiliser une base militante rapidement.</p>
+                    <a href="https://github.com/Elizabeth-Warren/Spoke">Accéder →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 4: SERVICES LIBRES -->
+    <section id="saas">
+        <div class="container">
+            <h2 class="title-large">SERVICES <span class="accent-text">[FIABLES & ETHIQUES]</span></h2>
+            <div class="grid-tools">
+                <div class="card">
+                    <div class="tag">CONSENSUS</div>
+                    <h3>Loomio</h3>
+                    <p>Prendre des décisions collectives sans se perdre dans des fils de discussion interminables.</p>
+                    <a href="https://www.loomio.org/">Visiter →</a>
+                </div>
+                <div class="card">
+                    <div class="tag">COMMUNICATION</div>
+                    <h3>Riseup</h3>
+                    <p>Le Graal. Mail, Chat et VPN gérés par et pour des activistes. Sécurité radicale.</p>
+                    <a href="https://riseup.net/">Visiter →</a>
+                </div>
+                <div class="card">
+                    <div class="tag">CAMPAGNE</div>
+                    <h3>Action Network</h3>
+                    <p>Pétitions, levées de fonds et mailings de masse pour les organisations militantes.</p>
+                    <a href="https://actionnetwork.org">Visiter →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 5: SYSTÈMES -->
+    <section id="systems">
+        <div class="container">
+            <h2 class="title-large">SYSTÈMES DE SURVIE</h2>
+            <div class="grid-tools">
+                <div class="card">
+                    <div class="tag">OS</div>
+                    <h3>Tails</h3>
+                    <p>Système amnésique sur clé USB. Ne laisse aucune trace sur l'ordinateur utilisé.</p>
+                    <a href="https://tails.boum.org/">Télécharger →</a>
+                </div>
+                <div class="card">
+                    <div class="tag">BROWSER</div>
+                    <h3>Tor Browser</h3>
+                    <p>Anonymat total. Contournez la censure et empêchez qu'on suive votre localisation.</p>
+                    <a href="https://www.torproject.org/">Télécharger →</a>
+                </div>
+                <div class="card">
+                    <div class="tag">MOBILE</div>
+                    <h3>Umbrella App</h3>
+                    <p>Leçons et checklists sur la sécurité physique et numérique en manifestation.</p>
+                    <a href="https://secfirst.org/">Accéder →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 6: EN PROJET -->
+    <section id="projects">
+        <div class="container">
+            <h2 class="title-large">NOTRE ARSENAL <span class="accent-text">[work in progress]</span></h2>
+            <div class="grid-arsenal">
+                <div class="card">
+                    <div class="tape" style="background: var(--accent); top:-30px; left:-30px; position:absolute;">CODE</div>
+                    <h3>Static-Site-Starter</h3>
+                    <p>Un template HTML/JS ultra-léger, SEO-ready, sans framework inutile.</p>
+                </div>
+                <div class="card">
+                    <div class="tape" style="background: var(--accent); top:-30px; left:-30px; position:absolute;">LEGAL</div>
+                    <h3>Contrats Type</h3>
+                    <p>Cessions de droits, contrats d'édition simplifiés. Sans blabla juridique toxique.</p>
+                </div>
+                <div class="card">
+                    <div class="tape" style="background: var(--accent); top:-30px; left:-30px; position:absolute;">TOOL</div>
+                    <h3>NADA-Shop</h3>
+                    <p>Un script de vente directe pour vendre tes atomes et tes bits sans commission.</p>
+                </div>
+            </div>
+            <a href="https://github.com/nadaprod" class="btn">ACCÉDER AUX DÉPÔTS →</a>
+        </div>
+    </section>
+
+    <!-- SECTION 7: CONTACT -->
+    <section id="contact">
+        <div class="container" style="text-align: center;">
+            <h2 class="title-huge">PROPOSER<br>UN OUTIL</h2>
+            <p>La lutte évolue, l'arsenal aussi.</p>
+            <div class="highlight" style="font-size: 1.5rem; margin-top: 2rem; background: var(--accent);">
+                CONTACT@NADAPROD.COM
+            </div>
+            <p style="margin-top: 4rem; opacity: 0.4; font-size: 0.6rem;">
+                AUCUN COPYRIGHT - COPIEZ, DIFFUSEZ, UTILISEZ. <br>
+                NADAPROD EST UN PROTOCOLE, PAS UNE MARQUE.
+            </p>
+        </div>
+    </section>
+
+    <script>
+        // Smooth scrolling logic
+        document.querySelectorAll('.nav-link').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetSection = document.querySelector(targetId);
+                targetSection.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+
+        // Intersection Observer for Nav active states
+        const sections = document.querySelectorAll('section');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        window.addEventListener('scroll', () => {
+            let current = "";
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= (sectionTop - sectionHeight / 3)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.style.background = link.getAttribute('href').includes(current) ? 'var(--accent)' : 'var(--text)';
+                link.style.color = link.getAttribute('href').includes(current) ? 'var(--bg)' : 'var(--bg)';
+            });
+        });
+    </script>
+</body>
+</html>

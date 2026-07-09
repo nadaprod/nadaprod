@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Philippe Petit | Friends & Labels</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --punk-red: #da4444;
+            --punk-black: #1a1a1a;
+            --punk-cream: #f4f1ea;
+            --bg-texture: url("https://www.transparenttextures.com/patterns/paper-fibers.png");
+        }
+
+        body.dark {
+            --punk-cream: #121212;
+            --punk-black: #e5e5e5;
+            --punk-red: #ff4d4d;
+            background-image: url("https://www.transparenttextures.com/patterns/dark-matter.png");
+        }
+
+        body {
+            background-color: var(--punk-cream);
+            color: var(--punk-black);
+            font-family: 'Courier Prime', monospace;
+            background-image: var(--bg-texture);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        h1, h2, h3, .punk-title {
+            font-family: 'Special Elite', cursive;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+        }
+
+        a {
+            text-decoration-thickness: 2px;
+        }
+        
+        a:hover {
+            color: var(--punk-red);
+        }
+
+        .nav-link {
+            position: relative;
+            transition: all 0.2s;
+            display: inline-block;
+            padding: 2px 8px;
+            text-decoration: none;
+        }
+        .nav-link:hover {
+            background: var(--punk-black);
+            color: var(--punk-cream);
+            transform: rotate(-1deg) scale(1.05);
+        }
+        .nav-link.active {
+            background: var(--punk-red);
+            color: white;
+            transform: rotate(1deg);
+        }
+
+        .paper-sheet {
+            background: white;
+            box-shadow: 4px 4px 0px var(--punk-black);
+            padding: 2rem;
+            transform: rotate(-0.5deg);
+            border: 1px solid var(--punk-black);
+        }
+        body.dark .paper-sheet {
+            background: #1a1a1a;
+            border-color: #333;
+            box-shadow: 4px 4px 0px #000;
+        }
+
+        .sticker {
+            background: var(--punk-black);
+            color: white;
+            padding: 0.2em 0.5em;
+            transform: rotate(1deg);
+            display: inline-block;
+            font-family: 'Special Elite', cursive;
+        }
+        body.dark .sticker {
+            background: var(--punk-red);
+        }
+
+        .friend-item {
+            border-left: 2px solid var(--punk-black);
+            padding-left: 0.5rem;
+            transition: all 0.2s;
+        }
+        body.dark .friend-item {
+            border-color: #555;
+        }
+        .friend-item:hover {
+            border-left-color: var(--punk-red);
+            padding-left: 1rem;
+        }
+
+        ::selection {
+            background: var(--punk-red);
+            color: white;
+        }
+
+        .theme-toggle {
+            top: 23px;
+            position: fixed;
+            cursor: pointer;
+            padding: 5px;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .theme-toggle:hover {
+            background: var(--punk-black);
+            color: var(--punk-cream);
+        }
+        .theme-toggle svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+        @media (max-width: 767px) {
+			.theme-toggle {
+				position: fixed;
+				top: 14px;
+				right: -2px;
+                align-items: end;
+    			justify-content: right;
+			}
+		}
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+    
+    <!-- HEADER -->
+    <header class="max-w-6xl mx-auto mb-12 border-b-4 border-black pb-6 dark:border-white">
+        <div class="flex flex-col md:flex-row justify-between items-center md:items-end gap-6">
+            <div>
+                <h1><a href="./" class="text-4xl md:text-6xl font-bold leading-none">Philippe Petit</a></h1>
+                <p class="text-lg md:text-xl italic mt-2 text-gray-700 bg-black text-white inline-block px-2 dark:bg-red-600">a musical travel-agent</p>
+            </div>
+            
+            <nav>
+                <ul class="flex flex-wrap gap-4 text-sm md:text-base font-bold uppercase justify-center md:justify-end">
+                    <li><a href="biography.html" class="nav-link">Biography</a></li>
+                    <li><a href="modulisme.html" class="nav-link">MODULISME</a></li>
+                    <li><a href="listen.html" class="nav-link">LISTEN / DISCOG</a></li>
+                    <li><a href="booking.html" class="nav-link">Contact/Booking</a></li>
+					<li><a href="friends.html" class="nav-link active">Friends</a></li>
+                    <button id="theme-switcher" class="theme-toggle" title="Switch Theme">
+                        <svg id="sun-icon" class="hidden" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.122-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 14.95a1 1 0 01-1.414 0l-.707-.707a1 1 0 011.414-1.414l.707.707a1 1 0 010 1.414zm-1.414-11.314a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM4 10a1 1 0 00-1-1H2a1 1 0 100 2h1a1 1 0 001-1z"></path></svg>
+                        <svg id="moon-icon" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                    </button>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- MAIN -->
+    <main class="max-w-6xl mx-auto grid grid-cols-1 gap-16">
+        
+        <!-- SECTION: LABELS -->
+        <section class="paper-sheet relative">
+            <!-- Tape effect top -->
+            <div class="absolute -top-3 left-1/2 w-32 h-8 bg-yellow-100 opacity-80 transform -translate-x-1/2 rotate-2 shadow-sm"></div>
+
+            <h2 class="text-3xl md:text-5xl punk-title mb-8 text-center text-red-600 border-b-2 border-black dark:border-white pb-4 inline-block transform -rotate-1">LABELS releasing my music</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                <!-- Major Labels List -->
+                <ul class="space-y-4 text-lg font-bold">
+                    <li>
+                        <span class="uppercase">CRONICA ELECTRONICA</span><br>
+                        <a href="https://www.cronicaelectronica.org/" target="_blank" class="text-sm font-normal underline text-gray-600 hover:text-red-600">www.cronicaelectronica.org</a>
+                    </li>
+                    <li>
+                        <span class="uppercase text-gray-500">MODULISME</span><br>
+                        <a href="https://modulisme.info/sessions" target="_blank" class="text-sm font-normal underline text-gray-600 hover:text-red-600">modulisme.info/sessions</a>
+                    </li>
+                    <li>
+                        <span class="uppercase">OSCILLATIONS</span><br>
+                        <a href="https://oscillations-music.bandcamp.com/music" target="_blank" class="text-sm font-normal underline text-gray-600 hover:text-red-600">oscillations-music.bandcamp.com</a>
+                    </li>
+                    <li>
+                        <span class="uppercase">AURAL TERRAINS</span><br>
+                        <a href="https://www.auralterrains.com/releases/50" target="_blank" class="text-sm font-normal underline text-gray-600 hover:text-red-600">www.auralterrains.com</a>
+                    </li>
+                    <li>
+                        <span class="uppercase">ETERNAL MUSIC PROJECTS</span><br>
+                        <a href="https://eternalmusicprojects.mailchimpsites.com/" target="_blank" class="text-sm font-normal underline text-gray-600 hover:text-red-600">eternalmusicprojects.mailchimpsites.com</a>
+                    </li>
+                    <li>
+                        <span class="uppercase">MUTEANT SOUND</span><br>
+                        <a href="https://muteantsoundsnetlabel.bandcamp.com" target="_blank" class="text-sm font-normal underline text-gray-600 hover:text-red-600">muteantsoundsnetlabel.bandcamp.com</a>
+                    </li>
+                    <li>
+                        <span class="uppercase">AAGOO RECORDS</span><br>
+                        <a href="http://www.aagoo.com/" target="_blank" class="text-sm font-normal underline text-gray-600 hover:text-red-600">www.aagoo.com</a>
+                    </li>
+                </ul>
+
+                <!-- Column 2 -->
+                <ul class="space-y-4 text-lg font-bold">
+                    <li>
+                        <span class="uppercase text-gray-500">LUMBERTON TRADING Co./FOURTH DIMENSION</span><br>
+                        <a href="https://coldspring.co.uk/index.php?route=product/product&amp;product_id=2285" target="_blank" class="text-sm font-normal underline text-gray-600 hover:text-red-600">coldspring.co.uk</a>
+                    </li>
+                    <li>
+                        <span class="uppercase">HOME NORMAL</span><br>
+                        <a href="https://homenormal.bandcamp.com/album/cordophony" target="_blank" class="text-sm font-normal underline text-gray-600 hover:text-red-600">homenormal.bandcamp.com</a>
+                    </li>
+                    <li>
+                        <span class="uppercase">SUB ROSA</span><br>
+                        <a href="http://www.subrosa.net/" target="_blank" class="text-sm font-normal underline text-gray-600 hover:text-red-600">www.subrosa.net</a>
+                    </li>
+                    <li>
+                        <span class="uppercase">PUBLIC EYESORE</span><br>
+                        <a href="http://www.publiceyesore.com/" target="_blank" class="text-sm font-normal underline text-gray-600 hover:text-red-600">www.publiceyesore.com</a>
+                    </li>
+                    <li>
+                        <span class="uppercase">BETA-LACTAM RING</span><br>
+                        <a href="http://www.blrrecords.com" target="_blank" class="text-sm font-normal underline text-gray-600 hover:text-red-600">www.blrrecords.com</a>
+                    </li>
+                    <li>
+                        <span class="uppercase">IMPORTANT</span><br>
+                        <a href="http://www.importantrecords.com/" target="_blank" class="text-sm font-normal underline text-gray-600 hover:text-red-600">www.importantrecords.com</a>
+                    </li>
+                    <li>
+                        <span class="uppercase">KARL</span><br>
+                        <a href="http://karlrecords.net/" target="_blank" class="text-sm font-normal underline text-gray-600 hover:text-red-600">karlrecords.net</a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Wall of Labels Text -->
+            <div class="border-t-4 border-black dark:border-white pt-6 mt-6">
+                <p class="text-sm md:text-base leading-relaxed text-justify uppercase font-bold text-gray-500">
+                    OPA-LOKA ; MONOTYPE ; ALREALON MUSIQUE ; HELLOSQUARE ; SOUTHERN UK ; FLAMING PINES ; BOLT ; TRACE ; AURICULAR ; UTECH ; CONSPIRACY ; SMALL DOSES ; THICK SYRUP ; COMFORTZONE MUSIC ; BASSES FREQUENCES ; ANTE RASA ; CENTRAL CONTROL INTERNATIONAL ; STAUBGOLD ; DIRTER PROMOTIONS ; RUSTBLADE ; BORING MACHINES ; BLACKHOUSE ; M-TRONIC ; TRUTH TABLE
+                </p>
+            </div>
+        </section>
+
+
+        <!-- SECTION: FRIENDS -->
+        <section>
+            <div class="mb-12">
+                <h2 class="text-3xl md:text-5xl punk-title mb-4">Friends & Collaborators</h2>
+                <p class="text-xl italic font-serif">Endless gratitude to my friends generous enough to contribute their talent to my works, please check'em out:</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
+                
+                <!-- Col 1 -->
+                <div class="space-y-6">
+                    <div class="friend-item">
+                        <div class="font-bold uppercase">STRINGS OF CONSCIOUSNESS</div>
+                        <a href="http://www.stringsofconsciousness.info" class="text-sm underline text-gray-500 hover:text-red-600 truncate block">stringsofconsciousness.info</a>
+                    </div>
+                    <div class="friend-item">
+                        <div class="font-bold uppercase">GABRIEL PROKOFIEV</div>
+                        <a href="https://www.gabrielprokofiev.com/" class="text-sm underline text-gray-500 hover:text-red-600 truncate block">gabrielprokofiev.com</a>
+                    </div>
+                    <div class="friend-item">
+                        <div class="font-bold uppercase">EUGENE S. ROBINSON</div>
+                        <a href="http://www.eugeneSrobinson.com" class="text-sm underline text-gray-500 hover:text-red-600 truncate block">eugeneSrobinson.com</a>
+                    </div>
+                    <div class="friend-item">
+                        <div class="font-bold uppercase">MURCOF</div>
+                        <a href="http://murcof.com/" class="text-sm underline text-gray-500 hover:text-red-600 truncate block">murcof.com</a>
+                    </div>
+                    <div class="friend-item">
+                        <div class="font-bold uppercase text-gray-500">LYDIA LUNCH</div>
+                        <a href="http://www.lydia-lunch.org/news.html" class="text-sm underline text-gray-500 hover:text-red-600 truncate block">lydia-lunch.org</a>
+                    </div>
+                    <div class="friend-item">
+                        <div class="font-bold uppercase">E.C.O. Ensemble</div>
+                        <a href="http://ecosound.eu/en/composers/" class="text-sm underline text-gray-500 hover:text-red-600 truncate block">ecosound.eu</a>
+                    </div>
+                    <div class="friend-item">
+                        <div class="font-bold uppercase">Ensemble Musiques Nouvelles</div>
+                        <a href="http://www.musiquesnouvelles.com/" class="text-sm underline text-gray-500 hover:text-red-600 truncate block">musiquesnouvelles.com</a>
+                    </div>
+                    <div class="friend-item">
+                        <div class="font-bold uppercase">ANDY DIAGRAM / SPACEHEADS</div>
+                        <a href="http://www.spaceheads.co.uk" class="text-sm underline text-gray-500 hover:text-red-600 truncate block">spaceheads.co.uk</a>
+                    </div>
+                    <div class="friend-item">
+                        <div class="font-bold uppercase">ALEC DARTLEY</div>
+                        <a href="http://alecdartley.com/" class="text-sm underline text-gray-500 hover:text-red-600 truncate block">alecdartley.com</a>
+                    </div>
+                    <div class="friend-item">
+                        <div class="font-bold uppercase text-gray-500">MIA ZABELKA</div>
+                        <a href="http://miazabelka.com/" class="text-sm underline text-gray-500 hover:text-red-600 truncate block">miazabelka.com</a>
+                    </div>
+                </div>
+
+                <!-- Col 2 -->
+                <div class="space-y-6">
+                    <div class="friend-item">
+                        <div class="font-bold uppercase">AUDREY CHEN</div>
+                        <a href="http://audreychen.com/" class="text-sm underline text-gray-500 hover:text-red-600 truncate block">audreychen.com</a>
+                    </div>
+                    <div class="friend-item">
+                        <div class="font-bold uppercase">BELA EMERSON</div>
+                        <a href="http://www.belaemerson.com" class="text-sm underline text-gray-500 hover:text-red-600 truncate block">belaemerson.com</a>
+                    </div>
+                    <div class="friend-item">
+                        <div class="font-bold uppercase">PAS</div>
+                        <a href="http://www.pasmusique.net/" class="text-sm underline text-gray-500 hover:text-red-600 truncate block">pasmusique.net</a>
+                    </div>
+                    <div class="friend-item">
+                        <div class="font-bold uppercase">FAUST - JEAN-HERVE PERON</div>
+                        <a href="http://www.art-errorist.de" class="text-sm underline text-gray-500 hover:text-red-600 truncate block">art-errorist.de</a>
+                    </div>
+                    <div class="friend-item">
+                        <div class="font-bold uppercase">JONO PODMORE / KUMO</div>
+                        <a href="http://www.psychomat.com/" class="text-sm underline text-gray-500 hover:text-red-600 truncate block">psychomat.com</a>
+                    </div>
+                    <div class="friend-item">
+                        <div class="font-bold uppercase">BAS MANTEL</div>
+                        <a href="http://www.revlaboratories.com" class="text-sm underline text-gray-500 hover:text-red-600 truncate block">revlaboratories.com</a>
+                    </div>
+                    <div class="friend-item">
+                        <div class="font-bold uppercase">COSEY FANNI TUTTI</div>
+                        <a href="http://coseyfannitutti.com/" class="text-sm underline text-gray-500 hover:text-red-600 truncate block">coseyfannitutti.com</a>
+                    </div>
+                    <div class="friend-item">
+                        <div class="font-bold uppercase">VULTURES Qt.</div>
+                        <a href="http://www.vulturesquartet.com/" class="text-sm underline text-gray-500 hover:text-red-600 truncate block">vulturesquartet.com</a>
+                    </div>
+                    <div class="friend-item">
+                        <div class="font-bold uppercase">SIMON FISHER-TURNER</div>
+                        <a href="http://www.simonfisherturner.com/" class="text-sm underline text-gray-500 hover:text-red-600 truncate block">simonfisherturner.com</a>
+                    </div>
+                    <div class="friend-item">
+                        <div class="font-bold uppercase">PIETRO RIPARBELLI</div>
+                        <a href="http://www.pt-r.com" class="text-sm underline text-gray-500 hover:text-red-600 truncate block">pt-r.com</a>
+                    </div>
+                </div>
+
+                <!-- Col 3 -->
+                <div class="space-y-6">
+                    <div class="friend-item">
+                        <div class="font-bold uppercase">JIM THIRLWELL</div>
+                        <a href="http://www.foetus.org" class="text-sm underline text-gray-500 hover:text-red-600 truncate block">foetus.org</a>
+                    </div>
+                    <div class="friend-item">
+                        <div class="font-bold uppercase">RON ANDERSON</div>
+                        <a href="http://www.ronanderson-molecules.com" class="text-sm underline text-gray-500 hover:text-red-600 truncate block">ronanderson-molecules.com</a>
+                    </div>
+                    <div class="friend-item">
+                        <div class="font-bold uppercase">EDWARD KA-SPELL / LPD</div>
+                        <a href="http://www.legendarypinkdots.org" class="text-sm underline text-gray-500 hover:text-red-600 truncate block">legendarypinkdots.org</a>
+                    </div>
+                    <div class="friend-item">
+                        <div class="font-bold uppercase">ZEITKRATZER</div>
+                        <a href="http://www.zeitkratzer.de" class="text-sm underline text-gray-500 hover:text-red-600 truncate block">zeitkratzer.de</a>
+                    </div>
+                    <div class="friend-item">
+                        <div class="font-bold uppercase">JAMES JOHNSTON</div>
+                        <a href="http://www.gallondrunk.com/" class="text-sm underline text-gray-500 hover:text-red-600 truncate block">gallondrunk.com</a>
+                    </div>
+                    <div class="friend-item">
+                        <div class="font-bold uppercase">JARBOE</div>
+                        <a href="http://www.thelivingjarboe.com" class="text-sm underline text-gray-500 hover:text-red-600 truncate block">thelivingjarboe.com</a>
+                    </div>
+                    <div class="friend-item">
+                        <div class="font-bold uppercase">MATHIAS DELPLANQUE</div>
+                        <a href="http://www.mathiasdelplanque.com/" class="text-sm underline text-gray-500 hover:text-red-600 truncate block">mathiasdelplanque.com</a>
+                    </div>
+                    <div class="friend-item">
+                        <div class="font-bold uppercase">FRED LONBERG-HOLM</div>
+                        <a href="http://www.lonberg-holm.info/" class="text-sm underline text-gray-500 hover:text-red-600 truncate block">lonberg-holm.info</a>
+                    </div>
+                    <div class="friend-item">
+                        <div class="font-bold uppercase">JAD FAIR</div>
+                        <a href="http://jadfair.org/" class="text-sm underline text-gray-500 hover:text-red-600 truncate block">jadfair.org</a>
+                    </div>
+                    <div class="friend-item">
+                        <div class="font-bold uppercase">CINDYTALK</div>
+                        <a href="http://www.cindytalk.com/" class="text-sm underline text-gray-500 hover:text-red-600 truncate block">cindytalk.com</a>
+                    </div>
+                    <div class="friend-item">
+                        <div class="font-bold uppercase">YURI LANDMAN</div>
+                        <a href="http://www.hypercustom.com/" class="text-sm underline text-gray-500 hover:text-red-600 truncate block">hypercustom.com</a>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="max-w-6xl mx-auto mt-24 pt-8 border-t-4 border-black dark:border-white text-xs uppercase font-bold flex flex-wrap justify-between gap-4">
+        <div>&copy; 2026 Philippe Petit</div>
+        <div class="flex gap-6 text-red-600">
+            <a href="https://philippepetitamusicaltravel-agent.bandcamp.com/" target="_blank" class="hover:underline">Bandcamp</a>
+            <a href="https://modulisme.info" class="hover:underline">Modulisme</a>
+        </div>
+    </footer>
+
+    <script>
+        const body = document.body;
+        const themeBtn = document.getElementById('theme-switcher');
+        const sunIcon = document.getElementById('sun-icon');
+        const moonIcon = document.getElementById('moon-icon');
+
+        themeBtn.addEventListener('click', () => {
+            body.classList.toggle('dark');
+            const isDark = body.classList.contains('dark');
+            sunIcon.classList.toggle('hidden', !isDark);
+            moonIcon.classList.toggle('hidden', isDark);
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
+
+        if (localStorage.getItem('theme') !== 'light') {
+            body.classList.add('dark');
+            sunIcon.classList.remove('hidden');
+            moonIcon.classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

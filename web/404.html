@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>404 | NADAPROD</title>
+    
+    <meta name="theme-color" content="#050505">
+    <meta name="robots" content="noindex, nofollow">
+
+    <!-- FONTS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- REUSE CORE VARIABLES --- */
+        :root {
+            --accent: #ccff00;
+            --ease: cubic-bezier(0.16, 1, 0.3, 1);
+            --font-display: 'Bebas Neue', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            
+            --bg: #080808;
+            --surface: #141414;
+            --text-main: #f0f0f0;
+            --text-secondary: #888888;
+            --border: #444444;
+            --scanline-opacity: 0.05;
+        }
+
+        /* --- RESET --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        /* --- FX --- */
+        .crt-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+            background-size: 100% 4px;
+            opacity: var(--scanline-opacity);
+        }
+
+        /* --- 404 CONTENT --- */
+        .error-container {
+            max-width: 600px;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        h1 {
+            font-family: var(--font-display);
+            font-size: clamp(8rem, 25vw, 15rem);
+            line-height: 0.8;
+            margin: 0;
+            position: relative;
+            color: var(--text-main);
+            letter-spacing: -0.05em;
+        }
+
+        /* GLITCH EFFECT CSS ONLY */
+        h1::before, h1::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+        }
+
+        h1::before {
+            left: 2px;
+            text-shadow: -1px 0 #ff00c1;
+            animation: glitch-anim-1 2s infinite linear alternate-reverse;
+            clip-path: inset(0 0 0 0);
+        }
+
+        h1::after {
+            left: -2px;
+            text-shadow: -1px 0 var(--accent);
+            animation: glitch-anim-2 3s infinite linear alternate-reverse;
+            clip-path: inset(0 0 0 0);
+        }
+
+        @keyframes glitch-anim-1 {
+            0% { clip-path: inset(20% 0 80% 0); }
+            20% { clip-path: inset(60% 0 10% 0); }
+            40% { clip-path: inset(40% 0 50% 0); }
+            60% { clip-path: inset(80% 0 5% 0); }
+            80% { clip-path: inset(10% 0 70% 0); }
+            100% { clip-path: inset(30% 0 20% 0); }
+        }
+
+        @keyframes glitch-anim-2 {
+            0% { clip-path: inset(10% 0 60% 0); }
+            20% { clip-path: inset(30% 0 20% 0); }
+            40% { clip-path: inset(90% 0 10% 0); }
+            60% { clip-path: inset(15% 0 80% 0); }
+            80% { clip-path: inset(55% 0 10% 0); }
+            100% { clip-path: inset(40% 0 30% 0); }
+        }
+
+        /* TERMINAL STYLE MSG */
+        .terminal-msg {
+            font-family: var(--font-mono);
+            color: var(--accent);
+            margin: 1rem 0 2rem 0;
+            font-size: 0.9rem;
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            display: inline-block;
+            background: rgba(20, 20, 20, 0.8);
+        }
+
+        .blink { animation: blinker 1s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0; } }
+
+        p.desc {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            line-height: 1.5;
+        }
+
+        /* BUTTON */
+        .btn-home {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            color: var(--bg);
+            background: var(--text-main);
+            padding: 0.8rem 2rem;
+            border: 2px solid var(--text-main);
+            transition: all 0.3s var(--ease);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-home:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #000;
+            box-shadow: 0 0 15px rgba(204, 255, 0, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* LANGUAGE TOGGLE MINI */
+        .lang-toggle {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 5px 10px;
+            cursor: pointer;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+        }
+        .lang-toggle:hover { color: var(--text-main); border-color: var(--text-main); }
+
+    </style>
+</head>
+<body>
+
+    <div class="crt-overlay"></div>
+    
+    <button class="lang-toggle" onclick="toggleLang()" id="lang-btn">FR</button>
+
+    <div class="error-container">
+        <h1 data-text="404">404</h1>
+        
+        <div class="terminal-msg">
+            > ERROR: <span id="err-code">PAGE_NOT_FOUND</span><span class="blink">_</span>
+        </div>
+
+        <p class="desc" id="desc-text">
+            Le lien est mort. Vous vous êtes juste perdu.
+        </p>
+
+        <a href="/" class="btn-home" id="btn-text">Retour à la base</a>
+    </div>
+
+    <script>
+        const i18n = {
+            fr: {
+                err: "PAGE_INTROUVABLE",
+                desc: "Le lien est mort. Peut-être censuré par l'algorithme, ou vous vous êtes juste perdu dans la matrice.",
+                btn: "Retour à l'accueil"
+            },
+            en: {
+                err: "PAGE_NOT_FOUND",
+                desc: "Dead link. Censored by the algorithm? There is no one there. You just got lost.",
+                btn: "Return to Home"
+            }
+        };
+
+        // Detect Language
+        const browserLang = navigator.language || navigator.userLanguage || 'en';
+        let currentLang = browserLang.startsWith('fr') ? 'fr' : 'en';
+
+        function applyLang() {
+            document.getElementById('lang-btn').innerText = currentLang.toUpperCase();
+            document.getElementById('err-code').innerText = i18n[currentLang].err;
+            document.getElementById('desc-text').innerText = i18n[currentLang].desc;
+            document.getElementById('btn-text').innerText = i18n[currentLang].btn;
+        }
+
+        function toggleLang() {
+            currentLang = currentLang === 'fr' ? 'en' : 'fr';
+            applyLang();
+        }
+
+        // Init
+        applyLang();
+    </script>
+
+</body>
+</html>

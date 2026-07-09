@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Philippe Petit | Musical Travel-Agent</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --punk-red: #da4444;
+            --punk-black: #1a1a1a;
+            --punk-cream: #f4f1ea;
+            --bg-texture: url("https://www.transparenttextures.com/patterns/paper-fibers.png");
+        }
+
+        body.dark {
+            --punk-cream: #121212;
+            --punk-black: #e5e5e5;
+            --punk-red: #ff4d4d;
+            background-image: url("https://www.transparenttextures.com/patterns/dark-matter.png");
+        }
+
+        body {
+            background-color: var(--punk-cream);
+            color: var(--punk-black);
+            font-family: 'Courier Prime', monospace;
+            background-image: var(--bg-texture);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            margin: 0;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+        }
+
+        /* --- TYPOGRAPHY --- */
+        h1, h2, h3, .punk-title {
+            font-family: 'Special Elite', cursive;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+        }
+
+        /* --- NAVIGATION --- */
+        .nav-link {
+            position: relative;
+            transition: all 0.2s;
+            display: inline-block;
+            padding: 2px 8px;
+            text-decoration: none;
+        }
+        .nav-link:hover {
+            background: var(--punk-black);
+            color: var(--punk-cream);
+            transform: rotate(-1deg) scale(1.05);
+        }
+
+        /* --- FIXED BACKGROUND LAYERS (VIDEO + CANVAS) --- */
+        #visual-layers {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100dvh; /* Mobile Friendly Height */
+            z-index: -1;
+            pointer-events: none; /* Let clicks pass through to canvas if needed, mostly for visual */
+            overflow: hidden;
+        }
+
+        #source-video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* CRITICAL FOR MOBILE */
+            transform: translate(-50%, -50%);
+            opacity: 0.6;
+            mix-blend-mode: multiply;
+        }
+        body.dark #source-video {
+            mix-blend-mode: luminosity;
+            opacity: 0.4;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+            mix-blend-mode: hard-light;
+        }
+
+        /* --- LAYOUT STRUCTURE --- */
+        /* Header is fixed so it's always accessible */
+        header.main-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 50;
+            padding: 1rem;
+            background: linear-gradient(to bottom, var(--punk-cream) 0%, rgba(0,0,0,0) 100%);
+            transition: background 0.3s;
+        }
+        body.dark header.main-header {
+            background: linear-gradient(to bottom, var(--punk-cream) 0%, rgba(0,0,0,0) 100%);
+        }
+
+        /* Spacer to push content below the visual hero */
+        .hero-spacer {
+            height: 100dvh;
+            width: 100%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 50px;
+            pointer-events: none; /* Let scroll happen */
+        }
+
+        /* The scroll indicator */
+        .scroll-hint {
+            background: var(--punk-black);
+            color: var(--punk-cream);
+            padding: 5px 15px;
+            font-size: 0.8rem;
+            animation: bounce 2s infinite;
+            pointer-events: auto;
+            cursor: pointer;
+        }
+
+        /* Content Container - Slides OVER the fixed background */
+        .content-layer {
+            position: relative;
+            z-index: 10;
+            background-color: var(--punk-cream); /* Solid background to cover video */
+            background-image: var(--bg-texture);
+            border-top: 4px solid var(--punk-black);
+            padding-top: 4rem;
+            min-height: 50vh;
+        }
+
+        /* --- COLLAGE & DESIGN ELEMENTS --- */
+        .collage-frame {
+            border: 2px solid var(--punk-black);
+            box-shadow: 8px 8px 0px var(--punk-black);
+            transition: transform 0.3s, box-shadow 0.3s;
+            background: white;
+        }
+        body.dark .collage-frame {
+            background: #1a1a1a;
+            border-color: #333;
+            box-shadow: 8px 8px 0px #000;
+        }
+        .collage-frame:hover {
+            transform: translate(2px, 2px);
+            box-shadow: 4px 4px 0px var(--punk-black);
+        }
+
+        .video-container {
+            border: 1px solid var(--punk-black);
+            padding: 10px;
+            background: white;
+            transform: rotate(-0.5deg);
+        }
+        body.dark .video-container {
+            background: #1a1a1a;
+            border-color: #333;
+        }
+
+        .text-justified {
+            text-align: justify;
+            hyphens: auto;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-10px);}
+            60% {transform: translateY(-5px);}
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            cursor: pointer;
+            padding: 5px;
+            border: 2px solid transparent;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .theme-toggle:hover {
+            background: var(--punk-black);
+            color: var(--punk-cream);
+        }
+        .theme-toggle svg { width: 20px; height: 20px; fill: currentColor; }
+
+        /* Interaction Layer for Canvas */
+        #interaction-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100dvh;
+            z-index: 5; /* Above video, below content layer */
+            cursor: crosshair;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- VISUAL BACKGROUND (Fixed) -->
+    <div id="visual-layers">
+        <video id="source-video" src="https://nadaprod.com/pp/index.mp4" muted loop autoplay playsinline></video>
+        <canvas id="glitch-canvas"></canvas>
+        <!-- Hidden Image for Canvas Source -->
+        <img id="source-image" src="https://nadaprod.com/pp/index.jpeg" style="display:none;" crossorigin="anonymous">
+    </div>
+
+    <!-- INVISIBLE TOUCH LAYER (Only active in Hero area) -->
+    <div id="interaction-layer"></div>
+
+    <!-- HEADER (Sticky/Fixed) -->
+    <header class="main-header max-w-full mx-auto">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-end gap-2 md:gap-6">
+            <div class="pointer-events-auto">
+                <h1><a href="./" class="text-3xl md:text-5xl font-bold leading-none">Philippe Petit</a></h1>
+                <p class="text-sm md:text-lg italic mt-1 text-gray-700 bg-black text-white inline-block px-2 dark:bg-red-600">musical travel-agent</p>
+            </div>
+            
+            <nav class="pointer-events-auto bg-opacity-90 backdrop-blur-sm md:backdrop-blur-none rounded p-2">
+                <ul class="flex flex-wrap gap-3 text-xs md:text-sm font-bold uppercase justify-center md:justify-end items-center">
+                    <li><a href="biography.html" class="nav-link">Biography</a></li>
+                    <li><a href="modulisme.html" class="nav-link">MODULISME</a></li>
+                    <li><a href="listen.html" class="nav-link">LISTEN</a></li>
+                    <li><a href="booking.html" class="nav-link">Contact</a></li>
+                    
+                    <button id="theme-switcher" class="theme-toggle ml-2" title="Switch Theme">
+                        <svg id="sun-icon" class="hidden" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.122-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 14.95a1 1 0 01-1.414 0l-.707-.707a1 1 0 011.414-1.414l.707.707a1 1 0 010 1.414zm-1.414-11.314a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM4 10a1 1 0 00-1-1H2a1 1 0 100 2h1a1 1 0 001-1z"></path></svg>
+                        <svg id="moon-icon" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                    </button>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- HERO SPACER (Transparent area to see art) -->
+    <div class="hero-spacer">
+        <div class="text-center z-20">
+            <div id="audio-status" class="text-xs uppercase tracking-widest mb-2 opacity-70">[ CLICK SCREEN FOR AUDIO ]</div>
+            <div class="scroll-hint" onclick="document.querySelector('.content-layer').scrollIntoView({behavior: 'smooth'})">
+                ↓ NEW RELEASE ↓
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT (Slides over the art) -->
+    <main class="content-layer shadow-2xl">
+        <div class="max-w-6xl mx-auto px-4 md:px-8 pb-24">
+            
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-12">
+                
+                <!-- LEFT COLUMN (Visuals) -->
+                <div class="md:col-span-5 space-y-12">
+                    <div class="collage-frame p-2 bg-white">
+                        <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/0039181481-23_orig.jpg" 
+                             alt="Closing Our Eyes Cover" 
+                             class="w-full transition-all duration-500">
+                    </div>
+
+                    <div class="video-container shadow-xl">
+                        <div class="aspect-video bg-black relative">
+                            <!-- Using a placeholder for YouTube to prevent heavy load issues -->
+                            <iframe class="w-full h-full absolute top-0 left-0" src="https://www.youtube.com/embed/IdaHQK6lUnk" frameborder="0" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN (Text) -->
+                <div class="md:col-span-7">
+                    <div class="space-y-6">
+                        <div class="flex items-center gap-4">
+                            <div class="inline-block bg-red-600 text-white px-4 py-1 text-xl md:text-2xl punk-title transform -rotate-1 shadow-md">
+                                NEW ALBUM
+                            </div>
+                            <span class="h-1 flex-grow bg-black dark:bg-red-600 opacity-20"></span>
+                        </div>
+                        
+                        <h2 class="text-5xl md:text-7xl font-black leading-none break-words">
+                            Closing Our <span class="text-red-600">Eyes</span>
+                        </h2>
+                        
+                        <div class="text-lg md:text-xl font-bold border-l-4 border-black dark:border-red-600 pl-4 py-2 bg-black bg-opacity-5 dark:bg-white dark:bg-opacity-10">
+                            (Crónica / CD + DL - April 2025)
+                        </div>
+
+                        <div class="text-lg">
+                            <a href="https://cronica.bandcamp.com/album/closing-our-eyes" target="_blank" class="text-red-600 hover:text-black dark:hover:text-white transition-colors font-bold flex items-center gap-2">
+                                <span>▶</span> cronica.bandcamp.com/album/closing-our-eyes
+                            </a>
+                        </div>
+
+                        <div class="paragraph-text text-base md:text-lg leading-relaxed space-y-6 text-justified opacity-90">
+                            <p>
+                                “Closing Our Eyes” is a series of compositions that invite the listener-spectator to find a place of interiority, a sonic journey that conjures up images, imaginary signs, in perpetual change to create the possibility of pushing the imagination further.
+                            </p>
+                            
+                            <p class="font-bold border-b-2 border-red-600 inline-block pb-1">
+                                You can only see the images by closing your eyes?!
+                            </p>
+                            
+                            <p>
+                                Following his soundtrack to Dante Alighieri’s “Divine Comedy”, “Closing Our Eyes” is pushing further the marriage of electronic and acoustic. Petit is always showing extreme respect to the acoustic material, keeping it fresh, accentuating the relief and depth of the noble sound-material.
+                            </p>
+
+                            <p>
+                                This collection of pieces conjures images, mental and emotional pictures of events, scenes and moods, bringing a new palette of sounds with a vast array of inside-piano, tape manipulations, percussive instruments and modular synthesisers played in creative and unconventional ways.
+                            </p>
+
+                            <p class="italic text-xl text-center text-gray-500 py-4 font-serif">"It could, though should it?"</p>
+
+                            <div class="bg-black text-white p-6 text-sm uppercase font-bold tracking-wider dark:bg-zinc-800 border-l-8 border-red-600 shadow-lg">
+                                <span class="text-red-500">Instruments:</span> Prepared Piano Soundboard, Daxophone, Serge Analog Synthesizer, Electric Psalterion, Buchla 200 Analog Synthesizer, Percussions.
+                            </div>
+                        </div>
+
+                        <div class="pt-8 border-t-2 border-black dark:border-zinc-700 mt-8">
+                            <span class="text-xs uppercase font-bold text-gray-500">Cover art by</span>
+                            <h3 class="punk-title text-2xl text-red-600">Flore Kunst</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER (Inside content layer) -->
+        <footer class="bg-black text-white p-8 border-t-4 border-red-600">
+            <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center md:items-end gap-6 text-xs uppercase font-bold tracking-widest">
+                <div>&copy; 2026 Philippe Petit</div>
+                <div class="flex gap-8">
+                    <a href="#" class="hover:text-red-500 transition-colors">Bandcamp</a>
+                    <a href="#" class="hover:text-red-500 transition-colors">Modulisme</a>
+                    <a href="#" class="hover:text-red-500 transition-colors">Contact</a>
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <!-- SCRIPTS -->
+    <script>
+        // --- 1. THEME LOGIC ---
+        const body = document.body;
+        const themeBtn = document.getElementById('theme-switcher');
+        const sunIcon = document.getElementById('sun-icon');
+        const moonIcon = document.getElementById('moon-icon');
+
+        const updateIcons = (isDark) => {
+            sunIcon.classList.toggle('hidden', !isDark);
+            moonIcon.classList.toggle('hidden', isDark);
+        };
+
+        themeBtn.addEventListener('click', () => {
+            body.classList.toggle('dark');
+            const isDark = body.classList.contains('dark');
+            updateIcons(isDark);
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
+
+        if (localStorage.getItem('theme') !== 'light') {
+            body.classList.add('dark');
+            updateIcons(true);
+        }
+
+        // --- 2. AUDIO & VISUAL ENGINE ---
+        const canvas = document.getElementById('glitch-canvas');
+        const ctx = canvas.getContext('2d');
+        const img = document.getElementById('source-image');
+        const interactionLayer = document.getElementById('interaction-layer');
+        const audioStatus = document.getElementById('audio-status');
+
+        let width, height;
+        let mouseX = 0.5, mouseY = 0.5;
+        let isInteracting = false;
+        let chaosLevel = 0;
+        let loaded = false;
+
+        // Audio Context
+        let audioCtx = null;
+        let masterGain;
+        let noiseBuffer;
+
+        function initAudio() {
+            if (audioCtx) return;
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AudioContext();
+            masterGain = audioCtx.createGain();
+            masterGain.gain.value = 0.4;
+            masterGain.connect(audioCtx.destination);
+            
+            // Create Noise Buffer
+            const bufferSize = audioCtx.sampleRate; // 1 sec
+            noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+            
+            audioStatus.textContent = "[ AUDIO ACTIVE - MOVE TO GLITCH ]";
+            audioStatus.style.color = "var(--punk-red)";
+        }
+
+        function triggerSound(intensity) {
+            if (!audioCtx || audioCtx.state === 'suspended') {
+                if(audioCtx) audioCtx.resume();
+                return;
+            }
+            const src = audioCtx.createBufferSource();
+            src.buffer = noiseBuffer;
+            src.playbackRate.value = 0.2 + (Math.random() * (0.5 + intensity * 3));
+            
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = Math.random() > 0.5 ? 'bandpass' : 'highpass';
+            filter.frequency.value = 200 + (Math.random() * 4000);
+            
+            const amp = audioCtx.createGain();
+            const now = audioCtx.currentTime;
+            const duration = 0.05 + Math.random() * 0.1;
+            
+            amp.gain.setValueAtTime(0, now);
+            amp.gain.linearRampToValueAtTime(0.5, now + 0.01);
+            amp.gain.exponentialRampToValueAtTime(0.01, now + duration);
+            
+            src.connect(filter);
+            filter.connect(amp);
+            amp.connect(masterGain);
+            src.start(now);
+            src.stop(now + duration + 0.1);
+        }
+
+        // --- VISUAL LOOP ---
+        img.onload = () => { loaded = true; };
+        
+        function resize() {
+            // Use visual-layers container size which is 100dvh fixed
+            const container = document.getElementById('visual-layers');
+            width = canvas.width = container.offsetWidth;
+            height = canvas.height = container.offsetHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        function draw() {
+            // Clear but keep transparent to see video behind
+            ctx.clearRect(0,0, width, height); 
+            
+            // Decay Chaos
+            if (isInteracting) {
+                // Calculate distance from center to increase chaos at edges
+                const dist = Math.sqrt(Math.pow(mouseX - 0.5, 2) + Math.pow(mouseY - 0.5, 2));
+                const targetChaos = 0.2 + (dist * 2); 
+                chaosLevel += (targetChaos - chaosLevel) * 0.1;
+            } else {
+                chaosLevel *= 0.9;
+            }
+
+            // Only draw if we have significant chaos or the image is loaded
+            if (loaded) {
+                const aspect = img.width / img.height;
+                // Responsive image sizing logic
+                let drawW = width * 0.8;
+                let drawH = drawW / aspect;
+                
+                // If tall screen (mobile)
+                if (height > width) {
+                   drawW = width * 0.9;
+                   drawH = drawW / aspect;
+                }
+
+                if (drawH > height * 0.8) {
+                    drawH = height * 0.8;
+                    drawW = drawH * aspect;
+                }
+
+                const x = (width - drawW) / 2;
+                const y = (height - drawH) / 2;
+
+                // --- GLITCH LOGIC ---
+                // Only draw image on canvas if glitching or semi-transparent overlay
+                // The VIDEO is the main background, the CANVAS adds the "Pepper"
+                
+                const isGlitching = chaosLevel > 0.1;
+
+                if (isGlitching) {
+                    if (Math.random() > 0.8) triggerSound(chaosLevel);
+
+                    const slices = Math.floor(chaosLevel * 15);
+                    for(let i=0; i<slices; i++) {
+                        const sy = Math.random() * img.height;
+                        const sh = Math.random() * (img.height * 0.2);
+                        const dy = y + (sy/img.height) * drawH;
+                        const dh = (sh/img.height) * drawH;
+                        const jitterX = (Math.random() - 0.5) * chaosLevel * 100;
+                        
+                        // Random blend modes for punk feel
+                        ctx.globalCompositeOperation = Math.random() > 0.8 ? 'difference' : 'source-over';
+                        
+                        ctx.drawImage(img, 0, sy, img.width, sh, x + jitterX, dy, drawW, dh);
+                    }
+                    ctx.globalCompositeOperation = 'source-over';
+                    
+                    // Occasional Invert
+                    if (chaosLevel > 0.8 && Math.random() > 0.9) {
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+                        ctx.fillRect(0,0,width,height);
+                    }
+                } else {
+                    // When idle, draw a ghost of the image to blend with video
+                    ctx.globalAlpha = 0.3;
+                    ctx.globalCompositeOperation = 'overlay';
+                    ctx.drawImage(img, x, y, drawW, drawH);
+                    ctx.globalAlpha = 1.0;
+                    ctx.globalCompositeOperation = 'source-over';
+                }
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+        // --- INPUT HANDLING ---
+        // We attach listeners to 'interaction-layer' (the full screen transparent div)
+        // AND 'document' for scroll tracking
+        
+        const updatePos = (e) => {
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            mouseX = clientX / window.innerWidth;
+            mouseY = clientY / window.innerHeight;
+            isInteracting = true;
+        };
+
+        const stopInteract = () => { isInteracting = false; };
+
+        // Mouse
+        interactionLayer.addEventListener('mousemove', updatePos);
+        interactionLayer.addEventListener('mousedown', (e) => {
+            initAudio();
+            updatePos(e);
+        });
+        interactionLayer.addEventListener('mouseleave', stopInteract);
+        interactionLayer.addEventListener('mouseup', stopInteract);
+
+        // Touch
+        // We DO NOT prevent default here, so user can scroll down
+        interactionLayer.addEventListener('touchstart', (e) => {
+            initAudio();
+            updatePos(e);
+        }, {passive: true});
+        
+        interactionLayer.addEventListener('touchmove', (e) => {
+            updatePos(e);
+            // If user is swiping horizontally mostly, maybe prevent scroll? 
+            // Nah, let's keep it fluid.
+        }, {passive: true});
+        
+        interactionLayer.addEventListener('touchend', stopInteract);
+
+        // Also, scroll triggers chaos?
+        let lastScrollY = window.scrollY;
+        window.addEventListener('scroll', () => {
+            const speed = Math.abs(window.scrollY - lastScrollY);
+            if (speed > 5) {
+                chaosLevel += speed * 0.005;
+                if (chaosLevel > 0.5) chaosLevel = 0.5;
+            }
+            lastScrollY = window.scrollY;
+            
+            // Disable interaction layer when scrolled down to let text be selectable
+            if (window.scrollY > window.innerHeight * 0.5) {
+                interactionLayer.style.pointerEvents = 'none';
+            } else {
+                interactionLayer.style.pointerEvents = 'auto';
+            }
+        });
+
+        draw();
+
+    </script>
+</body>
+</html>

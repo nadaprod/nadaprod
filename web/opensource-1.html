@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NADAPROD | MAISON D'AUTOÉDITION</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#050505">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="Maison d'autoédition. Désintermédiation de masse.">
+
+    <!-- FONTS: Bebas Neue (Display) & Inter (Body) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- VARIABLES & THEMES --- */
+        :root {
+            /* Common */
+            --accent: #ccff00;
+            --ease: cubic-bezier(0.16, 1, 0.3, 1);
+            
+            /* Fonts */
+            --font-display: 'Bebas Neue', sans-serif;
+            --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+            
+            /* Light Mode (Default) */
+            --bg: #ffffff;
+            --surface: #f4f4f4;
+            --text-main: #111111;
+            --text-secondary: #666666;
+            --border: #e0e0e0;
+            --grid-line: #e0e0e0;
+            --logo-filter: invert(1);
+            --scanline-opacity: 0.02;
+            --selection-bg: #000;
+            --selection-text: #fff;
+            --box-shadow-color: rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg: #080808;
+            --surface: #141414;
+            --text-main: #f0f0f0;
+            --text-secondary: #c0c0c0;
+            --border: #444444; /* Slightly lighter for visibility */
+            --grid-line: #2a2a2a;
+            --logo-filter: none;
+            --scanline-opacity: 0.05;
+            --selection-bg: #ccff00;
+            --selection-text: #000;
+            --box-shadow-color: rgba(0,0,0,0.5);
+        }
+
+        /* --- RESET --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+
+        ::selection {
+            background: var(--selection-bg);
+            color: var(--selection-text);
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.4s var(--ease), color 0.4s var(--ease);
+            font-size: 16px;
+        }
+
+        /* --- FX: NOISE & SCANLINES (90s TOUCH) --- */
+        .crt-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+            background-size: 100% 4px;
+            opacity: var(--scanline-opacity);
+            mix-blend-mode: overlay;
+        }
+
+        /* --- LAYOUT --- */
+        main {
+            flex: 1;
+            position: relative;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            padding-top: 80px;
+        }
+
+        section {
+            display: none;
+            min-height: 100%;
+            padding: 2rem 1.5rem 8rem 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            animation: fadeUp 0.6s var(--ease) forwards;
+        }
+        
+        section.active { display: block; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- HEADER --- */
+        header {
+            max-width: 1248px; /* Match grid max-width + padding */
+            margin: 0 auto;
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: var(--bg);
+            border-bottom: 2px solid var(--border); /* Thicker header border */
+            transition: background 0.4s var(--ease);
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-img {
+            height: 48px;
+            width: auto;
+            filter: var(--logo-filter);
+            transition: filter 0.4s;
+            display: block;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: 2px solid var(--border);
+            color: var(--text-main);
+            height: 36px;
+            padding: 0 10px;
+            border-radius: 4px; /* Slight round */
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+            font-family: var(--font-body);
+            transition: all 0.2s;
+        }
+        
+        .icon-btn:hover {
+            border-color: var(--text-main);
+            background: var(--surface);
+            transform: translateY(-2px);
+            box-shadow: 2px 2px 0px var(--text-main);
+        }
+
+        .lang-switch {
+            text-transform: uppercase;
+            width: auto;
+            min-width: 40px;
+        }
+
+        /* --- TYPOGRAPHY --- */
+        h1, h2, h3 {
+            font-family: var(--font-display);
+            font-weight: 400; 
+            text-transform: uppercase;
+            line-height: 0.9;
+            letter-spacing: 0.02em;
+        }
+
+        p {
+            line-height: 1.6;
+            font-weight: 400;
+            color: var(--text-secondary);
+        }
+        
+        strong {
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .display-text {
+            font-size: clamp(3.5rem, 10vw, 9rem);
+            margin: 2rem 0 0;
+            color: var(--text-main);
+            min-height: 1.2em; 
+        }
+        
+        .display-text span.outline {
+            color: transparent; 
+            -webkit-text-stroke: 1px var(--text-main);
+        }
+
+        /* Glitch Effect on Hover (Subtler) */
+        .glitch-hover {
+            transition: color 0.2s;
+        }
+        .glitch-hover:hover {
+            color: var(--accent);
+            text-shadow: 2px 0 var(--border);
+        }
+
+        .highlight-bg {
+            background-color: var(--accent);
+            color: #000;
+            padding: 0 4px;
+            font-weight: 500;
+        }
+
+        /* --- MARQUEE (INFINITE LOOP FIX) --- */
+        .marquee-wrapper {
+            width: 100vw;
+            margin-left: calc(-50vw + 50%);
+            border-top: 2px solid var(--border);
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 4rem;
+            background: var(--surface);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .marquee-track {
+            display: flex;
+            width: max-content;
+            animation: scroll 40s linear infinite;
+        }
+
+        .marquee-content {
+            white-space: nowrap;
+            padding: 0.6rem 0;
+            font-family: var(--font-body);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-main);
+            font-weight: 500;
+            padding-right: 2rem; 
+        }
+        
+        @keyframes scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); } 
+        }
+
+        /* --- BENTO GRID (DIY/IMPERFECT STYLE) --- */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .grid-item {
+            background: var(--bg);
+            /* THICKER, MORE VISIBLE BORDERS */
+            border: 2px solid var(--text-main);
+            /* IMPERFECT "HAND DRAWN" FEEL via uneven border radius */
+            border-radius: 2px 4px 3px 1px;
+            padding: 2rem;
+            grid-column: span 4;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 320px;
+            transition: all 0.3s;
+            position: relative;
+            /* HARD SHADOW for visibility */
+            box-shadow: 5px 5px 0px var(--box-shadow-color);
+        }
+
+        /* Make lines even more visible on hover */
+        .grid-item:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0px var(--accent);
+            border-color: var(--text-main);
+            z-index: 2;
+        }
+
+        /* Lego "Connector" Visual Cue - slightly imperfect placement */
+        .grid-item::after {
+            content: "";
+            position: absolute;
+            top: -12px;
+            left: 18px; /* Slightly off center */
+            width: 42px;
+            height: 10px;
+            background: var(--bg);
+            border: 2px solid var(--text-main);
+            border-bottom: none;
+            transition: background 0.3s;
+            z-index: 1;
+        }
+        
+        .grid-item:hover::after {
+            background: var(--accent);
+        }
+
+        .grid-item.double { grid-column: span 8; }
+        .grid-item.full { grid-column: span 12; }
+
+        .grid-item h3 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--text-main);
+        }
+        
+        .service-details {
+            font-size: 0.85rem;
+            margin-top: 1rem;
+            color: var(--text-secondary);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            border-top: 2px dashed var(--border); /* Dotted line more visible */
+            padding-top: 1rem;
+        }
+        
+        .service-details span::before {
+            content: "+ ";
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .grid-tag {
+            font-family: var(--font-body);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-main);
+            border: 2px solid var(--border);
+            padding: 4px 8px;
+            border-radius: 4px;
+            align-self: flex-start;
+            margin-bottom: 1.5rem;
+            background: var(--surface);
+            font-weight: bold;
+        }
+        
+        /* TECHNICAL SPECS (For Manifesto) */
+        .tech-spec {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        /* --- NAVIGATION --- */
+        nav {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(20, 20, 20, 0.9);
+            backdrop-filter: blur(12px);
+            padding: 8px;
+            border-radius: 12px; /* Less rounded, more blocky */
+            display: flex;
+            gap: 6px;
+            z-index: 1000;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+        
+        [data-theme="light"] nav { 
+             background: rgba(240, 240, 240, 0.95); 
+             border: 2px solid rgba(0,0,0,0.1); 
+             color: black;
+        }
+
+        .nav-item {
+            background: transparent;
+            border: none;
+            color: #999;
+            padding: 0.8rem 1.2rem;
+            cursor: pointer;
+            font-family: var(--font-body);
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+
+        .nav-item.active {
+            background: var(--text-main);
+            color: var(--bg);
+        }
+        
+        .nav-item:hover:not(.active) {
+            color: var(--text-main);
+            background: rgba(125,125,125,0.1);
+        }
+
+        /* --- FOOTER --- */
+        .contact-row {
+            border-top: 2px solid var(--border);
+            padding-top: 2rem;
+            margin-top: 4rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3rem;
+        }
+        
+        .big-mail {
+            font-family: var(--font-display);
+            font-size: 3.5rem;
+            color: var(--text-main);
+            text-decoration: none;
+            line-height: 1;
+            transition: color 0.3s;
+        }
+        
+        .big-mail:hover {
+            color: var(--accent); /* Acid hover */
+        }
+        
+        .link-list {
+            list-style: none;
+            border: 2px solid var(--border);
+            padding: 0 0.5rem;
+            margin-top: 0;
+            gap: 3rem;
+        }
+        
+        .link-list li a {
+            display: block;
+            padding: 1.4rem 1rem 1.3rem 1.3rem;
+            border-bottom: 1px solid var(--border);
+            text-decoration: none;
+            color: var(--text-main);
+            font-size: 1.2rem;
+            font-family: var(--font-display);
+            transition: padding-left 0.2s;
+        }
+        
+        .link-list li a:hover {
+			color: #fff;
+            padding-left: 10px;
+        }
+        
+        .link-list li a .hidden {
+			color: #000;
+            opacity: 0;
+			transition-duration: 0.3s;
+        }
+        
+        .link-list li a:hover .hidden {
+            color: var(--accent);
+            opacity: 1;
+			margin-left: 2.3rem;
+        }
+
+		#hero-title {
+			padding: 0 0 42px;
+		}
+
+        /* Mobile */
+        @media (max-width: 900px) {
+            .grid-container { grid-template-columns: 1fr; gap: 2rem; }
+            .grid-item { grid-column: span 1 !important; min-height: auto; }
+            .display-text { font-size: 3.5rem; }
+            .big-mail { font-size: 2rem; }
+            nav { width: 92%; justify-content: space-between; bottom: 1.5rem; padding: 6px; }
+            .nav-item { padding: 0.6rem 0.4rem; font-size: 0.65rem; }
+            section { padding-top: 1rem; }
+            .grid-item::after { left: 50%; transform: translateX(-50%); }
+            .logo-img { height: 36px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="crt-overlay"></div>
+
+    <header>
+        <img src="/gfx/logo.png" alt="NADAPROD" class="logo-img">
+        
+        <div class="header-controls">
+            <button class="icon-btn lang-switch" onclick="toggleLanguage()" id="lang-btn">FR</button>
+            <button class="icon-btn theme-toggle" onclick="toggleTheme()" aria-label="Toggle Theme">
+                ◑
+            </button>
+        </div>
+    </header>
+
+    <main id="app">
+        <!-- TAB 1: ACCUEIL (Formerly WTF + Title) -->
+        <section id="tab-home" class="active">
+            <h1 class="display-text glitch-hover" id="hero-title">
+                <span class="outline">MAISON<br>d'</span>autoédition
+            </h1>
+
+            <div class="grid-container">
+                <div class="grid-item double">
+                    <span class="grid-tag">Newsletter</span>
+                    <h3 data-i18n="newsletter_title">Restez connecté</h3>
+                    <p data-i18n="newsletter_sub" style="margin-bottom: 1rem;">Pas de spam. Pas d'algo. Juste le signal.</p>
+                    <form onsubmit="event.preventDefault(); alert('Subscribed!')" style="margin-top: 1.5rem; display: flex; border-bottom: 2px solid var(--text-main);">
+                        <input type="email" placeholder="your@email.com" style="flex: 1; border: none; background: transparent; padding: 1rem 0; font-family: var(--font-body); font-size: 1.2rem; color: var(--text-main); outline: none;">
+                        <button type="submit" style="background: transparent; color: var(--text-main); border: none; font-family: var(--font-display); font-size: 1.5rem; cursor: pointer;">→</button>
+                    </form>
+                </div>
+                
+                <div class="grid-item">
+                    <span class="grid-tag" data-i18n="who_tag">Qui</span>
+                    <h3>L3DLP</h3>
+                    <p data-i18n="who_desc">Collectif autogéré pour l'indépendance numérique.</p>
+                </div>
+            </div>
+
+            <div class="contact-row">
+                <div style="flex: 1;">
+                    <a href="mailto:contact@nadaprod.com" class="big-mail">contact@<br>nadaprod.com</a>
+                    <p style="margin-top: 1rem;" data-i18n="contact_sub">Un email pour tout.</p>
+                </div>
+                <div style="font-size: 0.9rem; line-height: 1.6; opacity: 0.7; min-width: 200px;">
+                    <strong>NADAPROD</strong><br>
+                    Publisher: intelligences sas<br>
+                    200 Rue de la Croix Nivert, 75015 Paris<br>
+                    RCS Paris 943899567<br><br>
+                    <a href="/about" style="color:var(--text-main)">Mentions légales & RGPD</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: MANIFESTE (NEW HOW-TO) -->
+        <section id="tab-manifesto">
+            <h2 class="display-text glitch-hover" data-i18n="manifesto_main_title">La Stack<br><span class="outline">Souveraine</span></h2>
+            <p style="margin-bottom: 2rem; font-family: var(--font-body); max-width: 800px;" data-i18n="manifesto_intro">
+                Arrêtez de construire des châteaux sur des terres louées. Voici les outils open-source pour reprendre le contrôle total de votre production, diffusion et monétisation.
+            </p>
+
+            <div class="grid-container">
+                <!-- STEP 1: PUBLICATION -->
+                <div class="grid-item double">
+                    <span class="grid-tag">01 / PUBLICATION</span>
+                    <span class="tech-spec">/// TOOLS: HUGO (GOLANG)</span>
+                    <h3 data-i18n="step1_title">Sites Statiques & Rapides</h3>
+                    <p data-i18n="step1_desc">Fini Wordpress. Fini les bases de données SQL qui plantent. Utilisez Hugo pour générer des sites statiques ultra-rapides. Compilez votre site comme du code. Hébergez le résultat (HTML/CSS) n'importe où.</p>
+                    <div class="service-details">
+                        <span data-i18n="step1_d1">Zero Database</span>
+                        <span data-i18n="step1_d2">Impossible à hacker</span>
+                        <span data-i18n="step1_d3">Chargement < 50ms</span>
+                        <span data-i18n="step1_d4">Portabilité Totale</span>
+                    </div>
+                </div>
+
+                <!-- STEP 2: IDENTITÉ -->
+                <div class="grid-item">
+                    <span class="grid-tag">02 / IDENTITÉ</span>
+                    <span class="tech-spec">/// PROTOCOL: ACTIVITYPUB</span>
+                    <h3 data-i18n="step2_title">Fédérer, pas mendier</h3>
+                    <p data-i18n="step2_desc">Ne soyez pas un utilisateur Twitter. Soyez votre propre instance. Rejoignez le Fediverse.</p>
+                </div>
+
+                <!-- STEP 3: DIFFUSION -->
+                <div class="grid-item">
+                    <span class="grid-tag">03 / DIFFUSION</span>
+                    <span class="tech-spec">/// STANDARD: RSS 2.0</span>
+                    <h3 data-i18n="step3_title">Le Flux Roi</h3>
+                    <p data-i18n="step3_desc">Le seul algorithme que vous contrôlez. Forcez le RSS partout. C'est incensurable.</p>
+                </div>
+
+                <!-- STEP 4: AUDIENCE -->
+                <div class="grid-item double">
+                    <span class="grid-tag">04 / RELATION</span>
+                    <span class="tech-spec">/// TOOLS: LISTMONK / GHOST</span>
+                    <h3 data-i18n="step4_title">La Liste Sacrée</h3>
+                    <p data-i18n="step4_desc">Si Instagram ferme demain, vous perdez tout. Une mailing list hébergée chez vous (Listmonk) est le seul actif réel d'un artiste numérique.</p>
+                    <div class="service-details">
+                        <span data-i18n="step4_d1">Self-hosted</span>
+                        <span data-i18n="step4_d2">Pas de frais mensuels</span>
+                        <span data-i18n="step4_d3">Import/Export CSV</span>
+                        <span data-i18n="step4_d4">Analytics privés</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: SERVICES (UNCHANGED) -->
+        <section id="tab-services">
+            <h2 class="display-text glitch-hover" data-i18n="services_title">Services</h2>
+            <p style="margin-bottom: 2rem; font-family: var(--font-body);" data-i18n="services_subtitle">Infrastructure modulaire. Choisissez vos briques. Construisez votre château.</p>
+
+            <div class="marquee-wrapper">
+                <div class="marquee-track">
+                    <span class="marquee-content" data-i18n="marquee">/// PLUS DE MÉTAYAGE NUMÉRIQUE /// NE LOUEZ PAS VOTRE AUDIENCE /// ÉCHAPPEZ À L'ALGORITHME /// SOUVERAINETÉ MÉDIATIQUE TOTALE /// </span>
+                    <span class="marquee-content" data-i18n="marquee">/// PLUS DE MÉTAYAGE NUMÉRIQUE /// NE LOUEZ PAS VOTRE AUDIENCE /// ÉCHAPPEZ À L'ALGORITHME /// SOUVERAINETÉ MÉDIATIQUE TOTALE /// </span>
+                    <span class="marquee-content" data-i18n="marquee">/// PLUS DE MÉTAYAGE NUMÉRIQUE /// NE LOUEZ PAS VOTRE AUDIENCE /// ÉCHAPPEZ À L'ALGORITHME /// SOUVERAINETÉ MÉDIATIQUE TOTALE /// </span>
+                    <span class="marquee-content" data-i18n="marquee">/// PLUS DE MÉTAYAGE NUMÉRIQUE /// NE LOUEZ PAS VOTRE AUDIENCE /// ÉCHAPPEZ À L'ALGORITHME /// SOUVERAINETÉ MÉDIATIQUE TOTALE /// </span>
+                </div>
+            </div>
+            
+            <div class="grid-container">
+                <!-- BLOCK 1 -->
+                <div class="grid-item">
+                    <span class="grid-tag">BLOCK A-01</span>
+                    <h3 data-i18n="svc_web_title">Espace Web</h3>
+                    <p data-i18n="svc_web_desc">Une maison que vous possédez vraiment.</p>
+                    <div class="service-details">
+                        <span data-i18n="svc_web_d1">Design Sur Mesure</span>
+                        <span data-i18n="svc_web_d2">Pas de Templates</span>
+                        <span data-i18n="svc_web_d3">Contrôle CMS</span>
+                        <span data-i18n="svc_web_d4">Optimisé SEO</span>
+                    </div>
+                </div>
+
+                <!-- BLOCK 2 -->
+                <div class="grid-item">
+                    <span class="grid-tag">BLOCK A-02</span>
+                    <h3 data-i18n="svc_app_title">App Mobile</h3>
+                    <p data-i18n="svc_app_desc">Ligne directe vers la poche de vos fans.</p>
+                    <div class="service-details">
+                        <span data-i18n="svc_app_d1">PWA / iOS / Android</span>
+                        <span data-i18n="svc_app_d2">Notifs Push</span>
+                        <span data-i18n="svc_app_d3">Mode Hors-ligne</span>
+                        <span data-i18n="svc_app_d4">0% Taxe Store</span>
+                    </div>
+                </div>
+
+                <!-- BLOCK 3 -->
+                <div class="grid-item">
+                    <span class="grid-tag">BLOCK A-03</span>
+                    <h3 data-i18n="svc_shop_title">Shop</h3>
+                    <p data-i18n="svc_shop_desc">Gardez 100% des revenus.</p>
+                    <div class="service-details">
+                        <span data-i18n="svc_shop_d1">Vente Directe</span>
+                        <span data-i18n="svc_shop_d2">Paiement Instantané</span>
+                        <span data-i18n="svc_shop_d3">Bundle Phys/Num</span>
+                        <span data-i18n="svc_shop_d4">Logistique Globale</span>
+                    </div>
+                </div>
+
+                <!-- BLOCK 4 -->
+                <div class="grid-item double">
+                    <span class="grid-tag">BLOCK B-01</span>
+                    <h3 data-i18n="svc_comms_title">Broadcast & Comms</h3>
+                    <p data-i18n="svc_comms_desc">Possédez la relation. Pas de filtre algorithmique.</p>
+                    <div class="service-details">
+                        <span data-i18n="svc_comms_d1">Social Sync</span>
+                        <span data-i18n="svc_comms_d2">Newsletter Propriétaire</span>
+                        <span data-i18n="svc_comms_d3">Funnels Auto</span>
+                        <span data-i18n="svc_comms_d4">Dossiers Presse (EPK)</span>
+                        <span data-i18n="svc_comms_d5">Relations Media</span>
+                        <span data-i18n="svc_comms_d6">Propriété des Données</span>
+                    </div>
+                </div>
+
+                <!-- BLOCK 5 -->
+                <div class="grid-item">
+                    <span class="grid-tag">BLOCK B-02</span>
+                    <h3 data-i18n="svc_admin_title">Outils Admin</h3>
+                    <p data-i18n="svc_admin_desc">Le truc chiant, automatisé.</p>
+                    <div class="service-details">
+                        <span data-i18n="svc_admin_d1">Smart Contracts</span>
+                        <span data-i18n="svc_admin_d2">Facturation Auto</span>
+                        <span data-i18n="svc_admin_d3">Fiches Techniques</span>
+                        <span data-i18n="svc_admin_d4">Plans de Scène</span>
+                    </div>
+                </div>
+
+                <!-- BLOCK 6 -->
+                <div class="grid-item full">
+                    <span class="grid-tag">BLOCK C-00</span>
+                    <h3 style="font-size: 3rem;" data-i18n="svc_irl_title">Réalité Physique</h3>
+                    <p data-i18n="svc_irl_desc">On gère les atomes aussi bien que les bits.</p>
+                    <div class="service-details" style="grid-template-columns: repeat(4, 1fr);">
+                        <span data-i18n="svc_irl_d1">Pressage Vinyle</span>
+                        <span data-i18n="svc_irl_d2">Reliure Livres</span>
+                        <span data-i18n="svc_irl_d3">Design Merch</span>
+                        <span data-i18n="svc_irl_d4">Sourcing Durable</span>
+                        <span data-i18n="svc_irl_d5">Logistique Event</span>
+                        <span data-i18n="svc_irl_d6">Street Marketing</span>
+                        <span data-i18n="svc_irl_d7">Expositions</span>
+                        <span data-i18n="svc_irl_d8">Installations</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: NETWORK (UNCHANGED) -->
+        <section id="tab-network">
+            <h2 class="display-text glitch-hover" data-i18n="nav_network">Réseau</h2>
+            
+            <div class="grid-container" style="border:none; background: transparent; gap: 0;">
+                <div class="grid-item full" style="background: transparent; padding: 0; border: none; box-shadow: none;">
+                    <ul class="link-list">
+                        <li><a href="https://clh.do" target="_blank">CLH <span class="hidden">WEBSITE, GFX, HOSTING</span></a></li>
+                        <li><a href="https://youtube.com/@conymeprod" target="_blank">Connexion Anonyme <span class="hidden">GFX</span></a></li>
+                        <li><a href="https://fredj.art" target="_blank">FREDJ<span class="hidden">WEBSITE</span></a></li>
+                        <li><a href="https://ideeschauves.com" target="_blank">Idées Chauves<span class="hidden">WEBSITE</span></a></li>
+                        <li><a href="https://modular-station.com/" target="_blank">Modular Station<span class="hidden">WEBRADIO, HOSTING</span></a></li>
+                        <li><a href="https://modulisme.com/" target="_blank">Modulisme<span class="hidden">WEBSITE, HOSTING</span></a></li>
+                        <li><a href="https://oliver-night.com" target="_blank">Oliver Night<span class="hidden">WEBSITE, HOSTING</span></a></li>
+                        <li><a href="/pp/" target="_blank">Philippe Petit<span class="hidden">WEBSITE, HOSTING</span></a></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <nav>
+        <button class="nav-item active" onclick="switchTab('home')" data-i18n="nav_home">Accueil</button>
+        <button class="nav-item" onclick="switchTab('manifesto')" data-i18n="nav_manifesto">Manifeste</button>
+        <button class="nav-item" onclick="switchTab('services')" data-i18n="nav_services">Services</button>
+        <button class="nav-item" onclick="switchTab('network')" data-i18n="nav_network">Réseau</button>
+    </nav>
+
+    <script>
+        // --- TRANSLATIONS ---
+        const translations = {
+            fr: {
+                nav_home: "Accueil",
+                nav_manifesto: "Manifeste",
+                nav_services: "Services",
+                nav_network: "Réseau",
+                
+                // HOME / WTF content
+                newsletter_title: "Restez connecté",
+                newsletter_sub: "Pas de spam. Pas d'algo. Juste le signal.",
+                who_tag: "Qui",
+                who_desc: "Collectif autogéré pour l'indépendance numérique.",
+                contact_sub: "Un email pour tout.",
+
+                // MANIFESTO (HOW-TO)
+                manifesto_main_title: "La Stack<br><span class=\"outline\">Souveraine</span>",
+                manifesto_intro: "Arrêtez de construire des châteaux sur des terres louées. Voici les outils open-source pour reprendre le contrôle total de votre production, diffusion et monétisation.",
+                
+                step1_title: "Sites Statiques & Rapides",
+                step1_desc: "Fini Wordpress. Fini les bases de données SQL qui plantent. Utilisez Hugo pour générer des sites statiques ultra-rapides. Compilez votre site comme du code. Hébergez le résultat (HTML/CSS) n'importe où.",
+                step1_d1: "Zero Database",
+                step1_d2: "Impossible à hacker",
+                step1_d3: "Chargement < 50ms",
+                step1_d4: "Portabilité Totale",
+
+                step2_title: "Fédérer, pas mendier",
+                step2_desc: "Ne soyez pas un utilisateur Twitter. Soyez votre propre instance. Rejoignez le Fediverse.",
+
+                step3_title: "Le Flux Roi",
+                step3_desc: "Le seul algorithme que vous contrôlez. Forcez le RSS partout. C'est incensurable.",
+
+                step4_title: "La Liste Sacrée",
+                step4_desc: "Si Instagram ferme demain, vous perdez tout. Une mailing list hébergée chez vous (Listmonk) est le seul actif réel d'un artiste numérique.",
+                step4_d1: "Self-hosted",
+                step4_d2: "Pas de frais mensuels",
+                step4_d3: "Import/Export CSV",
+                step4_d4: "Analytics privés",
+                
+                // SERVICES
+                services_title: "Services",
+                services_subtitle: "Infrastructure modulaire. Choisissez vos briques. Construisez votre château.",
+                marquee: "/// PLUS DE MÉTAYAGE NUMÉRIQUE /// NE LOUEZ PAS VOTRE AUDIENCE /// ÉCHAPPEZ À L'ALGORITHME /// SOUVERAINETÉ MÉDIATIQUE TOTALE /// ",
+                
+                svc_web_title: "Espace Web",
+                svc_web_desc: "Une maison que vous possédez vraiment.",
+                svc_web_d1: "Design Sur Mesure",
+                svc_web_d2: "Pas de Templates",
+                svc_web_d3: "Contrôle CMS",
+                svc_web_d4: "Optimisé SEO",
+                
+                svc_app_title: "App Mobile",
+                svc_app_desc: "Ligne directe vers la poche de vos fans.",
+                svc_app_d1: "PWA / iOS / Android",
+                svc_app_d2: "Notifs Push",
+                svc_app_d3: "Mode Hors-ligne",
+                svc_app_d4: "0% Taxe Store",
+                
+                svc_shop_title: "Shop",
+                svc_shop_desc: "Gardez 100% des revenus.",
+                svc_shop_d1: "Vente Directe",
+                svc_shop_d2: "Paiement Instantané",
+                svc_shop_d3: "Bundle Phys/Num",
+                svc_shop_d4: "Logistique Globale",
+
+                svc_comms_title: "Broadcast & Comms",
+                svc_comms_desc: "Possédez la relation. Pas de filtre algorithmique.",
+                svc_comms_d1: "Social Sync",
+                svc_comms_d2: "Newsletter Propriétaire",
+                svc_comms_d3: "Funnels Auto",
+                svc_comms_d4: "Dossiers Presse (EPK)",
+                svc_comms_d5: "Relations Media",
+                svc_comms_d6: "Propriété des Données",
+
+                svc_admin_title: "Outils Admin",
+                svc_admin_desc: "Le truc chiant, automatisé.",
+                svc_admin_d1: "Smart Contracts",
+                svc_admin_d2: "Facturation Auto",
+                svc_admin_d3: "Fiches Techniques",
+                svc_admin_d4: "Plans de Scène",
+
+                svc_irl_title: "Réalité Physique",
+                svc_irl_desc: "On gère les atomes aussi bien que les bits.",
+                svc_irl_d1: "Pressage Vinyle",
+                svc_irl_d2: "Reliure Livres",
+                svc_irl_d3: "Design Merch",
+                svc_irl_d4: "Sourcing Durable",
+                svc_irl_d5: "Logistique Event",
+                svc_irl_d6: "Street Marketing",
+                svc_irl_d7: "Expositions",
+                svc_irl_d8: "Installations"
+            },
+            en: {
+                nav_home: "Home",
+                nav_manifesto: "The Stack",
+                nav_services: "Services",
+                nav_network: "Network",
+                
+                newsletter_title: "Stay Tuned",
+                newsletter_sub: "No spam. No algo. Just the signal.",
+                who_tag: "Who",
+                who_desc: "Self-managed collective for digital independence.",
+                contact_sub: "One email for everything.",
+
+                manifesto_main_title: "The Sovereign<br><span class=\"outline\">Stack</span>",
+                manifesto_intro: "Stop building castles on rented land. Here are the open-source tools to retake total control of your production, distribution, and monetization.",
+
+                step1_title: "Static & Fast Sites",
+                step1_desc: "No more Wordpress. No more crashing SQL databases. Use Hugo to generate ultra-fast static sites. Compile your site like code. Host the result (HTML/CSS) anywhere.",
+                step1_d1: "Zero Database",
+                step1_d2: "Unhackable",
+                step1_d3: "Load time < 50ms",
+                step1_d4: "Total Portability",
+
+                step2_title: "Federate, Don't Beg",
+                step2_desc: "Don't be a Twitter user. Be your own instance. Join the Fediverse.",
+
+                step3_title: "Feed is King",
+                step3_desc: "The only algorithm you control. Force RSS everywhere. It is uncensorable.",
+
+                step4_title: "The Sacred List",
+                step4_desc: "If Instagram closes tomorrow, you lose everything. A self-hosted mailing list (Listmonk) is the only real asset of a digital artist.",
+                step4_d1: "Self-hosted",
+                step4_d2: "No monthly fees",
+                step4_d3: "CSV Import/Export",
+                step4_d4: "Private Analytics",
+
+                services_title: "Services",
+                services_subtitle: "Modular infrastructure. Pick your bricks. Build your castle.",
+                marquee: "/// NO MORE DIGITAL SHARECROPPING /// DON'T RENT YOUR AUDIENCE /// ESCAPE THE ALGORITHM /// TOTAL MEDIA SOVEREIGNTY /// ",
+                
+                svc_web_title: "Web Space",
+                svc_web_desc: "A home you actually own.",
+                svc_web_d1: "Custom Design",
+                svc_web_d2: "No Templates",
+                svc_web_d3: "CMS Control",
+                svc_web_d4: "SEO Optimized",
+                
+                svc_app_title: "Mobile App",
+                svc_app_desc: "Direct pipe to your fans' pockets.",
+                svc_app_d1: "PWA / iOS / Android",
+                svc_app_d2: "Push Notifs",
+                svc_app_d3: "Offline Mode",
+                svc_app_d4: "0% Store Tax",
+                
+                svc_shop_title: "Shop",
+                svc_shop_desc: "Keep 100% of the revenue.",
+                svc_shop_d1: "Direct Sales",
+                svc_shop_d2: "Instant Payouts",
+                svc_shop_d3: "Bundle Phys/Dig",
+                svc_shop_d4: "Global Fulfillment",
+
+                svc_comms_title: "Broadcast & Comms",
+                svc_comms_desc: "Own the relationship. No algorithm filtering.",
+                svc_comms_d1: "Social Sync",
+                svc_comms_d2: "Proprietary Newsletter",
+                svc_comms_d3: "Auto-Funnels",
+                svc_comms_d4: "Press Kits (EPK)",
+                svc_comms_d5: "Media Relations",
+                svc_comms_d6: "Data Ownership",
+
+                svc_admin_title: "Admin Tools",
+                svc_admin_desc: "Boring stuff, automated.",
+                svc_admin_d1: "Smart Contracts",
+                svc_admin_d2: "Auto-Invoicing",
+                svc_admin_d3: "Tech Specs",
+                svc_admin_d4: "Stage Plans",
+
+                svc_irl_title: "Physical Reality",
+                svc_irl_desc: "We handle the atoms as well as the bits.",
+                svc_irl_d1: "Vinyl Pressing",
+                svc_irl_d2: "Book Binding",
+                svc_irl_d3: "Merch Design",
+                svc_irl_d4: "Sustainable Sourcing",
+                svc_irl_d5: "Event Logistics",
+                svc_irl_d6: "Street Marketing",
+                svc_irl_d7: "Exhibitions",
+                svc_irl_d8: "Installations"
+            }
+        };
+
+        const browserLang = navigator.language || navigator.userLanguage || 'en';
+        let currentLang = browserLang.startsWith('fr') ? 'fr' : 'en';
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'fr' ? 'en' : 'fr';
+            applyLanguage();
+        }
+
+        function applyLanguage() {
+            // Update Toggle Button Text
+            document.getElementById('lang-btn').textContent = currentLang.toUpperCase();
+
+            // Update all data-i18n elements
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[currentLang][key]) {
+                    el.innerHTML = translations[currentLang][key];
+                }
+            });
+
+            // Update Marquee specifically (since it has duplicates)
+            document.querySelectorAll('.marquee-content').forEach(el => {
+                el.textContent = translations[currentLang]['marquee'];
+            });
+
+            // Update Dynamic Hero Logic for next cycle
+            // Reset message index to force immediate update if needed, but for simplicity
+            // we will let the next interval tick pick up the new language.
+            updateHeroMessages();
+        }
+        
+        // --- HERO MESSAGES ---
+        // We define them as functions or objects to get current lang
+        function getHeroMessages() {
+            if (currentLang === 'fr') {
+                return [
+                    { top: "VIREZ LES", bot: "INTERMÉDIAIRES." },
+                    { top: "POSSÉDEZ VOTRE", bot: "PLATEFORME." }
+                ];
+            } else {
+                return [
+                    { top: "BOOT THE", bot: "MIDDLEMEN." },
+                    { top: "OWN YOUR", bot: "PLATFORM." },
+                    { top: "ENSHITTIFICATION", bot: "IS INEVITABLE." }
+                ];
+            }
+        }
+        
+        let messages = getHeroMessages();
+        
+        function updateHeroMessages() {
+            messages = getHeroMessages();
+        }
+
+        // --- NAVIGATION LOGIC ---
+        function switchTab(tabId) {
+            document.querySelectorAll('section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById('tab-' + tabId).classList.add('active');
+            
+            const indexMap = { 'home': 0, 'manifesto': 1, 'services': 2, 'network': 3 };
+            const buttons = document.querySelectorAll('.nav-item');
+            if(buttons[indexMap[tabId]]) buttons[indexMap[tabId]].classList.add('active');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- THEME TOGGLE ---
+        function toggleTheme() {
+            const html = document.documentElement;
+            const current = html.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', next);
+        }
+
+        // --- HERO TEXT ANIMATION ---
+        let msgIndex = 0;
+        const heroTitle = document.getElementById('hero-title');
+        
+        setInterval(() => {
+            msgIndex = (msgIndex + 1) % messages.length;
+            const nextMsg = messages[msgIndex];
+            
+            heroTitle.style.opacity = '0';
+            heroTitle.style.transform = 'translateY(10px)';
+            heroTitle.style.transition = 'opacity 0.4s, transform 0.4s';
+            
+            setTimeout(() => {
+                heroTitle.innerHTML = `<span class="outline">${nextMsg.top}</span><br>${nextMsg.bot}`;
+                heroTitle.style.opacity = '1';
+                heroTitle.style.transform = 'translateY(0)';
+            }, 400);
+            
+        }, 4000);
+
+        // Init Language
+        applyLanguage();
+
+    </script>
+</body>
+</html>

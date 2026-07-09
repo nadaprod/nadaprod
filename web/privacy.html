@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NADAPROD | PRIVACY</title>
+    
+    <!-- FONTS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- REPRISE EXACTE DU CSS NADAPROD (COMMON) --- */
+        :root {
+            --accent: #ccff00;
+            --ease: cubic-bezier(0.16, 1, 0.3, 1);
+            --font-display: 'Bebas Neue', sans-serif;
+            --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+            
+            --bg: #ffffff;
+            --surface: #f4f4f4;
+            --text-main: #111111;
+            --text-secondary: #666666;
+            --border: #e0e0e0;
+            --logo-filter: invert(1);
+            --scanline-opacity: 0.02;
+            --selection-bg: #000;
+            --selection-text: #fff;
+            --box-shadow-color: rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg: #080808;
+            --surface: #141414;
+            --text-main: #f0f0f0;
+            --text-secondary: #c0c0c0;
+            --border: #444444;
+            --logo-filter: none;
+            --scanline-opacity: 0.05;
+            --selection-bg: #ccff00;
+            --selection-text: #000;
+            --box-shadow-color: rgba(0,0,0,0.5);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+
+        ::selection { background: var(--selection-bg); color: var(--selection-text); }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.4s var(--ease), color 0.4s var(--ease);
+            font-size: 16px;
+        }
+
+        /* FX */
+        .crt-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+            background-size: 100% 4px;
+            opacity: var(--scanline-opacity);
+            mix-blend-mode: overlay;
+        }
+
+        /* HEADER */
+        header {
+            max-width: 1248px;
+            margin: 0 auto;
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: var(--bg);
+            border-bottom: 2px solid var(--border);
+        }
+
+        .logo-img { height: 48px; width: auto; filter: var(--logo-filter); display: block; }
+
+        .icon-btn {
+            background: transparent;
+            border: 2px solid var(--border);
+            color: var(--text-main);
+            height: 36px;
+            padding: 0 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem; font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .icon-btn:hover {
+            border-color: var(--text-main);
+            background: var(--surface);
+            transform: translateY(-2px);
+            box-shadow: 2px 2px 0px var(--text-main);
+        }
+
+        /* MAIN CONTENT */
+        main {
+            flex: 1;
+            padding: 100px 1.5rem 6rem;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .display-text {
+            font-family: var(--font-display);
+            font-size: clamp(3rem, 6vw, 6rem);
+            margin: 3.3rem 0;
+            color: var(--text-main);
+            line-height: 0.9;
+        }
+
+        .outline { color: transparent; -webkit-text-stroke: 1px var(--text-main); }
+        
+        .legal-meta {
+            font-family: var(--font-body);
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            border-left: 2px solid var(--accent);
+            padding-left: 1rem;
+        }
+
+        /* DOC CONTAINER */
+        .legal-doc {
+            background: var(--bg);
+            border: 2px solid var(--text-main);
+            border-radius: 2px 4px 3px 1px;
+            padding: 3rem;
+            box-shadow: 5px 5px 0px var(--box-shadow-color);
+            position: relative;
+        }
+
+        .legal-doc::after {
+            content: "";
+            position: absolute;
+            top: -12px; left: 18px; width: 42px; height: 10px;
+            background: var(--bg);
+            border: 2px solid var(--text-main);
+            border-bottom: none;
+        }
+
+        /* TYPOGRAPHY */
+        .legal-doc h2 {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px dashed var(--border);
+            color: var(--text-main);
+        }
+
+        .legal-doc h2:first-of-type { margin-top: 0; }
+
+        .legal-doc p, .legal-doc li {
+            font-family: var(--font-body);
+            line-height: 1.7;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .legal-doc strong { color: var(--text-main); }
+
+        .legal-doc ul { padding-left: 1.5rem; margin-bottom: 1.5rem; }
+        .legal-doc li { margin-bottom: 0.5rem; }
+
+        /* Highlight box for "Engagement Explicite" */
+        .engagement-box {
+            border: 2px solid var(--accent);
+            background: rgba(204, 255, 0, 0.05);
+            padding: 1.5rem;
+            margin-top: 3rem;
+        }
+        
+        .engagement-box h2 {
+            border-bottom: none;
+            color: var(--accent);
+            margin-top: 0;
+        }
+
+        /* FOOTER NAV */
+        .bottom-nav {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+        }
+
+        .nav-back-btn {
+            background: rgba(20, 20, 20, 0.9);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(255,255,255,0.1);
+            color: #fff;
+            padding: 0.8rem 2rem;
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            cursor: pointer;
+            border-radius: 12px;
+            text-transform: uppercase;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        [data-theme="light"] .nav-back-btn {
+            background: rgba(240, 240, 240, 0.95);
+            border: 2px solid rgba(0,0,0,0.1);
+            color: #000;
+        }
+
+        .nav-back-btn:hover {
+            transform: scale(1.05);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .display-text { font-size: 2.5rem; }
+            .legal-doc { padding: 1.5rem; }
+            main { padding-top: 80px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="crt-overlay"></div>
+
+    <header>
+        <a href="/">
+            <img src="/gfx/logo.png" alt="NADAPROD" class="logo-img">
+        </a>
+        <div class="header-controls">
+            <button class="icon-btn theme-toggle" onclick="toggleTheme()" aria-label="Toggle Theme">◑</button>
+        </div>
+    </header>
+
+    <main>
+        <h1 class="display-text">POLITIQUE DE<br><span class="outline">CONFIDENTIALITÉ</span></h1>
+        
+        <div class="legal-meta">
+            Dernière mise à jour : <strong>29/12/2025</strong><br>
+            Référence : <strong>PRIV-STD-2025-V1</strong>
+        </div>
+
+        <div class="legal-doc">
+            <!-- SECTION 1 -->
+            <h2>Qui sommes-nous</h2>
+            <p>La présente politique de confidentialité s’applique à tous les services proposés par <strong>Intelligences SAS / NADAPROD</strong>, SAS au capital de 1001 €, immatriculée au RCS de Paris sous le numéro <strong>943 899 567</strong>, dont le siège est situé <strong>200 Rue de la Croix Nivert, 75015 Paris</strong> et joignable à <strong>contact@nadaprod.com</strong>.</p>
+            <p>Cette politique informe les utilisateurs sur la collecte, l’usage, le stockage et la protection des données personnelles dans le cadre de l’utilisation de nos services, plateformes web, applications et contenus.</p>
+
+            <!-- SECTION 2 -->
+            <h2>Données personnelles collectées</h2>
+            <p>Nous ne collectons volontairement aucune donnée personnelle identifiable à l’exception de ce qui est strictement nécessaire pour fournir un service expressément demandé par l’utilisateur (par exemple, création de compte, formulaire de contact, achat).</p>
+            <p>Dans tous les cas, nous n’utilisons aucun outil de tracking externe (<strong>aucun Google Analytics, Meta Pixel, Amplitude, Hotjar, TikTok/LinkedIn/Whatever</strong>) et nous ne déléguons aucun traitement à des plateformes tierces de marketing ou profiling.</p>
+
+            <!-- SECTION 3 -->
+            <h2>Cookies et sessions</h2>
+            <p>Pour assurer le fonctionnement minimum des services, nous utilisons uniquement :</p>
+            <ul>
+                <li><strong>Cookies de session locaux</strong> stockés dans le navigateur de l’utilisateur (par exemple : session d’utilisateur, paramètres temporaires utiles à l’expérience de navigation). Ces cookies ne sont pas utilisés pour suivre l’utilisateur à travers des sites tiers ni pour profiler ses comportements, ils expirent à la fermeture du navigateur ou à la fin de la session.</li>
+            </ul>
+            <p>Nous n’installons aucun cookie de mesure d’audience, aucun cookie publicitaire, aucun cookie de tracking tiers.<br>
+            L’utilisateur demeure libre de supprimer ces cookies à tout moment via son navigateur.</p>
+
+            <!-- SECTION 4 -->
+            <h2>Finalité de la collecte</h2>
+            <p>Les seules données éventuellement collectées sont utilisées pour :</p>
+            <ul>
+                <li>Exécuter les services demandés par l’utilisateur (authentification, gestion de compte, traitement de commande) ;</li>
+                <li>Assurer le fonctionnement technique sécurisé de l’application ou du site ;</li>
+                <li>Répondre aux demandes explicites de support ou de contact.</li>
+            </ul>
+            <p>Aucune donnée n’est utilisée à des fins publicitaires, de profilage ou de revente.</p>
+
+            <!-- SECTION 5 -->
+            <h2>Base légale du traitement</h2>
+            <p>La collecte de données nécessaires à l’exécution d’un service contractuel est fondée sur l’exécution du contrat ou la fourniture d’un service demandé par l’utilisateur.<br>
+            Nous ne collectons pas de données pour des finalités basées sur l’intérêt légitime à des fins de marketing ou de publicité.</p>
+
+            <!-- SECTION 6 -->
+            <h2>Durée de conservation</h2>
+            <p>Les données sont conservées uniquement le temps nécessaire à l’exécution de la prestation et conformément aux obligations légales applicables.</p>
+
+            <!-- SECTION 7 -->
+            <h2>Sécurité des données</h2>
+            <p>Nous mettons en place des mesures techniques et organisationnelles raisonnables pour protéger les données contre la perte, l’accès non autorisé et la divulgation.</p>
+
+            <!-- SECTION 8 -->
+            <h2>Droits des utilisateurs</h2>
+            <p>Conformément au Règlement Général sur la Protection des Données (RGPD), toute personne dispose :</p>
+            <ul>
+                <li>du droit d’accès</li>
+                <li>du droit de rectification</li>
+                <li>du droit à l’effacement</li>
+                <li>du droit à la limitation du traitement</li>
+                <li>du droit à la portabilité des données</li>
+                <li>du droit d’opposition</li>
+            </ul>
+            <p>pour toute donnée personnelle qu’elle nous a transmise.</p>
+            <p>Pour exercer ces droits ou obtenir des informations supplémentaires, vous pouvez nous contacter à <strong>contact@nadaprod.com</strong>.</p>
+
+            <!-- SECTION 9 -->
+            <h2>Modifications de la politique</h2>
+            <p>Nous pouvons être amenés à modifier cette politique pour respecter l’évolution des services ou des lois. La version mise à jour sera publiée sur notre site et datée.</p>
+
+            <!-- SECTION 10: ENGAGEMENT -->
+            <div class="engagement-box">
+                <h2>Engagement explicite</h2>
+                <p>Nous revendiquons et assumons pleinement notre choix de ne rien tracker, analyser, profiler ou revendre.</p>
+                <p>Aucun outil de suivi externe n’est intégré dans nos services, et nous ne plaçons que les cookies essentiels de session nécessaires au fonctionnement technique.</p>
+                <p style="margin-bottom: 0;"><strong>C’est un engagement volontaire de respect de la vie privée, pas un compromis marketing.</strong></p>
+            </div>
+        </div>
+    </main>
+
+    <div class="bottom-nav">
+        <a href="/" class="nav-back-btn">← RETOUR QG</a>
+    </div>
+
+    <script>
+        // --- THEME LOGIC (COPIED FROM MAIN) ---
+        function toggleTheme() {
+            const html = document.documentElement;
+            const current = html.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+        }
+
+        // Apply saved theme on load
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+    </script>
+</body>
+</html>

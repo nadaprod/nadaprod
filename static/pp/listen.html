@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Philippe Petit | Discography</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --punk-red: #da4444;
+            --punk-black: #1a1a1a;
+            --punk-cream: #f4f1ea;
+            --bg-texture: url("https://www.transparenttextures.com/patterns/paper-fibers.png");
+        }
+
+        body.dark {
+            --punk-cream: #121212;
+            --punk-black: #e5e5e5;
+            --punk-red: #ff4d4d;
+            background-image: url("https://www.transparenttextures.com/patterns/dark-matter.png");
+        }
+
+        body {
+            background-color: var(--punk-cream);
+            color: var(--punk-black);
+            font-family: 'Courier Prime', monospace;
+            background-image: var(--bg-texture);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        h1, h2, h3, .punk-title {
+            font-family: 'Special Elite', cursive;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+        }
+
+        a {
+            text-decoration-thickness: 2px;
+        }
+        
+        a:hover {
+            color: var(--punk-red);
+        }
+
+        .nav-link {
+            position: relative;
+            transition: all 0.2s;
+            display: inline-block;
+            padding: 2px 8px;
+            text-decoration: none;
+        }
+        .nav-link:hover {
+            background: var(--punk-black);
+            color: var(--punk-cream);
+            transform: rotate(-1deg) scale(1.05);
+        }
+        .nav-link.active {
+            background: var(--punk-red);
+            color: white;
+            transform: rotate(1deg);
+        }
+
+        .collage-frame {
+            border: 2px solid var(--punk-black);
+            box-shadow: 6px 6px 0px var(--punk-black);
+            transition: transform 0.3s, box-shadow 0.3s;
+            background: white;
+            margin-bottom: 1rem;
+        }
+        body.dark .collage-frame {
+            background: #1a1a1a;
+            border-color: #333;
+            box-shadow: 6px 6px 0px #000;
+        }
+        
+        .collage-frame:hover {
+            transform: translate(2px, 2px);
+            box-shadow: 3px 3px 0px var(--punk-black);
+        }
+
+        .notice-box {
+            border: 2px dashed var(--punk-black);
+            padding: 1.5rem;
+            background: rgba(255,255,255,0.5);
+            transform: rotate(-0.5deg);
+        }
+        body.dark .notice-box {
+            background: rgba(0,0,0,0.3);
+            border-color: #555;
+        }
+
+        ::selection {
+            background: var(--punk-red);
+            color: white;
+        }
+
+        .theme-toggle {
+            top: 23px;
+            position: fixed;
+            cursor: pointer;
+            padding: 5px;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .theme-toggle:hover {
+            background: var(--punk-black);
+            color: var(--punk-cream);
+        }
+        .theme-toggle svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+        @media (max-width: 767px) {
+			.theme-toggle {
+				position: fixed;
+				top: 14px;
+				right: -2px;
+                align-items: end;
+    			justify-content: right;
+			}
+		}
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+
+    <!-- HEADER -->
+    <header class="max-w-6xl mx-auto mb-12 pb-6 dark:border-white">
+        <div class="flex flex-col md:flex-row justify-between items-center md:items-end gap-6">
+            <div>
+                <h1><a href="./" class="text-4xl md:text-6xl font-bold leading-none">Philippe Petit</a></h1>
+                <p class="text-lg md:text-xl italic mt-2 text-gray-700 bg-black text-white inline-block px-2 dark:bg-red-600">a musical travel-agent</p>
+            </div>
+            
+            <nav>
+                <ul class="flex flex-wrap gap-4 text-sm md:text-base font-bold uppercase justify-center md:justify-end">
+                    <li><a href="biography.html" class="nav-link">Biography</a></li>
+                    <li><a href="modulisme.html" class="nav-link">MODULISME</a></li>
+                    <li><a href="listen.html" class="nav-link active">LISTEN / DISCOG</a></li>
+                    <li><a href="booking.html" class="nav-link">Contact/Booking</a></li>
+					<li><a href="friends.html" class="nav-link">Friends</a></li>
+                    <button id="theme-switcher" class="theme-toggle" title="Switch Theme">
+                        <svg id="sun-icon" class="hidden" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.122-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 14.95a1 1 0 01-1.414 0l-.707-.707a1 1 0 011.414-1.414l.707.707a1 1 0 010 1.414zm-1.414-11.314a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM4 10a1 1 0 00-1-1H2a1 1 0 100 2h1a1 1 0 001-1z"></path></svg>
+                        <svg id="moon-icon" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                    </button>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- MAIN -->
+    <main class="max-w-6xl mx-auto">
+
+        <div class="mb-16 border-4 border-black dark:border-white bg-[var(--punk-cream)] p-6 md:p-8 transform rotate-1 shadow-[8px_8px_0px_var(--punk-black)] transition-transform hover:rotate-0">
+            <div class="flex flex-col md:flex-row gap-8 items-center">
+                
+                <div class="w-full md:w-1/2 collage-frame transform -rotate-2 m-0">
+                    <img src="terrore.jpg" alt="The Acoustic Cornet, an hommage to Leonora Carrington" class="w-full h-auto"> 
+                </div>
+                
+                <div class="w-full md:w-1/2 flex flex-col justify-center">
+                    <h2 class="text-xl md:text-2xl font-bold text-red-600 uppercase mb-2">★★★ New Release ★★★</h2>
+                    <h3 class="punk-title text-3xl md:text-4xl mb-4 leading-none">Terrore Nello Spazio</h3>
+                    <p class="italic text-lg mb-4 bg-black text-white inline-block px-2 self-start dark:bg-red-600">(Sublime Retreat / CD + DL - June 2026)</p>
+                    
+                    <div class="flex gap-4 mb-6">
+                        <a href="https://sublimeretreat.bandcamp.com/album/terrore-nello-spazio" target="_blank" rel="noopener noreferrer" class="nav-link bg-black text-white dark:bg-white dark:text-black border-2 border-black dark:border-white px-4 py-2 font-bold text-lg uppercase hover:bg-red-600 hover:text-white hover:border-red-600 transition-colors">
+                            Discover on Sublime Retreat Bandcamp
+                        </a>
+                    </div>
+
+                    <div class="w-full border-2 border-black dark:border-[#555] p-2 bg-[var(--punk-cream)]">
+                        <iframe style="border: 0; width: 100%; height: 120px;" src="https://bandcamp.com/EmbeddedPlayer/album=4138243256/size=large/bgcol=000000/linkcol=da4444/tracklist=false/artwork=none/transparent=true/" seamless title="Lecteur Audio The Acoustic Cornet"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-16 border-4 border-black dark:border-white bg-[var(--punk-cream)] p-6 md:p-8 transform rotate-2 shadow-[8px_8px_0px_var(--punk-black)] transition-transform hover:rotate-0">
+            <div class="flex flex-col md:flex-row gap-8 items-center">
+                
+                <div class="w-full md:w-1/2 collage-frame transform -rotate-2 m-0">
+                    <img src="mahorka.jpeg" alt="The Acoustic Cornet, an hommage to Leonora Carrington" class="w-full h-auto"> 
+                </div>
+                
+                <div class="w-full md:w-1/2 flex flex-col justify-center">
+                    <h2 class="text-xl md:text-2xl font-bold text-red-600 uppercase mb-2">★★★ New Release ★★★</h2>
+                    <h3 class="punk-title text-3xl md:text-4xl mb-4 leading-none">The Acoustic Cornet, an hommage to Leonora Carrington</h3>
+                    <p class="italic text-lg mb-4 bg-black text-white inline-block px-2 self-start dark:bg-red-600">(Mahorka / MC + Digital - February 2026)</p>
+                    
+                    <div class="flex gap-4 mb-6">
+                        <button id="open-manifesto" class="nav-link bg-black text-white dark:bg-white dark:text-black border-2 border-black dark:border-white px-4 py-2 font-bold text-lg uppercase hover:bg-red-600 hover:text-white hover:border-red-600 transition-colors cursor-pointer transform -rotate-1">
+                            Read about the project
+                        </button>
+                        <a href="https://mahorka.org/release/480" target="_blank" rel="noopener noreferrer" class="nav-link bg-black text-white dark:bg-white dark:text-black border-2 border-black dark:border-white px-4 py-2 font-bold text-lg uppercase hover:bg-red-600 hover:text-white hover:border-red-600 transition-colors">
+                            Discover on Mahorka
+                        </a>
+                    </div>
+
+                    <div class="w-full border-2 border-black dark:border-[#555] p-2 bg-[var(--punk-cream)]">
+                        <iframe style="border: 0; width: 100%; height: 120px;" src="https://bandcamp.com/EmbeddedPlayer/album=3070769914/size=large/bgcol=000000/linkcol=da4444/tracklist=false/artwork=none/transparent=true/" seamless title="Lecteur Audio The Acoustic Cornet"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- IMPORTANT NOTICE BOX -->
+        <div class="notice-box mb-16 text-center">
+            <h2 class="punk-title text-2xl md:text-3xl text-red-600 mb-2">Various Albums Can Be Heard Here</h2>
+            <a href="http://philippepetitamusicaltravel-agent.bandcamp.com/" target="_blank" class="text-lg underline font-bold hover:bg-black hover:text-white px-1">philippepetitamusicaltravel-agent.bandcamp.com</a>
+            
+            <div class="w-24 h-1 bg-black mx-auto my-6 dark:bg-white"></div>
+            
+            <p class="font-bold text-xl uppercase mb-2">Direct Orders Very Welcome</p>
+            <p class="italic text-sm mb-4">Prices below are POSTPAID _ PAYPAL ACCEPTED</p>
+            <div class="inline-block bg-black text-white px-3 py-1 text-sm font-mono dark:bg-zinc-800">
+                paypal: mail [at] philippepetit [dot] info
+            </div>
+        </div>
+
+        <!-- RECENT RELEASES GRID -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 mb-20">
+            
+            <!-- Elegy -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/petit-elegy-digital.jpeg?1755504888" alt="Elegy" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Philippe Petit - Elegy</h3>
+                <p class="text-sm italic mb-2">(I Shall Sing Until My Land Is Free / DL - August 2025)</p>
+                <a href="https://ishallsinguntilmylandisfree.bandcamp.com/album/elegy" class="text-red-600 font-bold text-xs uppercase border-b border-red-600">Listen / Order</a>
+            </article>
+
+            <!-- Closing Our Eyes -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/0039181481-23.jpg?1746390243" alt="Closing Our Eyes" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Philippe Petit - Closing Our Eyes</h3>
+                <p class="text-sm italic mb-2">(Crónica / CD + DL - April 2025)</p>
+            </article>
+
+            <!-- Emperor Tomato Ketchup -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/emperor-tomato.jpg?1746390248" alt="Emperor Tomato Ketchup" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">The Emperor Tomato Ketchup</h3>
+                <p class="text-sm italic mb-2">(Sublime Retreat - CD/DL. March 2025)</p>
+            </article>
+
+             <!-- Sending Feedback -->
+             <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/editor/fmoa16-1.jpg?1740516295" alt="Sending Feedback" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Sending Feedback</h3>
+                <p class="text-sm italic mb-2">(FMOA - February 2025)</p>
+                <a href="https://tbwb.bandcamp.com/album/sending-feedback-fmoa-audio-postcard-series" class="text-red-600 font-bold text-xs uppercase border-b border-red-600">Listen / Order</a>
+            </article>
+
+            <!-- Attractive Apesanteur -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/cronica228-1.png?1740516286" alt="Attractive Apesanteur" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Attractive Apesanteur</h3>
+                <p class="text-sm italic mb-2">(Crónica / DL - December 2024)</p>
+            </article>
+
+            <!-- A Reassuring Elsewhere Chant III -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/a3997979984-10.jpg?1734276924" alt="Chant III" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">A Reassuring Elsewhere - Chant III</h3>
+                <p class="text-sm italic mb-2">(Oscillations Records / CD + DL - November 2024)</p>
+                <p class="font-bold text-red-600">15 euros</p>
+            </article>
+
+            <!-- Dementia -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/editor/session-114-philippe-petit-avec-bandeau.jpg?1729463704" alt="Dementia" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Dementia (Modulisme Session 114)</h3>
+                <p class="text-sm italic mb-2">(Modulisme / DL - October 2024)</p>
+            </article>
+
+            <!-- Passing Thru -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/editor/front-philippe-petit.jpg?1729463687" alt="Passing Thru" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Passing Thru</h3>
+                <p class="text-sm italic mb-2">(Eternal Music Project / Double CD + DL - July 2024)</p>
+                <p class="font-bold text-red-600">20 euros</p>
+                <a href="https://eternalmusicprojects.bandcamp.com/album/passing-thru" class="text-xs uppercase border-b border-black dark:border-white">View on Bandcamp</a>
+            </article>
+
+            <!-- A Divine Comedy -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/divine.jpg?1729463668" alt="Divine Comedy" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">A Divine Comedy</h3>
+                <p class="text-sm italic mb-2">(Crónica / Double CD + DL - February 2024)</p>
+                <p class="font-bold text-red-600">20 euros</p>
+                <a href="https://www.cronicaelectronica.org/212/" class="text-xs uppercase border-b border-black dark:border-white">More Info</a>
+            </article>
+
+             <!-- A Reassuring Elsewhere Chant II -->
+             <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/a-reassuring-elsewhere-2bis.jpg?1712073822" alt="Chant II" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">A Reassuring Elsewhere - Chant II</h3>
+                <p class="text-sm italic mb-2">(Oscillations Records / CD + DL - November 2023)</p>
+                <p class="font-bold text-red-600">15 euros</p>
+                <a href="https://oscillations-music.bandcamp.com/album/a-reassuring-elsewhere-chapter-2" class="text-xs uppercase border-b border-black dark:border-white">Bandcamp</a>
+            </article>
+
+            <!-- Drinking the Acheron -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/cronica204-3-1.jpg?1712073815" alt="Drinking the Acheron" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Drinking the Acheron river at its source</h3>
+                <p class="text-sm italic mb-2">(Crónica / DL - July 2023)</p>
+                <a href="https://www.cronicaelectronica.org/releases/204" class="text-xs uppercase border-b border-black dark:border-white">Info</a>
+            </article>
+
+             <!-- Sleepwatching -->
+             <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/sleepwatching-the-stars-dance-cover-front-ydoph5dtaqzp.jpg?1712073808" alt="Sleepwatching" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Sleepwatching The Stars Dance</h3>
+                <p class="text-sm italic mb-2">(Attenuation-Circuit / CD - February 2023)</p>
+            </article>
+
+             <!-- Guro Skumsnes Moe -->
+             <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/guro-pp.jpg?1674219158" alt="Guro Skumsnes Moe & Philippe Petit" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Guro Skumsnes Moe & Philippe Petit</h3>
+                <p class="text-sm italic mb-2">(Public Eyesore / CD - January 2023)</p>
+                <p class="font-bold text-red-600">15 euros</p>
+            </article>
+
+            <!-- Buchla 200 -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/face20221201-124817.jpg?1670872944" alt="Buchla 200" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Plays The Buchla 200 Music Electric Box</h3>
+                <p class="text-sm italic mb-2">(ERR REC Concr​è​te n​°​1 K7 + DL - December 2022)</p>
+                <a href="https://err-rec.bandcamp.com/album/err-rec-concr-te-n-1-philippe-petit-plays-the-buchla-200-music-electric-box" class="text-xs uppercase border-b border-black dark:border-white">Listen</a>
+            </article>
+
+             <!-- A Reassuring Elsewhere -->
+             <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/a-reassuring-elsewhere.jpg?1673289841" alt="A Reassuring Elsewhere" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">A Reassuring Elsewhere</h3>
+                <p class="text-sm italic mb-2">(Oscillations Records / CD + DL - November 2022)</p>
+                <a href="https://oscillations-music.bandcamp.com/album/a-reassuring-elsewhere-chapter-i-2" class="text-xs uppercase border-b border-black dark:border-white">Listen</a>
+            </article>
+
+            <!-- In A State of Weightlessness -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/cd-cover.jpg?1666560761" alt="Weightlessness" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">In A State of Weightlessness</h3>
+                <p class="text-sm italic mb-2">(Aural Terrains / CD - October 2022)</p>
+                <a href="https://www.auralterrains.com/releases/50" class="text-xs uppercase border-b border-black dark:border-white">Link</a>
+            </article>
+
+             <!-- Michael Schaffer: II -->
+             <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/petit-schaffer-ii-albumcover.jpg?1666560903" alt="Petit & Schaffer: II" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Philippe Petit & Michael Schaffer: II</h3>
+                <p class="text-sm italic mb-2">(CD + DL / Opa-Loka - December 2021)</p>
+                <p class="font-bold text-red-600">15 euros</p>
+            </article>
+
+            <!-- Modulisme 2nd Birthday -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/session-modulisme-51-philippe-petit-cover-avec-bandeau.jpg?1636102675" alt="Modulisme 51" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Modulisme 2nd Birthday - Session #51</h3>
+                <p class="text-sm italic mb-2">(FREE Streaming / MOD 051 - October 2021)</p>
+                <a href="https://modular-station.com/modulisme/session/51/" class="text-xs uppercase border-b border-black dark:border-white">Stream</a>
+            </article>
+
+            <!-- Metalunian -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/front-cover.jpg?1619502296" alt="Metalunian" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Metalunian's Transferance</h3>
+                <p class="text-sm italic mb-2">(DL - Vicmod / April 2021)</p>
+            </article>
+
+            <!-- Neverland -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/a3065649026-16.jpg?1614165367" alt="Neverland" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Neverland… Wonderland EP</h3>
+                <p class="text-sm italic mb-2">(Vinyl - Cyland Archives 49. December 2020)</p>
+            </article>
+
+            <!-- Deeper-Sea Creatures -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/monstre-2-def-2.jpg?1620061871" alt="Deeper Sea" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Deeper-Sea Creatures</h3>
+                <p class="text-sm italic mb-2">(Digital / Muteant Records - December 2020)</p>
+            </article>
+            
+             <!-- Garden Of Earthly Delights -->
+             <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/a1724617425-16.jpg?1620060761" alt="Garden Of Earthly Delights" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">The Garden Of Earthly Delights</h3>
+                <p class="text-sm italic mb-2">(CD - Flag Days / December 2020)</p>
+            </article>
+
+            <!-- A Modern Atlantis -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/tt017-cover.jpg?1614165356" alt="A Modern Atlantis" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">A Modern Atlantis Down Under A Wave Of Greed</h3>
+                <p class="text-sm italic mb-2">(DL - Truth Table - November 2020)</p>
+            </article>
+
+            <!-- Michael Schaffer: I -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/petit-schaffer-albuma-cover.jpg?1614165352" alt="Schaffer I" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Philippe Petit & Michael Schaffer: I</h3>
+                <p class="text-sm italic mb-2">(CD + Digital / Opa-Loka - October 2020)</p>
+                <p class="font-bold text-red-600">15 euros</p>
+            </article>
+
+            <!-- A Space between spaces -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/a3387945114-16.jpg?1614165347" alt="Space between spaces" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">A Space between spaces</h3>
+                <p class="text-sm italic mb-2">(Digital / Ante-Rasa Records. Sept 2020)</p>
+            </article>
+
+             <!-- Deep-Sea Creatures -->
+             <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/deep-sea-creatures.jpg?1614165342" alt="Deep Sea" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Deep-Sea Creatures</h3>
+                <p class="text-sm italic mb-2">(Digital / Muteant Records - August 2020)</p>
+            </article>
+
+            <!-- The Swordfish & The Pearl -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/a1340084090-10.jpg?1614165335" alt="Swordfish" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">The Swordfish & The Pearl</h3>
+                <p class="text-sm italic mb-2">(Bandcamp only)</p>
+            </article>
+
+            <!-- Magical Mystery Ride -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/editor/single-face-logo-dca-edition-0154-phillipe-petit.png?1614165331" alt="Magical Mystery Ride" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Magical Mystery Ride</h3>
+                <p class="text-sm italic mb-2">(Free Streaming / Data Cult Audio #154 - March 2020)</p>
+            </article>
+
+            <!-- Do Humans Dream -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/do-humans-dream-of-electronic-ships-cover.jpg?1614165324" alt="Do Humans Dream" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Do Humans Dream Of Electronic Ships</h3>
+                <p class="text-sm italic mb-2">(CD + Digital / Opa-Loka - February 2020)</p>
+                <p class="font-bold text-red-600">15 euros</p>
+            </article>
+
+            <!-- Rex Maximus -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/a4199591763-10.jpg?1614165319" alt="Rex Maximus" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Philippe Petit / Rex Maximus: split EP</h3>
+                <p class="text-sm italic mb-2">(Vinyl + CD / Sound Crucible - January 2020)</p>
+                <p class="font-bold text-red-600">20 euros</p>
+            </article>
+
+            <!-- Into The Maelstrom -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/into-the-maelstrom-recto-press.jpg?1614165297" alt="Maelstrom" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">A Descent Into The Maëlstrom</h3>
+                <p class="text-sm italic mb-2">(CD + Digital / Opa-Loka - Summer 2019)</p>
+                <p class="font-bold text-red-600">15 euros</p>
+            </article>
+
+            <!-- Martin Dupont -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/cover-web-800x800.jpg?1614165292" alt="Martin Dupont" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">recontextualizes Martin Dupont: War Games EP</h3>
+                <p class="text-sm italic mb-2">(M-Tronic - May 2019)</p>
+            </article>
+
+             <!-- Black Sifichi -->
+             <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/cover.jpg?1614165285" alt="Black Sifichi" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Philippe Petit & Black Sifichi: The Bedded</h3>
+                <p class="text-sm italic mb-2">(M-Tronic / Digital - April 2019)</p>
+            </article>
+
+            <!-- Chapel In The Pines -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/chapel-in-the-pines.jpg?1614165280" alt="Chapel In The Pines" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Eugene S. Robinson & Philippe Petit : Chapel In The Pines</h3>
+                <p class="text-sm italic mb-2">(LP on Blackhouse - September 2018 + CD on Lumberton Trading Co. June 2018)</p>
+            </article>
+
+             <!-- Dagger Moth -->
+             <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/thumbnail-3_1.jpg?1614165275" alt="Dagger Moth" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Dagger Moth & Philippe Petit: Ovaries EP</h3>
+                <p class="text-sm italic mb-2">(LP + Digital / Jelodanti + Atypeek - May 2018)</p>
+            </article>
+
+            <!-- Friends On Top -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/ppf-on-top-f1-12.jpg?1614165272" alt="Friends On Top" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Philippe Petit & Friends: on top...</h3>
+                <p class="text-sm italic mb-2">(LP + CD + Digital / Aagoo Rec. April 2018)</p>
+                <p class="font-bold text-red-600">CD 15 Euros / LP 20 Euros</p>
+            </article>
+            
+            <!-- Buzzing -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/couve.jpg?1614165265" alt="Buzzing" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Buzzing But Not Hung Up On Hip</h3>
+                <p class="text-sm italic mb-2">(Digital / Atypeek - July 2017)</p>
+            </article>
+
+            <!-- Live NY -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/live-in-ny.jpg?1614165261" alt="Live NY" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Live In New York</h3>
+                <p class="text-sm italic mb-2">(CD + Digital - Templo Sagital - January 2017)</p>
+            </article>
+
+             <!-- You Only Live Ice -->
+             <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/3533764.jpg?1614165257" alt="You Only Live Ice" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">You Only Live Ice</h3>
+                <p class="text-sm italic mb-2">(CD / Glacial Movements - May 2016)</p>
+            </article>
+
+             <!-- Ear Me In -->
+             <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/8959435.jpg?1614165252" alt="Ear Me In" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Ear Me In</h3>
+                <p class="text-sm italic mb-2">(CD / Bolt - July 2015)</p>
+                <p class="font-bold text-red-600">15 euros</p>
+            </article>
+
+             <!-- Multicoloured Shadows -->
+             <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/325069.jpg?1614165248" alt="Multicoloured Shadows" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Multicoloured Shadows</h3>
+                <p class="text-sm italic mb-2">(Picture Disc vinyl + CD / Aagoo - June 2015)</p>
+            </article>
+
+            <!-- PAS Musique -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/7408802.jpg?1614165245" alt="PAS Musique" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">PAS Musique & Philippe Petit: s/t</h3>
+                <p class="text-sm italic mb-2">(Double CD - Auricular - October 2014)</p>
+            </article>
+
+            <!-- The Kookabura -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/7180700.jpg?1614165241" alt="Kookabura" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">The Kookabura</h3>
+                <p class="text-sm italic mb-2">(Flamin Pines - June 2014)</p>
+            </article>
+
+            <!-- Edward Ka-Spel -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/2432906.jpg?1614165237" alt="Edward Ka-Spel" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Edward Ka-Spel & Philippe Petit</h3>
+                <p class="text-sm italic mb-2">Are You Receiving Us, Planet Earth ?! (Rustblade - April 2014)</p>
+            </article>
+
+            <!-- Lydia Lunch Voodoo -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/published/5843809.jpg?1614165233" alt="Lydia Lunch" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Lydia Lunch & Philippe Petit: Taste Our Voodoo</h3>
+                <p class="text-sm italic mb-2">(Double LP + Double CD / Rustblade - December 2013)</p>
+            </article>
+
+            <!-- Murcof -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/7932845.jpg?119" alt="Murcof" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Murcof + Philippe Petit: 1st chapter</h3>
+                <p class="text-sm italic mb-2">(LP + CD + Digital / Rev. Lab. - Aagoo - September 2013)</p>
+            </article>
+
+             <!-- Needles In Pain -->
+             <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/3102939.jpg?1369380254" alt="Needles In Pain" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Needles In Pain</h3>
+                <p class="text-sm italic mb-2">(Pict. Disc vinyl album + Digital/ Alrealon Musique - MAY 2013)</p>
+            </article>
+            
+            <!-- Simon Fisher Turner -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/6568552.jpg?117" alt="Simon Fisher Turner" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Simon Fisher Turner & Philippe Petit</h3>
+                <p class="text-sm italic mb-2">A Ti Dou Li Dum A Ti Dou Li Dou Ti Dé (January 2013. CD / HelloSquare)</p>
+            </article>
+
+             <!-- Eugene S. Robinson Last of Dead -->
+             <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/3017041.jpg?118" alt="Eugene S. Robinson" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Eugene S. Robinson & Philippe Petit</h3>
+                <p class="text-sm italic mb-2">Last Of The Dead Hot Lovers (November 2012. LP - CD - Digital / SouthernUK)</p>
+            </article>
+
+             <!-- Lemon Girl Trilogy III -->
+             <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/6856610.jpg?113" alt="Lemon Girl III" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">The Extraordinary Tale Of A Lemon Girl III</h3>
+                <p class="text-sm italic mb-2">Hitch-hiking Thru Bronze Mirrors (October 2012. CD - Digital / Aagoo Rds)</p>
+            </article>
+
+             <!-- Lemon Girl Trilogy II -->
+             <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/6402443.jpg?106" alt="Lemon Girl II" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">The Extraordinary Tale Of A Lemon Girl II</h3>
+                <p class="text-sm italic mb-2">Fire-Walking To Wonderland (June 2012. CD - Digital / Aagoo Rds)</p>
+            </article>
+
+            <!-- Lemon Girl Trilogy I -->
+             <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/9924392.jpg?102" alt="Lemon Girl I" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">The Extraordinary Tale Of A Lemon Girl I</h3>
+                <p class="text-sm italic mb-2">Oneiric Rings On Grey Velvet (January 2012. CD - Digital / Aagoo Rds)</p>
+            </article>
+
+            <!-- ASVA -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/1850132.jpg?105" alt="ASVA" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">ASVA & Philippe Petit: Empires Should Burn</h3>
+                <p class="text-sm italic mb-2">(Small Doses/Basses Fréquences - July 2012)</p>
+                <p class="font-bold text-red-600">15 euros</p>
+            </article>
+
+             <!-- Eugenia -->
+             <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/931417.jpg?98" alt="Eugenia" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Philippe Petit: Eugénia EP</h3>
+                <p class="text-sm italic mb-2">(vinyl 10" + Digital / Alrealon Musique MAY 2012)</p>
+            </article>
+
+             <!-- Una Symphonia Della Paura -->
+             <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/4115897.jpg?103" alt="Una Symphonia Della Paura" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Una Symphonia Della Paura</h3>
+                <p class="text-sm italic mb-2">(Utech Records)</p>
+            </article>
+
+            <!-- Cordophony -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/480551.jpg?103" alt="Cordophony" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Philippe Petit & Friends: Cordophony</h3>
+                <p class="text-sm italic mb-2">(CD / Home Normal - April 2012)</p>
+            </article>
+
+            <!-- Closed Encounters -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/8692924.jpg?1331675905" alt="Closed Encounters" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Closed Encounters of the 4 Minds</h3>
+                <p class="text-sm italic mb-2">Ron Anderson / Robert L. Pepper / David Tamura / Philippe Petit (FEB 2012)</p>
+            </article>
+
+            <!-- Yuri Landman -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/1900544.jpg?106" alt="Yuri Landman" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Yuri Landman Ensemble feat. Jad Fair & Philippe Petit</h3>
+                <p class="text-sm italic mb-2">(April 2012 - LP / Siluh)</p>
+            </article>
+            
+            <!-- Cindytalk 1 -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/5201856.jpg?105" alt="Cindytalk" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Cindytalk & Philippe Petit</h3>
+                <p class="text-sm italic mb-2">(vinyl soundpostcard / Lumberton Trading Co. - January 2012)</p>
+            </article>
+
+             <!-- Eugene Robinson Lot 69 -->
+             <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/6824160.jpg?94" alt="Lot 69" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Eugene Robinson & Philippe Petit: The Crying Of Lot 69</h3>
+                <p class="text-sm italic mb-2">(CD + Digital / Monotype - July 2011)</p>
+            </article>
+
+            <!-- Lydia Lunch In Comfort -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/3496625.jpg?97" alt="In Comfort" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Lydia Lunch & Philippe Petit: In Comfort</h3>
+                <p class="text-sm italic mb-2">(May 2011 - 12" Pict. Disc vinyl)</p>
+            </article>
+
+            <!-- Vultures Qt -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/2880806.jpg?88" alt="Vultures" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Vultures Qt. & Philippe Petit: Tourbillon d'Obscurité</h3>
+                <p class="text-sm italic mb-2">(FEB 2011 - CD + Digital - Sub Rosa)</p>
+            </article>
+
+            <!-- Henry Iron Man -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/5818602.jpg?79" alt="Henry" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Henry: The Iron Man</h3>
+                <p class="text-sm italic mb-2">(JAN 2011 - Vinyl LP + Digital - Aagoo)</p>
+            </article>
+
+            <!-- Lydia Lunch Twist -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/5534441.gif?78" alt="Twist of Fate" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Lydia Lunch & Philippe Petit: Twist Of Fate</h3>
+                <p class="text-sm italic mb-2">(DEC 2010 - CD + DVD + Book / Monotype)</p>
+            </article>
+
+            <!-- Cosey Fanni Tutti -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/886024.jpg?69" alt="Cosey Fanni Tutti" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Cosey Fanni Tutti & Philippe Petit</h3>
+                <p class="text-sm italic mb-2">(OCT 2010 - picture-disc 7' - Dirter)</p>
+            </article>
+
+            <!-- Off To Titan -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/1923135.jpeg?75" alt="Titan" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Off To Titan</h3>
+                <p class="text-sm italic mb-2">a rework of Gustav Mahler's symphonic poem (SEPT 2010 - CD - Karl Rds)</p>
+            </article>
+
+            <!-- Garmambrosia -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/5819052.jpg?82" alt="Garmambrosia" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">A Scent Of Garmambrosia</h3>
+                <p class="text-sm italic mb-2">(MAY 2010 - Double CD + Digital - Aagoo Rds)</p>
+            </article>
+
+            <!-- K11 Haunting -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/2710449.jpg?82" alt="K11" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">The Haunting Triptych</h3>
+                <p class="text-sm italic mb-2">(MARCH 2010 - CD - Boring Machines)</p>
+            </article>
+
+             <!-- Silk Screened -->
+             <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/7187145.jpg?87" alt="Silk Screened" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Philippe Petit & friends : Silk-screened</h3>
+                <p class="text-sm italic mb-2">(JAN 2010 - CD - Trace Recordings)</p>
+            </article>
+
+            <!-- Henry Beta Lactam -->
+            <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/3990713.jpg?83" alt="Henry" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">Henry: The Iron Man</h3>
+                <p class="text-sm italic mb-2">(OCT 2009 - CD - Beta Lactam Ring)</p>
+            </article>
+
+             <!-- James Johnston -->
+             <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/3807514.jpg?86" alt="James Johnston" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">James Johnston & Philippe Petit : fiends with a face</h3>
+                <p class="text-sm italic mb-2">(MAY 2009 - CD - Dirter)</p>
+            </article>
+
+             <!-- reciprocess -->
+             <article>
+                <div class="collage-frame">
+                    <img src="https://philippepetit.weebly.com/uploads/6/1/0/9/6109788/8020823.jpg?96" alt="reciprocess" class="w-full h-auto">
+                </div>
+                <h3 class="punk-title text-xl font-bold">[reciprocess : +/vs.]</h3>
+                <p class="text-sm italic mb-2">(MARCH 2009 - CD - BiP_HOp/The Wire)</p>
+            </article>
+        </div>
+
+        <!-- OTHER SECTIONS (TEXT LISTS) -->
+        <div class="space-y-12 mb-20">
+            
+            <!-- Radio -->
+            <section class="border-l-4 border-black dark:border-white pl-4 md:pl-8">
+                <h2 class="text-4xl punk-title mb-6">Radio Transmission</h2>
+                <ul class="space-y-4 font-bold text-sm md:text-base">
+                    <li><a href="http://radia.fm/2020/11/show-818-what-do-invisible-sounds-fancy-by-philippe-petit-for-radio-panik/">> What do invisible sounds fancy? (RADIA Show 818)</a></li>
+                    <li><a href="http://radia.fm/2018/05/show-684-le-non-lieu-du-reve-by-philippe-petit-radio-panik/">> Le non-lieu du rêve (RADIA Show 684)</a></li>
+                    <li><a href="https://modulisme.info/session/1">> Icarus Lockdown Session (ICARUS Mixtape / May 2021)</a></li>
+                </ul>
+            </section>
+
+             <!-- Video -->
+             <section class="border-l-4 border-black dark:border-white pl-4 md:pl-8">
+                <h2 class="text-4xl punk-title mb-6">Video</h2>
+                <ul class="space-y-4 font-bold text-sm md:text-base">
+                    <li><a href="http://www.playloud.org/lunchpetit.html">> Lydia Lunch & Philippe Petit: Live At Volksbuhne (Play Loud! Live Music Series)</a></li>
+                </ul>
+            </section>
+
+            <!-- Compilations -->
+            <section class="border-l-4 border-black dark:border-white pl-4 md:pl-8">
+                <h2 class="text-4xl punk-title mb-6">Compilations</h2>
+                <ul class="space-y-2 text-xs md:text-sm font-mono leading-tight max-h-96 overflow-y-auto pr-4 custom-scrollbar">
+                    <li>VA. Call & Response Patterns (Frenetik Magic Sounds)</li>
+                    <li>VA. Acoustronique v.1 - v.7 (Modulisme Sessions)</li>
+                    <li>VA. Anti f:Orm vol 11 (God Hates God)</li>
+                    <li>VA. ORAM. An Hommage to Daphne Oram (Institute For Alien Research)</li>
+                    <li>VA. Spirit Voices. An Hommage to Daphne Oram</li>
+                    <li>VA. Daphne Oram</li>
+                    <li>VA. Sonic Pulsatons. An Hommage to Delia Derbyshire</li>
+                    <li>VA. En el fin del mundo, hasta el fin del mundo (Electronic Media Activities)</li>
+                    <li>V.A. April 25th (DL - SIRR)</li>
+                    <li>VA. Concrete Poetry #3</li>
+                    <li>VA. 30 Years of Neural</li>
+                    <li>VA. С​о​л​я​р​и​с</li>
+                    <li>VA. Anti f:Orm 10 (God Hates God)</li>
+                    <li>VA. Condition Report (Thisco)</li>
+                    <li>VA. Metropolis</li>
+                    <li>VA. Buchlaïsms v.1 - v.7</li>
+                    <li>VA. Mixtur - An Hommage to Stockhausen</li>
+                    <li>VA. Anthroprocene Tresholds (IN:EX)</li>
+                    <li>VA. A Plan For Modular Living (Electronic Sound magazine)</li>
+                    <li>V.A. EMERGE 20 (Attenuation Circuit)</li>
+                    <li>V.A. Serge -o- Voxes 5.1 & 5.2</li>
+                    <li>VA. 3 Year Itch Birthday v. 1 - v. 6</li>
+                    <li>VA. An Oblique Reference To Zeros (Fourth Dimension)</li>
+                    <li>VA. For Peace. Against War. Who Is Not?!</li>
+                    <li>VA. Stordeur Tribe (Antenna)</li>
+                    <li>VA. Стоп! (Attenuation Circuit)</li>
+                    <li>VA. A Sonorous Spirit (Treetrunk)</li>
+                    <li>VA. Synthisis Sonoris I & III</li>
+                    <li>VA. Anti f​:​Orm 08</li>
+                    <li>VA. Bioluminescence Pt. 2</li>
+                    <li>VA. Octocorallia (Buried Treasure)</li>
+                    <li>VA. Sonixtualized 1 & 2</li>
+                    <li>VA. Tone Science vol.5 (DIN Rds)</li>
+                    <li>VA. Table of Elements vol. 5.0</li>
+                    <li>VA. Make Noise Manyar</li>
+                    <li>VA. Civil Disobedience pt.3</li>
+                    <li>V.A. Ennio Morricone - Tributes</li>
+                    <li>VA. Musique Concrète For Children</li>
+                    <li>VA. With Love... (Jelodanti)</li>
+                    <li>VA. Intermediale</li>
+                    <li>VA. French Experimental Underground Survey</li>
+                    <li>VA. Alphaville: JLG Tribute</li>
+                    <li>VA. In Tribute to Karl Marx</li>
+                    <li>VA. 300. 30 Years of Atyppek</li>
+                    <li>VA. Hommage to Twin Peaks</li>
+                    <li>VA. In Abyssum</li>
+                    <li>VA. And Suddenly Everything... Was There</li>
+                    <li>VA. Parakustiks #1</li>
+                    <li>VA. Elements I > V (HomeNormal)</li>
+                    <li>VA. ConStates vol. 1</li>
+                    <li>VA. Survey (Classwar Karaoke)</li>
+                    <li>VA. Anyway Your Children Will Deny It</li>
+                    <li>VA. Crystalized. 3 Years Of Comfortzone</li>
+                    <li>VA. Antibothis Volume 4</li>
+                    <li>VA. La Compil à Deux Balles #2</li>
+                    <li>VA. We Are Unique! Is 10</li>
+                    <li>VA. Illàchime Quartet "Sales"</li>
+                    <li>VA. Alrealon 2011 - 2012 Media Sampler</li>
+                    <li>VA. Collection Amplifiée</li>
+                    <li>VA. Just A Moment (Audio Gourmet)</li>
+                    <li>VA. Under A Big Red Sun</li>
+                    <li>VA. One Minute For The Stars</li>
+                    <li>VA. The Wire Tapper 25</li>
+                    <li>VA. Explorer's Club series</li>
+                    <li>VA. Omega Sound Fix</li>
+                    <li>VA. PAS presents: experi-MENTAL vol.1</li>
+                    <li>VA. Avant Garde festival 2009 sampler</li>
+                    <li>VA. Below The Radar volume 4 (The Wire)</li>
+                    <li>VA. Abus Dangereux #114</li>
+                    <li>VA. Lagrimas De Miedo 15</li>
+                    <li>VA. Antibothis compilation vol. 3</li>
+                    <li>VA. Electronic Manifesto vol. 4</li>
+                    <li>VA. Mutant Sounds For Mutant People</li>
+                    <li>VA. Chtonian Music</li>
+                    <li>VA. Music Grows On Trees</li>
+                    <li>VA. Quit Having Fun</li>
+                    <li>VA. Chronik 1</li>
+                    <li>VA. Citysonics 2008</li>
+                    <li>VA. Time Out Of Joint</li>
+                    <li>VA. Electronautes</li>
+                </ul>
+            </section>
+
+            <!-- Appears On -->
+            <section class="border-l-4 border-black dark:border-white pl-4 md:pl-8">
+                <h2 class="text-4xl punk-title mb-6">Appears On</h2>
+                <ul class="space-y-2 text-xs md:text-sm font-mono">
+                    <li>Hervé Zénouda: Micrologies N°1</li>
+                    <li>Sterile Prayer: Accepting The New Normal</li>
+                    <li>Spaceheads: Sun Radar Remixed</li>
+                    <li>European Contemporary Orchestra: Orchestral Manoeuvre In The Sound</li>
+                    <li>European Contemporary Orchestra: E.C.O. On The Beach</li>
+                    <li>Sobaki Tabaka: XX - XXIV</li>
+                    <li>Shhh...: s/t (Thisco)</li>
+                    <li>Anthony Donovan: Elements 01 - 012</li>
+                    <li>Israel Martinez: In Memoriam</li>
+                    <li>TLASILA: The Grief That Shrieked To Multiply</li>
+                    <li>RMEDL / K11: Chtonian Music</li>
+                    <li>The Jeffrey Lee Pierce Sessions Project: The Journey Is Long</li>
+                    <li>Dead Voices On Air: Michael & the angels fought</li>
+                    <li>Simon Whetham: meditations on light</li>
+                    <li>Deison: night sessions</li>
+                    <li>Post Abortion Stress: such things... complete oneself</li>
+                    <li>Klangwart & Philippe Petit : 100 Jahre Einsamket</li>
+                    <li>Klangwart: sommer</li>
+                </ul>
+            </section>
+
+            <!-- Strings of Consciousness -->
+            <section class="border-l-4 border-black dark:border-white pl-4 md:pl-8">
+                <h2 class="text-4xl punk-title mb-6">Strings of Consciousness</h2>
+                <ul class="space-y-2 text-xs md:text-sm font-mono">
+                    <li>Strings of Counsciousness : From Beyond Love (March 2012)</li>
+                    <li>Strings of Counsciousness : Our Moon Is Full (Unreleased)</li>
+                    <li>Strings Of Consciousness & Angel : s/t (Jan 2009)</li>
+                    <li>Strings of Counsciousness : Fantomastique Acoustica (April 2008)</li>
+                    <li>Strings of Counsciousness : Our Moon Is Full (Sept 2007)</li>
+                    <li>Kammerflimmer Kollektiev / Strings Of Consciousness (April 2007)</li>
+                    <li>Strings of Counsciousness : Sonic Glimpses / Sirenade 'Round Midnite</li>
+                </ul>
+            </section>
+
+             <!-- Deviationists -->
+             <section class="border-l-4 border-black dark:border-white pl-4 md:pl-8">
+                <h2 class="text-4xl punk-title mb-6">Deviationists</h2>
+                <ul class="space-y-2 text-xs md:text-sm font-mono">
+                    <li>October 2005 : Pulseprogramming Remix</li>
+                    <li>May 2005 : "Sweetest Charms" on WireTapper 13</li>
+                    <li>February 2005 : Mind The Gap sampler 65</li>
+                </ul>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="max-w-6xl mx-auto mt-24 pt-8 border-t-4 border-black dark:border-white text-xs uppercase font-bold flex flex-wrap justify-between gap-4">
+        <div>&copy; 2026 Philippe Petit</div>
+        <div class="flex gap-6 text-red-600">
+            <a href="https://philippepetitamusicaltravel-agent.bandcamp.com/" target="_blank" class="hover:underline">Bandcamp</a>
+            <a href="https://modulisme.info" class="hover:underline">Modulisme</a>
+        </div>
+    </footer>
+<div id="text-popup" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div id="close-overlay" class="absolute inset-0 bg-black bg-opacity-80 backdrop-blur-sm cursor-pointer"></div>
+        
+        <div class="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-[var(--punk-cream)] text-[var(--punk-black)] border-4 border-black dark:border-white p-6 md:p-10 transform rotate-1 shadow-[12px_12px_0px_var(--punk-red)] custom-scrollbar">
+            
+            <button id="close-popup" class="absolute top-2 right-4 text-4xl font-bold hover:text-red-600 transform hover:rotate-90 transition-transform cursor-pointer leading-none" aria-label="Fermer">
+                &times;
+            </button>
+            
+            <h3 class="punk-title text-2xl md:text-3xl mb-6 text-red-600 border-b-4 border-black dark:border-white pb-2 pr-8">The Acoustic Cornet</h3>
+            
+            <div class="space-y-4 font-bold text-sm md:text-base leading-relaxed whitespace-pre-line">
+                Philippe Petit : The Acoustic Cornet (Mahorka - K7 / DL)
+                (in homage to Leonora Carrington)
+
+                Long before her work was fully seen, Leonora Carrington lived in the margins of Surrealism.
+                First eclipsed by the figure of Max Ernst, then displaced - geographically, symbolically - to Mexico, where her world finally began to unfold. 
+                A world shared with other insurgent imaginations, among them Remedios Varo. A world stubborn, occult, fiercely lucid.
+
+                The Acoustic Cornet takes its title from Carrington’s dark, delirious novel.
+                A book that asks a dangerous question:
+                Do “disturbed” women disturb because they are mad or because they hear too much?
+
+                The story follows Marion Leatherby. Ninety-nine years old. Almost deaf. Living quietly in Mexico, knitting cat hair, listening to the world fade. 
+                Until a gift arrives: an acoustic cornet. 
+                A ridiculous object. 
+                A revelation.
+
+                Through it, Marion overhears what was never meant to be heard.
+                Her family plotting her disappearance.
+                Her future sealed inside a retirement home where nothing is what it claims to be.
+
+                From there, reality fractures.
+
+                Women inhabit houses shaped like igloos, cakes, fantasies.
+                A false doctor presides like a guru.
+                A libidinous abbess watches from the shadows.
+                Architecture bends. Time slips. Staircases multiply.
+                The institution reveals itself as a cosmological trap.
+
+                This album does not retell the story.
+                It listens to it.
+
+                Philippe Petit approaches Carrington’s text as one would approach a signal coming from another frequency. 
+                Fragments. Resonances. Distorted transmissions. 
+                The acoustic cornet becomes a metaphor for listening itself: an instrument that amplifies what society prefers to keep inaudible.
+
+                Here, sound behaves like Carrington’s prose.
+                Absurd, ominous, playful, cruel.
+                A black farce. An initiation.
+                An Alice in Wonderland whose mirror opens onto the occult.
+
+                The music wanders through hidden corridors, riddles, vertiginous descents. It inhabits the space between lucidity and delirium, between laughter and menace. Nothing settles. Everything listens.
+
+                The Acoustic Cornet is not a tribute cast in bronze.
+                It is a continuation.
+                An echo.
+
+                An invitation to lean closer.
+                To hear what was always there.
+
+                And to accept that once you listen this way, there is no going back.
+            </div>
+        </div>
+    </div>
+    <script>
+        const body = document.body;
+        const themeBtn = document.getElementById('theme-switcher');
+        const sunIcon = document.getElementById('sun-icon');
+        const moonIcon = document.getElementById('moon-icon');
+
+        themeBtn.addEventListener('click', () => {
+            body.classList.toggle('dark');
+            const isDark = body.classList.contains('dark');
+            sunIcon.classList.toggle('hidden', !isDark);
+            moonIcon.classList.toggle('hidden', isDark);
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
+
+        if (localStorage.getItem('theme') !== 'light') {
+            body.classList.add('dark');
+            sunIcon.classList.remove('hidden');
+            moonIcon.classList.add('hidden');
+        }
+
+        // PUNK POPUP LOGIC
+        const popup = document.getElementById('text-popup');
+        const openBtn = document.getElementById('open-manifesto');
+        const closeBtn = document.getElementById('close-popup');
+        const overlay = document.getElementById('close-overlay');
+
+        if(openBtn && popup && closeBtn && overlay) {
+            // Ouvrir
+            openBtn.addEventListener('click', () => {
+                popup.classList.remove('hidden');
+                document.body.style.overflow = 'hidden'; // Empêche le scroll de la page derrière
+            });
+
+            // Fermer avec la croix
+            closeBtn.addEventListener('click', () => {
+                popup.classList.add('hidden');
+                document.body.style.overflow = 'auto'; // Réactive le scroll
+            });
+
+            // Fermer en cliquant à côté (sur le fond noir)
+            overlay.addEventListener('click', () => {
+                popup.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            });
+            
+            // Fermer avec la touche Echap
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !popup.classList.contains('hidden')) {
+                    popup.classList.add('hidden');
+                    document.body.style.overflow = 'auto';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

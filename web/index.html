@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NADAPROD — Éditeur de blocs Tailwind</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        display: ['"Space Grotesk"', 'sans-serif'],
+        sans: ['Inter', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'monospace'],
+      },
+      colors: {
+        ink:   { 950:'#07090D', 900:'#0A0C11', 850:'#0E1117', 800:'#131722', 700:'#1C2230', 600:'#2A3245', 400:'#5C687F', 300:'#8A94A8', 200:'#B9C0CF', 100:'#E7EAF1' },
+        vio:   { 500:'#8B5CF6', 400:'#A78BFA', 600:'#7C3AED' },
+      }
+    }
+  }
+}
+</script>
+<style type="text/tailwindcss">
+  @layer utilities {
+    .canvas-dots { background-image: radial-gradient(circle, #1C2230 1px, transparent 1px); background-size: 22px 22px; }
+    .scrollbar-thin::-webkit-scrollbar { width: 8px; height: 8px; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: #2A3245; border-radius: 8px; }
+    .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+  }
+</style>
+</head>
+<body class="h-full bg-ink-950 text-ink-100 font-sans antialiased overflow-hidden select-none">
+
+<div class="h-full flex flex-col">
+
+  <!-- ══════════ Barre supérieure ══════════ -->
+  <header class="h-14 shrink-0 flex items-center gap-4 px-4 border-b border-ink-700 bg-ink-900">
+    <div class="flex items-center gap-2.5">
+      <div class="leading-none">
+        <a href="/sites" class="font-display font-700 font-bold text-[15px] tracking-tight hover:opacity-90"><img src="/gfx/logo.png" class="h-9" /></a>
+      </div>
+    </div>
+
+    <!-- Bascule d'aperçu -->
+    <div class="mx-auto flex items-center gap-1 rounded-lg bg-ink-800 p-1 border border-ink-700" role="group" aria-label="Largeur d'aperçu">
+      <button data-vp="desktop" class="vp-btn px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 text-ink-300 hover:text-ink-100" title="Bureau">
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4" stroke-linecap="round"/></svg>Bureau
+      </button>
+      <button data-vp="tablet" class="vp-btn px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 text-ink-300 hover:text-ink-100" title="Tablette">
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01" stroke-linecap="round"/></svg>Tablette
+      </button>
+      <button data-vp="mobile" class="vp-btn px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 text-ink-300 hover:text-ink-100" title="Mobile">
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="2" width="8" height="20" rx="2"/><path d="M12 18h.01" stroke-linecap="round"/></svg>Mobile
+      </button>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <a href="/sites" class="h-9 px-3 rounded-lg text-xs font-medium text-ink-300 hover:text-ink-100 hover:bg-ink-800 flex items-center gap-1.5">
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3Z"/></svg>Sites importés
+      </a>
+      <button id="btnCopyPage" class="h-9 px-3 rounded-lg text-xs font-medium border border-ink-600 text-ink-200 hover:bg-ink-800 flex items-center gap-1.5">
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copier la page
+      </button>
+      <button id="btnExport" class="h-9 px-4 rounded-lg text-xs font-semibold bg-gradient-to-r from-vio-600 to-indigo-600 hover:from-vio-500 hover:to-indigo-500 text-white flex items-center gap-1.5 shadow-lg shadow-vio-600/20">
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke-linecap="round" stroke-linejoin="round"/></svg>Exporter le HTML
+      </button>
+    </div>
+  </header>
+
+  <div class="flex-1 flex min-h-0">
+
+    <!-- ══════════ Rail gauche : blocs + structure ══════════ -->
+    <aside class="w-64 shrink-0 border-r border-ink-700 bg-ink-900 flex flex-col min-h-0">
+      <div class="p-3 border-b border-ink-700">
+        <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 mb-2">Ajouter un bloc</p>
+        <div id="palette" class="grid grid-cols-2 gap-1.5"><!-- rempli via /api/blocks --></div>
+      </div>
+      <div class="flex-1 min-h-0 flex flex-col">
+        <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 px-3 pt-3 pb-2">Structure de la page</p>
+        <div id="structure" class="flex-1 overflow-y-auto scrollbar-thin px-3 pb-3 space-y-1.5"></div>
+      </div>
+    </aside>
+
+    <!-- ══════════ Canvas central ══════════ -->
+    <main class="flex-1 min-w-0 canvas-dots bg-ink-950 relative flex flex-col">
+      <div class="flex-1 min-h-0 overflow-auto scrollbar-thin p-6 grid place-items-start justify-center">
+        <div id="frameShell" class="transition-all duration-300 w-full max-w-full rounded-xl overflow-hidden ring-1 ring-ink-700 shadow-2xl shadow-black/50 bg-white" style="height: calc(100vh - 8.5rem);">
+          <iframe id="preview" title="Aperçu de la page" class="w-full h-full bg-white"></iframe>
+        </div>
+      </div>
+      <div id="emptyState" class="absolute inset-0 grid place-items-center pointer-events-none">
+        <div class="text-center max-w-sm">
+          <div class="mx-auto h-12 w-12 rounded-2xl border border-dashed border-ink-600 grid place-items-center mb-4">
+            <svg class="h-5 w-5 text-ink-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+          </div>
+          <p class="font-display font-semibold text-ink-200">Votre page est vide</p>
+          <p class="text-sm text-ink-400 mt-1">Ajoutez un bloc depuis le rail de gauche, puis décrivez-le pour le générer avec l'IA.</p>
+        </div>
+      </div>
+    </main>
+
+    <!-- ══════════ Panneau droit : générateur du bloc ══════════ -->
+    <aside id="rightPanel" class="w-[22.5rem] shrink-0 border-l border-ink-700 bg-ink-900 flex flex-col min-h-0 transition-all duration-300">
+      <!-- Onglets -->
+      <div class="shrink-0 flex border-b border-ink-700">
+        <button data-tab="generate" class="tab-btn flex-1 h-11 text-xs font-semibold border-b-2">Générer</button>
+        <button data-tab="code" class="tab-btn flex-1 h-11 text-xs font-semibold border-b-2">Code</button>
+        <button data-tab="brand" class="tab-btn flex-1 h-11 text-xs font-semibold border-b-2">Marque</button>
+      </div>
+
+      <div class="flex-1 min-h-0 overflow-y-auto scrollbar-thin">
+
+        <!-- Onglet Générer -->
+        <section id="tab-generate" class="p-4 space-y-4">
+          <div id="noSelection" class="text-sm text-ink-400 border border-dashed border-ink-600 rounded-xl p-4">
+            Sélectionnez un bloc dans la structure (ou ajoutez-en un) pour ouvrir son générateur spécialisé.
+          </div>
+          <div id="generator" class="hidden space-y-4">
+            <div>
+              <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400">Générateur spécialisé</p>
+              <p id="genBlockLabel" class="font-display font-semibold text-lg tracking-tight mt-0.5"></p>
+              <p id="genBlockDesc" class="text-xs text-ink-400 mt-0.5"></p>
+            </div>
+            <div>
+              <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 mb-2">Suggestions</p>
+              <div id="presets" class="space-y-1.5"></div>
+            </div>
+            <div>
+              <label for="promptInput" class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2">Votre brief</label>
+              <textarea id="promptInput" rows="4" placeholder="Ex. : un header sombre pour une startup SaaS, accent violet en dégradé, CTA « Commencer »…"
+                class="w-full rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm p-3 placeholder:text-ink-400/70 resize-y select-text"></textarea>
+            </div>
+            <button id="btnGenerate" class="w-full h-11 rounded-xl bg-gradient-to-r from-vio-600 to-indigo-600 hover:from-vio-500 hover:to-indigo-500 text-white text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shadow-vio-600/25 disabled:opacity-60 disabled:cursor-wait">
+              <svg id="genIcon" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.7 4.6L18 9l-4.3 1.4L12 15l-1.7-4.6L6 9l4.3-1.4L12 3ZM19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15ZM5 16l.6 1.7L7 18l-1.4.6L5 20l-.6-1.4L3 18l1.4-.3L5 16Z" stroke-linejoin="round"/></svg>
+              <svg id="genSpin" class="h-4 w-4 animate-spin hidden" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.25" stroke-width="3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+              <span id="genLabel">Générer ce bloc</span>
+            </button>
+            <p id="genMeta" class="text-[11px] font-mono text-ink-400 text-center hidden"></p>
+            <p class="text-[11px] text-ink-400 leading-relaxed">Le bloc existant est envoyé comme contexte : écrivez une retouche (« passe le fond en clair ») pour itérer plutôt que repartir de zéro.</p>
+          </div>
+        </section>
+
+        <!-- Onglet Code -->
+        <section id="tab-code" class="p-4 space-y-3 hidden">
+          <div id="noCode" class="text-sm text-ink-400 border border-dashed border-ink-600 rounded-xl p-4">Aucun bloc sélectionné.</div>
+          <div id="codePanel" class="hidden space-y-3">
+            <div class="flex items-center justify-between">
+              <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400">HTML du bloc</p>
+              <div class="flex items-center gap-3">
+                <button id="btnExpandCode" class="text-xs font-medium text-ink-300 hover:text-ink-100 flex items-center gap-1">
+                  <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" stroke-linecap="round" stroke-linejoin="round"/></svg>Agrandir
+                </button>
+                <button id="btnCopyBlock" class="text-xs font-medium text-ink-300 hover:text-ink-100 flex items-center gap-1">
+                  <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copier
+                </button>
+              </div>
+            </div>
+            <!-- Zone de repli tant que Monaco n'est pas chargé (ou si le CDN est indisponible) -->
+            <textarea id="codeEditor" rows="18" spellcheck="false"
+              class="w-full rounded-xl bg-ink-850 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none font-mono text-[11px] leading-relaxed p-3 text-ink-200 resize-y select-text"></textarea>
+            <div id="codeMonaco" class="hidden h-[60vh] min-h-[16rem] rounded-xl overflow-hidden border border-ink-600 select-text"></div>
+            <button id="btnApplyCode" class="w-full h-10 rounded-xl border border-ink-600 hover:bg-ink-800 text-sm font-medium">Appliquer à l'aperçu</button>
+          </div>
+        </section>
+
+        <!-- Onglet Marque -->
+        <section id="tab-brand" class="p-4 space-y-4 hidden">
+          <p class="text-xs text-ink-400 leading-relaxed">Ce contexte est transmis à chaque génération pour garder la page cohérente.</p>
+          <div>
+            <label class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" for="brandName">Nom du produit</label>
+            <input id="brandName" placeholder="Ex. : Nébula" class="w-full h-10 rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm px-3 select-text">
+          </div>
+          <div>
+            <label class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" for="brandColors">Palette</label>
+            <input id="brandColors" placeholder="Ex. : fond sombre #0B0D12, accent violet #8B5CF6" class="w-full h-10 rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm px-3 select-text">
+          </div>
+          <div>
+            <label class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" for="brandTone">Ton & secteur</label>
+            <input id="brandTone" placeholder="Ex. : SaaS B2B, moderne, direct" class="w-full h-10 rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm px-3 select-text">
+          </div>
+        </section>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 translate-y-16 opacity-0 transition-all duration-300 z-50 pointer-events-none">
+  <div class="px-4 py-2.5 rounded-xl bg-ink-800 border border-ink-600 text-sm shadow-2xl flex items-center gap-2">
+    <span id="toastDot" class="h-2 w-2 rounded-full bg-emerald-400"></span><span id="toastMsg"></span>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* ───────────────────── État ───────────────────── */
+const S = {
+  catalog: [],                    // catalogue des blocs venant du backend
+  page: [],                       // [{ id, type, html, prompt }]
+  selectedId: null,
+  viewport: 'desktop',
+  generating: false,
+};
+const VP_WIDTH = { desktop: '100%', tablet: '768px', mobile: '390px' };
+const uid = () => 'b' + Math.random().toString(36).slice(2, 9);
+const $  = (sel) => document.querySelector(sel);
+
+const ICONS = {
+  'layout-top':    '<rect x="3" y="4" width="18" height="4" rx="1"/><rect x="3" y="11" width="18" height="9" rx="1" opacity=".35"/>',
+  'sparkles':      '<path d="M12 4l1.5 4L18 9.5 13.5 11 12 15l-1.5-4L6 9.5 10.5 8 12 4Z"/><path d="M19 15l.7 1.8L21.5 17.5l-1.8.7L19 20l-.7-1.8-1.8-.7 1.8-.7L19 15Z"/>',
+  'grid':          '<rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/>',
+  'credit-card':   '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/>',
+  'quote':         '<path d="M8 11c0-3 2-5 5-5M8 11v5H4v-5h4ZM17 11c0-3 2-5 5-5M17 11v5h-4v-5h4Z" transform="scale(0.85) translate(2 2)"/>',
+  'help':          '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.4 2.3c-.8.3-.9 1-.9 1.7M12 17h.01"/>',
+  'megaphone':     '<path d="M3 11l14-6v14L3 13v-2ZM17 8a4 4 0 0 1 0 8M7 13v5a2 2 0 0 0 4 0v-4"/>',
+  'layout-bottom': '<rect x="3" y="4" width="18" height="9" rx="1" opacity=".35"/><rect x="3" y="16" width="18" height="4" rx="1"/>',
+};
+const icon = (name, cls='h-4 w-4') =>
+  `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round">${ICONS[name]||ICONS.grid}</svg>`;
+
+/* Squelette de bloc affiché avant génération */
+const skeleton = (label) => `
+<section class="border-2 border-dashed border-slate-300 bg-slate-50 py-16">
+  <div class="max-w-7xl mx-auto px-6 text-center">
+    <p class="text-xs font-semibold uppercase tracking-widest text-slate-400">${label}</p>
+    <p class="mt-2 text-sm text-slate-400">Bloc en attente de génération — décrivez-le dans le panneau de droite.</p>
+  </div>
+</section>`;
+
+/* ───────────────────── Persistance ───────────────────── */
+function save() {
+  try {
+    localStorage.setItem('windpage', JSON.stringify({
+      page: S.page,
+      brand: { name: $('#brandName').value, colors: $('#brandColors').value, tone: $('#brandTone').value },
+    }));
+  } catch (_) {}
+}
+function restore() {
+  try {
+    const d = JSON.parse(localStorage.getItem('windpage') || 'null');
+    if (!d) return;
+    S.page = d.page || [];
+    if (d.brand) {
+      $('#brandName').value = d.brand.name || '';
+      $('#brandColors').value = d.brand.colors || '';
+      $('#brandTone').value = d.brand.tone || '';
+    }
+    if (S.page.length) S.selectedId = S.page[0].id;
+  } catch (_) {}
+}
+
+/* ───────────────────── Rendu ───────────────────── */
+function specOf(type){ return S.catalog.find(c => c.type === type); }
+function selected(){ return S.page.find(b => b.id === S.selectedId) || null; }
+
+function renderPalette() {
+  $('#palette').innerHTML = S.catalog.filter(c => !c.hidden).map(c => `
+    <button data-add="${c.type}" title="${c.description}"
+      class="group flex flex-col items-start gap-1.5 rounded-xl border border-ink-700 bg-ink-850 hover:border-vio-500/60 hover:bg-ink-800 p-2.5 text-left transition-colors">
+      <span class="text-vio-400 group-hover:text-vio-400">${icon(c.icon)}</span>
+      <span class="text-[11px] font-medium text-ink-200 leading-tight">${c.label}</span>
+    </button>`).join('');
+}
+
+function renderStructure() {
+  const el = $('#structure');
+  if (!S.page.length) {
+    el.innerHTML = `<p class="text-xs text-ink-400 px-1">Aucun bloc pour l'instant.</p>`;
+    return;
+  }
+  el.innerHTML = S.page.map((b, i) => {
+    const c = specOf(b.type) || { label: b.type, icon: 'grid' };
+    const sel = b.id === S.selectedId;
+    return `
+    <div data-sel="${b.id}" class="group relative flex items-center gap-2 rounded-xl border p-2 cursor-pointer transition-colors
+        ${sel ? 'border-vio-500/70 bg-vio-500/10' : 'border-ink-700 bg-ink-850 hover:border-ink-600'}">
+      <span class="absolute left-0 top-2 bottom-2 w-0.5 rounded-full ${sel ? 'bg-vio-500' : 'bg-transparent'}"></span>
+      <span class="${sel ? 'text-vio-400' : 'text-ink-400'} pl-1">${icon(c.icon)}</span>
+      <div class="flex-1 min-w-0">
+        <p class="text-xs font-medium truncate ${sel ? 'text-ink-100' : 'text-ink-200'}">${c.label}</p>
+        <p class="text-[10px] font-mono ${b.html ? 'text-emerald-400/80' : 'text-ink-400'}">${b.html ? 'généré' : 'vide'}</p>
+      </div>
+      <div class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button data-up="${b.id}" ${i===0?'disabled':''} class="p-1 rounded hover:bg-ink-700 disabled:opacity-30" title="Monter" aria-label="Monter le bloc">
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5m0 0-6 6m6-6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button data-down="${b.id}" ${i===S.page.length-1?'disabled':''} class="p-1 rounded hover:bg-ink-700 disabled:opacity-30" title="Descendre" aria-label="Descendre le bloc">
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14m0 0 6-6m-6 6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button data-del="${b.id}" class="p-1 rounded hover:bg-red-500/20 text-red-400" title="Supprimer" aria-label="Supprimer le bloc">
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-9 0 1 13h8l1-13" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function pageHTML(forExport = false) {
+  const body = S.page.map(b => b.html || (forExport ? '' : skeleton((specOf(b.type)||{label:b.type}).label))).join('\n\n');
+  return `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${$('#brandName').value || 'Ma page'} — générée avec NADAPROD</title>
+<script src="https://cdn.tailwindcss.com"><\/script>
+</head>
+<body class="antialiased">
+${body}
+</body>
+</html>`;
+}
+
+function renderPreview() {
+  $('#preview').srcdoc = pageHTML(false);
+  $('#emptyState').classList.toggle('hidden', S.page.length > 0);
+}
+
+function renderInspector() {
+  const b = selected();
+  const has = !!b;
+  $('#noSelection').classList.toggle('hidden', has);
+  $('#generator').classList.toggle('hidden', !has);
+  $('#noCode').classList.toggle('hidden', has);
+  $('#codePanel').classList.toggle('hidden', !has);
+  if (!b) return;
+  const c = specOf(b.type) || { label: b.type, description: '', presets: [] };
+  $('#genBlockLabel').textContent = c.label;
+  $('#genBlockDesc').textContent = c.description;
+  $('#promptInput').value = b.prompt || '';
+  $('#presets').innerHTML = (c.presets || []).map(p => `
+    <button data-preset class="w-full text-left text-xs rounded-lg border border-ink-700 bg-ink-850 hover:border-vio-500/50 hover:bg-ink-800 px-3 py-2 text-ink-300 hover:text-ink-100 transition-colors">${p}</button>`).join('');
+  setCode(b.html || '');
+}
+
+function renderViewport() {
+  document.querySelectorAll('.vp-btn').forEach(btn => {
+    const on = btn.dataset.vp === S.viewport;
+    btn.classList.toggle('bg-ink-700', on);
+    btn.classList.toggle('text-ink-100', on);
+  });
+  const shell = $('#frameShell');
+  shell.style.width = VP_WIDTH[S.viewport];
+  shell.style.maxWidth = '100%';
+}
+
+function renderAll(){ renderStructure(); renderPreview(); renderInspector(); save(); }
+
+/* ───────────────────── Toast ───────────────────── */
+let toastTimer;
+function toast(msg, ok = true) {
+  $('#toastMsg').textContent = msg;
+  $('#toastDot').className = 'h-2 w-2 rounded-full ' + (ok ? 'bg-emerald-400' : 'bg-red-400');
+  const t = $('#toast');
+  t.classList.remove('translate-y-16','opacity-0');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.add('translate-y-16','opacity-0'), 3200);
+}
+
+/* ───────────────────── Actions ───────────────────── */
+function addBlock(type) {
+  const b = { id: uid(), type, html: '', prompt: '' };
+  S.page.push(b);
+  S.selectedId = b.id;
+  renderAll();
+  switchTab('generate');
+  $('#promptInput').focus();
+}
+
+async function generate() {
+  const b = selected();
+  if (!b || S.generating) return;
+  b.prompt = $('#promptInput').value.trim();
+
+  S.generating = true;
+  $('#btnGenerate').disabled = true;
+  $('#genIcon').classList.add('hidden');
+  $('#genSpin').classList.remove('hidden');
+  $('#genLabel').textContent = 'Génération en cours…';
+  $('#genMeta').classList.add('hidden');
+
+  try {
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        block: b.type,
+        prompt: b.prompt,
+        current_html: b.html,
+        brand: { name: $('#brandName').value, colors: $('#brandColors').value, tone: $('#brandTone').value },
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || ('Erreur ' + res.status));
+    b.html = data.html;
+    renderAll();
+    $('#genMeta').textContent = `${data.model} · ${(data.elapsed_ms/1000).toFixed(1)} s`;
+    $('#genMeta').classList.remove('hidden');
+    toast('Bloc généré');
+  } catch (err) {
+    toast(err.message || 'La génération a échoué', false);
+  } finally {
+    S.generating = false;
+    $('#btnGenerate').disabled = false;
+    $('#genIcon').classList.remove('hidden');
+    $('#genSpin').classList.add('hidden');
+    $('#genLabel').textContent = 'Générer ce bloc';
+  }
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(t => {
+    const on = t.dataset.tab === name;
+    t.classList.toggle('border-vio-500', on);
+    t.classList.toggle('text-ink-100', on);
+    t.classList.toggle('border-transparent', !on);
+    t.classList.toggle('text-ink-400', !on);
+  });
+  ['generate','code','brand'].forEach(n => $('#tab-'+n).classList.toggle('hidden', n !== name));
+  if (name === 'code') mountCodeEditor(); // Monaco monté au premier passage sur l'onglet
+}
+
+/* ───────────────────── Éditeur de code (Monaco, chargé à la demande) ───────────────────── */
+const MONACO_CDN = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min';
+let monacoP = null;
+function loadMonaco() {
+  if (monacoP) return monacoP;
+  monacoP = new Promise((resolve, reject) => {
+    // Les workers Monaco ne se chargent pas cross-origin : on passe par un blob-proxy.
+    window.MonacoEnvironment = {
+      getWorkerUrl: () => URL.createObjectURL(new Blob(
+        ["self.MonacoEnvironment={baseUrl:'" + MONACO_CDN + "/'};importScripts('" + MONACO_CDN + "/vs/base/worker/workerMain.js');"],
+        { type: 'text/javascript' }
+      )),
+    };
+    const s = document.createElement('script');
+    s.src = MONACO_CDN + '/vs/loader.js';
+    s.onload = () => {
+      window.require.config({ paths: { vs: MONACO_CDN + '/vs' } });
+      window.require(['vs/editor/editor.main'], () => {
+        monaco.editor.defineTheme('nadaprod', {
+          base: 'vs-dark', inherit: true, rules: [],
+          colors: {
+            'editor.background': '#0E1117',
+            'editor.lineHighlightBackground': '#131722',
+            'editorGutter.background': '#0E1117',
+            'editorLineNumber.foreground': '#5C687F',
+            'editor.selectionBackground': '#2A3245',
+            'editorWidget.background': '#131722',
+            'editorCursor.foreground': '#A78BFA',
+          },
+        });
+        resolve(window.monaco);
+      });
+    };
+    s.onerror = () => { monacoP = null; reject(new Error('CDN Monaco inaccessible')); };
+    document.head.appendChild(s);
+  });
+  return monacoP;
+}
+
+let codeMonaco = null;        // instance Monaco (null ⇒ repli textarea)
+let mountingCode = false;
+function getCode() { return codeMonaco ? codeMonaco.getValue() : $('#codeEditor').value; }
+function setCode(v) {
+  if (codeMonaco) { if (codeMonaco.getValue() !== v) codeMonaco.setValue(v); }
+  else $('#codeEditor').value = v;
+}
+
+async function mountCodeEditor() {
+  if (codeMonaco || mountingCode) return;
+  mountingCode = true;
+  try {
+    const monaco = await loadMonaco();
+    const host = $('#codeMonaco');
+    host.classList.remove('hidden');
+    codeMonaco = monaco.editor.create(host, {
+      value: $('#codeEditor').value, language: 'html', theme: 'nadaprod',
+      automaticLayout: true, minimap: { enabled: false }, wordWrap: 'on',
+      fontSize: 12, fontFamily: '"JetBrains Mono", monospace', tabSize: 2,
+      scrollBeyondLastLine: false, padding: { top: 10 },
+    });
+    codeMonaco.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => $('#btnApplyCode').click());
+    $('#codeEditor').classList.add('hidden');
+  } catch (_) {
+    toast('Éditeur Monaco indisponible — zone de texte simple conservée', false);
+  } finally {
+    mountingCode = false;
+  }
+}
+
+/* ───────────────────── Écouteurs ───────────────────── */
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('[data-add],[data-sel],[data-up],[data-down],[data-del],[data-preset],.tab-btn,.vp-btn');
+  if (!t) return;
+
+  if (t.dataset.add) return addBlock(t.dataset.add);
+  if (t.dataset.up || t.dataset.down) {
+    const id = t.dataset.up || t.dataset.down;
+    const i = S.page.findIndex(b => b.id === id);
+    const j = t.dataset.up ? i - 1 : i + 1;
+    if (j < 0 || j >= S.page.length) return;
+    [S.page[i], S.page[j]] = [S.page[j], S.page[i]];
+    return renderAll();
+  }
+  if (t.dataset.del) {
+    S.page = S.page.filter(b => b.id !== t.dataset.del);
+    if (S.selectedId === t.dataset.del) S.selectedId = S.page[0]?.id || null;
+    return renderAll();
+  }
+  if (t.dataset.sel) { S.selectedId = t.dataset.sel; return renderAll(); }
+  if (t.hasAttribute('data-preset')) { $('#promptInput').value = t.textContent.trim(); $('#promptInput').focus(); return; }
+  if (t.classList.contains('tab-btn')) return switchTab(t.dataset.tab);
+  if (t.classList.contains('vp-btn')) { S.viewport = t.dataset.vp; return renderViewport(); }
+});
+
+$('#btnGenerate').addEventListener('click', generate);
+$('#promptInput').addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') generate();
+});
+$('#btnApplyCode').addEventListener('click', () => {
+  const b = selected(); if (!b) return;
+  b.html = getCode();
+  renderAll(); toast('Code appliqué à l\u2019aperçu');
+});
+$('#btnExpandCode').addEventListener('click', () => {
+  const panel = $('#rightPanel');
+  const wide = panel.classList.toggle('w-[44rem]');
+  panel.classList.toggle('w-[22.5rem]', !wide);
+  $('#btnExpandCode').lastChild.textContent = wide ? 'Réduire' : 'Agrandir';
+});
+$('#btnCopyBlock').addEventListener('click', async () => {
+  const b = selected(); if (!b) return;
+  await navigator.clipboard.writeText(b.html || '');
+  toast('HTML du bloc copié');
+});
+$('#btnCopyPage').addEventListener('click', async () => {
+  await navigator.clipboard.writeText(pageHTML(true));
+  toast('Page complète copiée');
+});
+$('#btnExport').addEventListener('click', () => {
+  const blob = new Blob([pageHTML(true)], { type: 'text/html' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (($('#brandName').value || 'page').toLowerCase().replace(/\s+/g,'-')) + '.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('Fichier HTML exporté');
+});
+['brandName','brandColors','brandTone'].forEach(id => $('#'+id).addEventListener('input', save));
+
+/* ───────────────────── Démarrage ───────────────────── */
+(async function init() {
+  try {
+    const [blocks, health] = await Promise.all([
+      fetch('/api/blocks').then(r => r.json()),
+      fetch('/api/health').then(r => r.json()).catch(() => null),
+    ]);
+    S.catalog = blocks;
+    if (health?.model) $('#modelBadge').textContent = health.model;
+  } catch (_) {
+    toast('Impossible de joindre le backend (/api/blocks)', false);
+  }
+  restore();
+  renderPalette();
+  renderViewport();
+  switchTab('generate');
+  renderAll();
+})();
+</script>
+</body>
+</html>
