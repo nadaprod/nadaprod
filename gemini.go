@@ -78,8 +78,9 @@ func (g *GeminiClient) GenerateBlock(ctx context.Context, spec BlockSpec, req Ge
 
 	url := fmt.Sprintf(geminiEndpoint, g.model)
 
+	const maxAttempts = 2 // 1 retry sur erreur transitoire
 	var lastErr error
-	for attempt := 0; attempt < 2; attempt++ { // 1 retry sur erreur transitoire
+	for attempt := 0; attempt < maxAttempts; attempt++ {
 		httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(raw))
 		if err != nil {
 			return "", err
@@ -101,7 +102,13 @@ func (g *GeminiClient) GenerateBlock(ctx context.Context, spec BlockSpec, req Ge
 
 		if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode >= 500 {
 			lastErr = fmt.Errorf("gemini %d : %s", resp.StatusCode, truncate(string(data), 300))
-			time.Sleep(time.Duration(attempt+1) * time.Second)
+			if attempt+1 < maxAttempts { // pas d'attente après la dernière tentative
+				select {
+				case <-ctx.Done():
+					return "", ctx.Err()
+				case <-time.After(time.Duration(attempt+1) * time.Second):
+				}
+			}
 			continue
 		}
 
@@ -177,8 +184,9 @@ func cleanHTML(s string) string {
 }
 
 func truncate(s string, n int) string {
-	if len(s) <= n {
+	r := []rune(s) // tronquer en runes : ne jamais couper un caractère UTF-8
+	if len(r) <= n {
 		return s
 	}
-	return s[:n] + "…"
+	return string(r[:n]) + "…"
 }

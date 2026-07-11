@@ -135,7 +135,13 @@ func main() {
 	}
 
 	r.NoRoute(func(c *gin.Context) {
-		c.File("./web/404.html") 
+		// c.File passerait par http.ServeFile qui force un statut 200.
+		page, err := os.ReadFile("./web/404.html")
+		if err != nil {
+			c.String(http.StatusNotFound, "404 — page introuvable")
+			return
+		}
+		c.Data(http.StatusNotFound, "text/html; charset=utf-8", page)
 	})
 
 	addr := os.Getenv("ADDR")

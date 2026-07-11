@@ -112,6 +112,8 @@ tailwind.config = { theme: { extend: {
 <script>
 'use strict';
 const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let sitesCache = []; // dernier GET /api/sites — évite de faire transiter pages/domain par le DOM
 const S = {
   siteId: null, page: null, domain: '', dirty: false, hasSelection: false, aiBusy: false, saveResolve: null,
   mode: 'visual',     // 'visual' (IA) ou 'code' (Monaco)
@@ -172,18 +174,19 @@ function toast(msg, ok = true) {
 /* ───────── Vue liste ───────── */
 async function loadSites() {
   const sites = await fetch('/api/sites').then(r => r.json()).catch(() => []);
+  sitesCache = sites;
   $('#siteList').innerHTML = sites.length ? sites.map(s => `
     <div class="rounded-2xl border border-ink-700 bg-ink-900 p-4 flex items-center gap-4">
       <div class="h-10 w-10 rounded-xl bg-ink-800 grid place-items-center shrink-0">
         <svg class="h-5 w-5 text-vio-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3Z"/></svg>
       </div>
       <div class="flex-1 min-w-0">
-        <p class="font-display font-semibold truncate">${s.id}</p>
-        <p class="text-xs font-mono text-ink-400 truncate">${s.pages.length} page${s.pages.length>1?'s':''}${s.domain ? ' · <span class="text-emerald-400">'+s.domain+'</span>' : ''}</p>
+        <p class="font-display font-semibold truncate">${esc(s.id)}</p>
+        <p class="text-xs font-mono text-ink-400 truncate">${s.pages.length} page${s.pages.length>1?'s':''}${s.domain ? ' · <span class="text-emerald-400">'+esc(s.domain)+'</span>' : ''}</p>
       </div>
-      <a href="/preview/${s.id}/" target="_blank" class="h-9 px-3 rounded-lg text-xs font-medium border border-ink-600 hover:bg-ink-800 grid place-items-center">Aperçu</a>
-      <button data-open="${s.id}" data-domain="${s.domain||''}" data-pages='${JSON.stringify(s.pages)}' class="h-9 px-4 rounded-lg text-xs font-semibold bg-gradient-to-r from-vio-600 to-indigo-600 hover:from-vio-500 hover:to-indigo-500 text-white">Éditer</button>
-      <button data-remove="${s.id}" class="h-9 w-9 rounded-lg border border-red-500/40 text-red-400 hover:bg-red-500/10 grid place-items-center" title="Supprimer le site" aria-label="Supprimer le site">
+      <a href="/preview/${encodeURIComponent(s.id)}/" target="_blank" class="h-9 px-3 rounded-lg text-xs font-medium border border-ink-600 hover:bg-ink-800 grid place-items-center">Aperçu</a>
+      <button data-open="${esc(s.id)}" class="h-9 px-4 rounded-lg text-xs font-semibold bg-gradient-to-r from-vio-600 to-indigo-600 hover:from-vio-500 hover:to-indigo-500 text-white">Éditer</button>
+      <button data-remove="${esc(s.id)}" class="h-9 w-9 rounded-lg border border-red-500/40 text-red-400 hover:bg-red-500/10 grid place-items-center" title="Supprimer le site" aria-label="Supprimer le site">
         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-9 0 1 13h8l1-13" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
     </div>`).join('')
@@ -260,7 +263,7 @@ function setSelection(has, label) {
 }
 function updateLiveInfo() {
   $('#liveInfo').innerHTML = S.domain
-    ? `Servi sur <span class="font-mono text-emerald-400">${S.domain}</span> dès que le DNS pointe ici (enregistrement <span class="font-mono">A</span>). Chaque « Enregistrer » est en ligne immédiatement.`
+    ? `Servi sur <span class="font-mono text-emerald-400">${esc(S.domain)}</span> dès que le DNS pointe ici (enregistrement <span class="font-mono">A</span>). Chaque « Enregistrer » est en ligne immédiatement.`
     : `Aucun domaine branché. Renseignez-le en haut à droite puis pointez un enregistrement <span class="font-mono">A</span> de votre DNS vers ce serveur.`;
 }
 
@@ -417,7 +420,11 @@ document.addEventListener('click', async (e) => {
   const mode = e.target.closest('.mode-btn');
   if (mode) return mode.dataset.mode === 'code' ? enterCode() : enterVisual();
   const open = e.target.closest('[data-open]');
-  if (open) return openEditor(open.dataset.open, JSON.parse(open.dataset.pages), open.dataset.domain);
+  if (open) {
+    const site = sitesCache.find(x => x.id === open.dataset.open);
+    if (site) openEditor(site.id, site.pages, site.domain);
+    return;
+  }
   const rm = e.target.closest('[data-remove]');
   if (rm && confirm('Supprimer définitivement ce site ?')) {
     await fetch('/api/sites/' + rm.dataset.remove, { method: 'DELETE' });

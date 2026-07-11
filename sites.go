@@ -95,7 +95,10 @@ func safeJoin(base, p string) (string, error) {
 var slugRe = regexp.MustCompile(`[^a-z0-9]+`)
 
 func slugify(s string) string {
-	s = strings.ToLower(strings.TrimSuffix(strings.TrimSuffix(s, ".zip"), ".tar.gz"))
+	s = strings.ToLower(s)
+	for _, ext := range []string{".zip", ".tar.gz", ".tgz"} {
+		s = strings.TrimSuffix(s, ext)
+	}
 	s = strings.Trim(slugRe.ReplaceAllString(s, "-"), "-")
 	if s == "" {
 		s = "site"
@@ -332,9 +335,20 @@ func (s *SiteStore) RegisterRoutes(r *gin.Engine, api *gin.RouterGroup) {
 			return
 		}
 
-		id := slugify(header.Filename)
-		if _, err := os.Stat(s.siteDir(id)); err == nil {
-			id = fmt.Sprintf("%s-%d", id, os.Getpid()%10000+len(data)%1000)
+		// L'ID est réclamé atomiquement par os.Mkdir : deux uploads du même
+		// nom (même concurrents) obtiennent des suffixes -2, -3, … distincts.
+		base := slugify(header.Filename)
+		id := base
+		for i := 2; ; i++ {
+			err := os.Mkdir(s.siteDir(id), 0o755)
+			if err == nil {
+				break
+			}
+			if !errors.Is(err, fs.ErrExist) {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+			id = fmt.Sprintf("%s-%d", base, i)
 		}
 		pub := s.publicDir(id)
 		if err := os.MkdirAll(pub, 0o755); err != nil {

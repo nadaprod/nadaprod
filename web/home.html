@@ -99,13 +99,50 @@
         /* Subtle CRT / Paper Texture Overlay */
         .texture-overlay {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none;
             z-index: 9999;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
-            background-size: 100% 4px;
-            opacity: var(--scanline-opacity);
-            mix-blend-mode: overlay;
+            pointer-events: none;
+
+            /*
+            * Débordement volontaire :
+            * évite de voir les bords pendant les animations
+            * de la barre d'adresse mobile.
+            */
+            top: -5lvh;
+            left: 0;
+            width: 100%;
+            height: 110lvh;
+
+            background-image: url("https://l3dlp.com/assets/pwa/01.webp");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: cover;
+
+            mix-blend-mode: color-dodge;
+            opacity: 0.72;
+
+            /*
+            * Force son propre calque de composition.
+            */
+            transform: translate3d(0, 0, 0);
+            backface-visibility: hidden;
+            will-change: transform;
+            contain: paint;
+        }
+        .texture-overlay {
+            top: -5vh;
+            height: 110vh;
+        }
+
+        @supports (height: 100lvh) {
+            .texture-overlay {
+                top: -5lvh;
+                height: 110lvh;
+            }
+        }
+        html[data-theme="light"] .texture-overlay {
+            background: url(https://l3dlp.com/assets/pwa/03.webp) no-repeat center center !important;
+            background-size: cover !important;
+            mix-blend-mode: lighten;
         }
 
         /* Main Layout */
@@ -425,7 +462,7 @@
             header { padding: 1rem; }
             .service-details { grid-template-columns: 1fr; }
         }
-	#tab-home { padding-top: 12vh; }
+	#tab-home, #tab-app, #tab-services, #tab-network { padding-top: 10vh; }
         .logo-img { height: 48px; width: auto; filter: var(--logo-filter); display: block; }
     </style>
 </head>
@@ -447,33 +484,13 @@
     <main id="app">
         <!-- TAB 1: ACCUEIL -->
         <section id="tab-home" class="active">
-            <h1 class="display-text" id="hero-title">
+            <h1 class="display-text" id="hero-title" data-i18n="hero_title">
                 <span class="outline">ARTISTES,</span><br>REPRENEZ LE CONTRÔLE.
             </h1>
 
             <p class="section-intro" data-i18n="home_intro">
-                Arrêtez de construire vos empires sur des terres louées. NADAPROD est la maison d'autoédition conçue pour l'indépendance absolue des créateurs.
+                Arrêtez de construire vos forteresses sur des terres louées. NADAPROD est la maison d'autoédition conçue pour l'indépendance absolue des créateurs.
             </p>
-
-            <div class="grid-container">
-                <div class="grid-item double">
-                    <span class="grid-tag" data-i18n="newsletter_tag">Le Signal</span>
-                    <h3 data-i18n="newsletter_title">Désintermédiation.</h3>
-                    <p data-i18n="newsletter_sub" style="margin-bottom: 2rem;">L'algorithme vous censure. Les plateformes vous taxent. Rejoignez la liste pour découvrir comment sortir du système.</p>
-                    <form onsubmit="event.preventDefault(); alert('Subscribed!')" style="margin-top: auto; display: flex; border-bottom: 2px solid var(--text-main);">
-                        <input type="email" placeholder="email@artist.com" style="flex: 1; border: none; background: transparent; padding: 1rem 0; font-family: var(--font-body); font-size: 1.2rem; color: var(--text-main); outline: none;">
-                        <button type="submit" style="background: transparent; color: var(--text-main); border: none; font-family: var(--font-display); font-size: 2rem; cursor: pointer; padding: 0 1rem;">→</button>
-                    </form>
-                </div>
-
-                <div class="grid-item">
-                    <span class="grid-tag" data-i18n="who_tag">Contact</span>
-                    <h3>LIGNE<br>DIRECTE</h3>
-                    <a href="mailto:contact@nadaprod.com" style="font-family: var(--font-display); font-size: 2.5rem; color: var(--text-main); text-decoration: none; margin-top: auto; display: block; border-top: 2px solid var(--border); padding-top: 1rem;">
-                        CONTACT@<br>NADAPROD.COM
-                    </a>
-                </div>
-            </div>
         </section>
 
         <!-- TAB 2: L'APP (Manifesto) -->
@@ -528,7 +545,7 @@
 
         <!-- TAB 3: SERVICES IRL -->
         <section id="tab-services">
-            <h2 class="display-text" data-i18n="services_title">LA RÉALITÉ<br><span class="outline">PHYSIQUE</span></h2>
+            <h2 class="display-text" data-i18n="services_title">LA RÉALITÉ <span class="outline">PHYSIQUE</span></h2>
             <p class="section-intro" data-i18n="services_subtitle">Le digital ne suffit pas. L'art s'incarne. La maison d'autoédition vous accompagne pour matérialiser vos projets dans le monde réel.</p>
 
             <div class="marquee-wrapper">
@@ -564,15 +581,32 @@
             <h2 class="display-text" data-i18n="nav_network">LE<br><span class="outline">RÉSEAU</span></h2>
             <p class="section-intro" data-i18n="network_intro">Le collectif autogéré. Les artistes et entités qui soutiennent et opèrent sur notre infrastructure.</p>
 
+
+            <div class="grid-container">
+                <div class="grid-item double">
+                    <span class="grid-tag" data-i18n="newsletter_tag">Le Signal</span>
+                    <h3 data-i18n="newsletter_title">Désintermédiation.</h3>
+                    <p data-i18n="newsletter_sub" style="margin-bottom: 0rem;">L'algorithme vous censure. Les plateformes vous taxent. Rejoignez la liste pour découvrir comment sortir du système.</p>
+                    <form onsubmit="event.preventDefault(); alert('Subscribed!')" style="margin-top: auto; display: flex; border-bottom: 2px solid var(--text-main);">
+                        <input type="email" placeholder="email@artist.com" style="flex: 1; border: none; background: transparent; padding: 1rem 0; font-family: var(--font-body); font-size: 1.2rem; color: var(--text-main); outline: none;">
+                        <button type="submit" style="background: transparent; color: var(--text-main); border: none; font-family: var(--font-display); font-size: 2rem; cursor: pointer; padding: 0 1rem;">→</button>
+                    </form>
+                </div>
+
+                <div class="grid-item">
+                    <span class="grid-tag" data-i18n="who_tag">Contact</span>
+                    <a href="mailto:contact@nadaprod.com" style="font-family: var(--font-display); font-size: 2.5rem; color: var(--text-main); text-decoration: none; margin-top: auto; display: block">
+                        CONTACT@<br>NADAPROD.COM
+                    </a>
+                </div>
+            </div>
             <ul class="link-list">
                 <li><a href="https://clh.do" target="_blank">CLH <span class="hidden">DESIGN & DÉVELOPPEMENT</span></a></li>
-                <li><a href="https://youtube.com/@conymeprod" target="_blank">Connexion Anonyme <span class="hidden">PRODUCTION VIDÉO</span></a></li>
-                <li><a href="https://fredj.art" target="_blank">FREDJ<span class="hidden">ARTISTE</span></a></li>
                 <li><a href="https://ideeschauves.com" target="_blank">Idées Chauves<span class="hidden">CRÉATION</span></a></li>
                 <li><a href="https://modular-station.com/" target="_blank">Modular Station<span class="hidden">WEBRADIO</span></a></li>
                 <li><a href="https://modulisme.com/" target="_blank">Modulisme<span class="hidden">LABEL</span></a></li>
                 <li><a href="https://oliver-night.com" target="_blank">Oliver Night<span class="hidden">ARTISTE</span></a></li>
-                <li><a href="/pp/" target="_blank">Philippe Petit<span class="hidden">ARTISTE</span></a></li>
+                <li><a href="https://philippepetit.nadaprod.com" target="_blank">Philippe Petit<span class="hidden">ARTISTE</span></a></li>
             </ul>
         </section>
     </main>
@@ -585,6 +619,22 @@
     </nav>
 
     <script>
+        // Dynamic Hero Logic Configuration
+        const heroMessages = {
+            fr: [
+                { top: "ARTISTES,", bot: "REPRENEZ LE CONTRÔLE." },
+                { top: "ZÉRO ALGORITHME,", bot: "100% INDÉPENDANCE." },
+                { top: "CRÉEZ L'ART,", bot: "ON GÈRE LE RESTE." }
+            ],
+            en: [
+                { top: "ARTISTS,", bot: "TAKE BACK CONTROL." },
+                { top: "ZERO ALGORITHMS,", bot: "100% INDEPENDENCE." },
+                { top: "CREATE THE ART,", bot: "WE HANDLE THE REST." }
+            ]
+        };
+
+        let msgIndex = 0;
+
         const translations = {
             fr: {
                 nav_home: "Accueil",
@@ -592,7 +642,7 @@
                 nav_services: "Physique",
                 nav_network: "Réseau",
 
-                home_intro: "Arrêtez de construire vos empires sur des terres louées. NADAPROD est la maison d'autoédition conçue pour l'indépendance absolue des créateurs.",
+                home_intro: "Arrêtez de construire vos forteresses sur des terres louées. NADAPROD est la maison d'autoédition conçue pour l'indépendance absolue des créateurs.",
                 newsletter_tag: "Le Signal",
                 newsletter_title: "Désintermédiation.",
                 newsletter_sub: "L'algorithme vous censure. Les plateformes vous taxent. Rejoignez la liste pour découvrir comment sortir du système.",
@@ -625,7 +675,7 @@
                 f4_d3: "Paiements Instantanés",
                 f4_d4: "Propriété Totale des Données",
 
-                services_title: "LA RÉALITÉ<br><span class=\"outline\">PHYSIQUE</span>",
+                services_title: "LA RÉALITÉ <span class=\"outline\">PHYSIQUE</span>",
                 services_subtitle: "Le digital ne suffit pas. L'art s'incarne. La maison d'autoédition vous accompagne pour matérialiser vos projets dans le monde réel.",
                 marquee: "CRÉEZ L'ART. ON GÈRE LE RESTE. / SOUVERAINETÉ TOTALE. / AUCUNE CONCESSION. / ",
 
@@ -648,7 +698,7 @@
                 nav_services: "Physical",
                 nav_network: "Network",
 
-                home_intro: "Stop building your empires on rented land. NADAPROD is the self-publishing house built for absolute creator independence.",
+                home_intro: "Stop building your fortress on rented land. NADAPROD is the self-publishing house built for absolute creator independence.",
                 newsletter_tag: "The Signal",
                 newsletter_title: "Disintermediation.",
                 newsletter_sub: "Algorithms censor you. Platforms tax you. Join the list to find out how to exit the system.",
@@ -681,7 +731,7 @@
                 f4_d3: "Instant Payouts",
                 f4_d4: "Total Data Ownership",
 
-                services_title: "PHYSICAL<br><span class=\"outline\">REALITY</span>",
+                services_title: "PHYSICAL <span class=\"outline\">REALITY</span>",
                 services_subtitle: "Digital is not enough. Art embodies itself. The self-publishing house helps materialize your projects in the real world.",
                 marquee: "CREATE THE ART. WE HANDLE THE REST. / TOTAL SOVEREIGNTY. / NO COMPROMISE. / ",
 
@@ -710,34 +760,30 @@
 
         function applyLanguage() {
             document.getElementById('lang-btn').textContent = currentLang.toUpperCase();
+            
+            // Translate all standard fields
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
-                if (translations[currentLang][key]) {
+                if (key !== 'hero_title' && translations[currentLang][key]) {
                     el.innerHTML = translations[currentLang][key];
                 }
             });
+
+            // Instant update for the dynamic hero title using the exact current index
+            const heroTitle = document.getElementById('hero-title');
+            if (heroTitle) {
+                const currentMsg = heroMessages[currentLang][msgIndex];
+                heroTitle.innerHTML = `<span class="outline">${currentMsg.top}</span><br>${currentMsg.bot}`;
+            }
+
+            // Marquee update
             document.querySelectorAll('.marquee-content').forEach(el => {
                 el.textContent = translations[currentLang]['marquee'];
             });
         }
 
-        // Dynamic Hero Logic
-        const heroMessages = {
-            fr: [
-                { top: "ARTISTES,", bot: "REPRENEZ LE CONTRÔLE." },
-                { top: "ZÉRO ALGORITHME,", bot: "100% INDÉPENDANCE." },
-                { top: "CRÉEZ L'ART,", bot: "ON GÈRE LE RESTE." }
-            ],
-            en: [
-                { top: "ARTISTS,", bot: "TAKE BACK CONTROL." },
-                { top: "ZERO ALGORITHMS,", bot: "100% INDEPENDENCE." },
-                { top: "CREATE THE ART,", bot: "WE HANDLE THE REST." }
-            ]
-        };
-
-        let msgIndex = 0;
+        // Interval Loop for the Hero Title
         const heroTitle = document.getElementById('hero-title');
-
         setInterval(() => {
             const msgs = heroMessages[currentLang];
             msgIndex = (msgIndex + 1) % msgs.length;
@@ -770,17 +816,14 @@
 
         // Theme Setup & Toggle Logic
         function initTheme() {
-            // First check if user has a forced preference stored
             const storedTheme = localStorage.getItem('nadaprod-theme');
             if (storedTheme) {
                 document.documentElement.setAttribute('data-theme', storedTheme);
             }
-            // If not, CSS prefers-color-scheme will handle it naturally.
         }
 
         function toggleTheme() {
             const html = document.documentElement;
-            // Determine current actual theme
             const isDark = window.getComputedStyle(document.body).backgroundColor === 'rgb(5, 5, 5)' || html.getAttribute('data-theme') === 'dark';
 
             const nextTheme = isDark ? 'light' : 'dark';
@@ -791,7 +834,6 @@
         // Initialize App
         initTheme();
         applyLanguage();
-
     </script>
 </body>
 </html>
