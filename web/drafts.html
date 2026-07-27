@@ -22,8 +22,9 @@ tailwind.config = { theme: { extend: {
     <a href="/sites" class="flex items-center gap-2.5 hover:opacity-90">
         <img src="/gfx/logo.png" class="h-9" />
     </a>
+    
     &nbsp;
-    <p class="text-sm text-ink-300"><a href="/sites" class="text-white">Sites en ligne</a> &nbsp;&nbsp;&nbsp; <a href="/drafts">Brouillons</a></p>
+    <p class="text-sm text-ink-300"><a href="/sites">Sites en ligne</a> &nbsp;&nbsp;&nbsp; <a href="/drafts" class="text-white">Brouillons</a></p>
 
     <!-- Contrôles visibles uniquement en édition -->
     <div id="editControls" class="hidden mx-auto flex items-center gap-2">
@@ -43,7 +44,6 @@ tailwind.config = { theme: { extend: {
     <div id="editRight" class="hidden flex items-center gap-2">
       <input id="domainInput" placeholder="votre-domaine.fr" class="h-9 w-48 rounded-lg bg-ink-800 border border-ink-600 text-xs px-3 outline-none focus:border-vio-500 select-text">
       <button id="btnDomain" class="h-9 px-3 rounded-lg text-xs font-medium border border-ink-600 hover:bg-ink-800">Brancher le domaine</button>
-      <span id="domainRO" class="hidden h-9 px-3 rounded-lg text-xs font-mono border border-ink-700 text-emerald-400 items-center"></span>
       <div class="relative">
         <button id="btnSettings" title="Réglages de publication" aria-label="Réglages de publication" aria-expanded="false" class="h-9 w-9 rounded-lg border border-ink-600 hover:bg-ink-800 grid place-items-center text-ink-300 hover:text-ink-100">
           <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.56-1.11 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.08A1.7 1.7 0 0 0 10.1 4.1V4a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56h.08a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.08a1.7 1.7 0 0 0 1.56 1.03H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.56 1.03Z" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -67,12 +67,6 @@ tailwind.config = { theme: { extend: {
       </div>
       <button id="btnBack" class="h-9 px-3 rounded-lg text-xs font-medium text-ink-300 hover:text-ink-100">← Mes sites</button>
     </div>
-
-    <!-- Compte connecté (vue liste uniquement) -->
-    <div id="userBox" class="ml-auto flex items-center gap-2">
-      <span id="userEmail" class="text-xs font-mono text-ink-400 hidden sm:inline"></span>
-      <button id="btnLogout" class="h-9 px-3 rounded-lg text-xs font-medium border border-ink-600 hover:bg-ink-800 text-ink-300 hover:text-ink-100">Déconnexion</button>
-    </div>
   </header>
 
   <!-- Vue liste -->
@@ -89,23 +83,7 @@ tailwind.config = { theme: { extend: {
         <p id="uploadStatus" class="text-xs font-mono text-vio-400 mt-3 hidden"></p>
         <input id="fileInput" type="file" accept=".zip,.gz,.tgz,application/zip,application/gzip" class="hidden">
       </label>
-      <div id="siteList" class="space-y-3"></div>
-
-      <!-- Administration (root uniquement) : comptes + liste d'attente -->
-      <div id="accountsCard" class="hidden rounded-2xl border border-ink-700 bg-ink-900 p-5 space-y-5">
-        <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400">Comptes</p>
-        <div id="userList" class="space-y-3"></div>
-        <div class="flex flex-wrap items-center gap-2 border-t border-ink-700 pt-4">
-          <input id="nuEmail" type="email" placeholder="email@exemple.fr" class="h-9 flex-1 min-w-40 rounded-lg bg-ink-800 border border-ink-600 text-xs px-3 outline-none focus:border-vio-500 select-text">
-          <input id="nuPass" type="password" placeholder="mot de passe (8+)" autocomplete="new-password" class="h-9 w-44 rounded-lg bg-ink-800 border border-ink-600 text-xs px-3 outline-none focus:border-vio-500 select-text">
-          <button id="nuAdd" class="h-9 px-4 rounded-lg text-xs font-semibold bg-gradient-to-r from-vio-600 to-indigo-600 hover:from-vio-500 hover:to-indigo-500 text-white">Créer le compte</button>
-        </div>
-        <div class="border-t border-ink-700 pt-4">
-          <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 mb-3">Liste d'attente</p>
-          <div id="waitList" class="space-y-2"></div>
-        </div>
-      </div>
-      <div style="height:200px"></div>
+      <div id="siteList" class="space-y-3" style="padding-bottom:200px"></div>
     </div>
   </main>
 
@@ -158,7 +136,6 @@ tailwind.config = { theme: { extend: {
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let sitesCache = []; // dernier GET /api/sites — évite de faire transiter pages/domain par le DOM
-let ME = null;       // compte connecté ({email, root, sites}) — chargé au boot via /api/me
 const S = {
   siteId: null, page: null, domain: '', dirty: false, hasSelection: false, aiBusy: false, saveResolve: null,
   mode: 'visual',     // 'visual' (IA) ou 'code' (Monaco)
@@ -221,7 +198,7 @@ function toast(msg, ok = true) {
 async function loadSites() {
   const sites = await fetch('/api/sites').then(r => r.json()).catch(() => []);
   sitesCache = sites;
-  $('#siteList').innerHTML = sites.length ? sites.map(s => s.domain ? `
+  $('#siteList').innerHTML = sites.length ? sites.map(s => !s.domain ? `
     <div class="rounded-2xl border border-ink-700 bg-ink-900 p-4 flex items-center gap-4">
       <div class="h-10 w-10 rounded-xl bg-ink-800 grid place-items-center shrink-0">
         <svg class="h-5 w-5 text-vio-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3Z"/></svg>
@@ -230,11 +207,11 @@ async function loadSites() {
         <p class="font-display font-semibold truncate">${esc(s.id)}</p>
         <p class="text-xs font-mono text-ink-400 truncate">${s.pages.length} page${s.pages.length>1?'s':''}${s.domain ? ' · <span class="text-emerald-400">'+esc(s.domain)+'</span>' : ''}</p>
       </div>
-      <a href="https://${encodeURIComponent(s.domain)}/" target="_blank" class="h-9 px-3 rounded-lg text-xs font-medium border border-ink-600 hover:bg-ink-800 grid place-items-center">Consulter</a>
+      <a href="/preview/${encodeURIComponent(s.id)}/" target="_blank" class="h-9 px-3 rounded-lg text-xs font-medium border border-ink-600 hover:bg-ink-800 grid place-items-center">Aperçu</a>
       <button data-open="${esc(s.id)}" class="h-9 px-4 rounded-lg text-xs font-semibold bg-gradient-to-r from-vio-600 to-indigo-600 hover:from-vio-500 hover:to-indigo-500 text-white">Éditer</button>
-      ${ME && ME.root ? `<button data-remove="${esc(s.id)}" class="h-9 w-9 rounded-lg border border-red-500/40 text-red-400 hover:bg-red-500/10 grid place-items-center" title="Supprimer le site" aria-label="Supprimer le site">
+      <button data-remove="${esc(s.id)}" class="h-9 w-9 rounded-lg border border-red-500/40 text-red-400 hover:bg-red-500/10 grid place-items-center" title="Supprimer le site" aria-label="Supprimer le site">
         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-9 0 1 13h8l1-13" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>` : ``}
+      </button>
     </div>` : ``).join('')
   : `<p class="text-sm text-ink-400 text-center">Aucun site pour l'instant — importez votre première archive ci-dessus.</p>`;
 }
@@ -260,68 +237,6 @@ async function upload(file) {
   }
 }
 
-/* ───────── Administration (root) : comptes + liste d'attente ───────── */
-async function loadAccounts() {
-  const [users, wl] = await Promise.all([
-    fetch('/api/users').then(r => r.ok ? r.json() : []).catch(() => []),
-    fetch('/api/waiting-list').then(r => r.ok ? r.json() : []).catch(() => []),
-  ]);
-  const siteIds = sitesCache.map(s => s.id);
-  $('#userList').innerHTML = users.length ? users.map(u => `
-    <div class="rounded-xl border border-ink-700 bg-ink-850 p-3 space-y-2">
-      <div class="flex items-center gap-2">
-        <p class="flex-1 min-w-0 text-sm font-mono truncate">${esc(u.email)}</p>
-        <button data-upass="${esc(u.email)}" class="h-8 px-2.5 rounded-lg text-[11px] font-medium border border-ink-600 hover:bg-ink-800">Mot de passe…</button>
-        <button data-udel="${esc(u.email)}" class="h-8 w-8 rounded-lg border border-red-500/40 text-red-400 hover:bg-red-500/10 grid place-items-center" title="Supprimer le compte" aria-label="Supprimer le compte">
-          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-9 0 1 13h8l1-13" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-      </div>
-      <div class="flex flex-wrap gap-x-4 gap-y-1.5">
-        ${siteIds.map(id => `<label class="flex items-center gap-1.5 text-xs cursor-pointer text-ink-300 hover:text-ink-100">
-          <input type="checkbox" data-assign="${esc(u.email)}" value="${esc(id)}" ${u.sites.includes(id) ? 'checked' : ''} class="h-3.5 w-3.5 rounded border-ink-600 bg-ink-800 accent-vio-500"><span class="font-mono">${esc(id)}</span>
-        </label>`).join('') || '<span class="text-xs text-ink-400">Aucun site importé.</span>'}
-      </div>
-    </div>`).join('')
-  : `<p class="text-xs text-ink-400">Aucun compte — créez-en un ci-dessous, puis cochez ses sites.</p>`;
-  $('#waitList').innerHTML = wl.length ? wl.slice().reverse().map(e => `
-    <div class="rounded-lg border border-ink-700 bg-ink-850 px-3 py-2 text-xs">
-      <span class="font-mono text-ink-400">${esc((e.date || '').slice(0, 10))}</span>
-      <span class="font-mono text-vio-400 ml-2">${esc(e.email)}</span>
-      ${e.name ? `<span class="text-ink-200 ml-2">${esc(e.name)}</span>` : ''}
-      ${e.message ? `<p class="text-ink-300 mt-1 leading-relaxed">${esc(e.message)}</p>` : ''}
-    </div>`).join('')
-  : `<p class="text-xs text-ink-400">Aucune candidature pour l'instant (formulaire public : <span class="font-mono">/waiting-list</span>).</p>`;
-}
-
-// L'attribution d'un site est enregistrée dès le clic sur sa case.
-async function saveAssignments(email) {
-  const sites = [...document.querySelectorAll(`[data-assign="${CSS.escape(email)}"]`)]
-    .filter(cb => cb.checked).map(cb => cb.value);
-  const res = await fetch('/api/users/' + encodeURIComponent(email), {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ sites }),
-  });
-  const data = await res.json();
-  if (!res.ok) { toast(data.error || 'Échec', false); return loadAccounts(); }
-  toast('Accès de ' + email + ' mis à jour');
-}
-
-async function addUser() {
-  const email = $('#nuEmail').value.trim(), password = $('#nuPass').value;
-  if (!email || !password) return toast('Email et mot de passe requis', false);
-  const res = await fetch('/api/users', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
-  });
-  const data = await res.json();
-  if (!res.ok) return toast(data.error || 'Échec', false);
-  $('#nuEmail').value = ''; $('#nuPass').value = '';
-  toast('Compte « ' + email + ' » créé');
-  loadAccounts();
-}
-
 $('#fileInput').addEventListener('change', (e) => e.target.files[0] && upload(e.target.files[0]));
 ['dragover','dragleave','drop'].forEach(ev => $('#dropzone').addEventListener(ev, (e) => {
   e.preventDefault();
@@ -340,16 +255,7 @@ function openEditor(site) {
   $('#viewEdit').classList.add('flex');
   $('#editControls').classList.remove('hidden');
   $('#editRight').classList.remove('hidden');
-  $('#userBox').classList.add('hidden');
   $('#domainInput').value = S.domain;
-  // Le branchement de domaine est réservé à root ; un utilisateur le voit en lecture seule.
-  const isRoot = !!(ME && ME.root);
-  $('#domainInput').classList.toggle('hidden', !isRoot);
-  $('#btnDomain').classList.toggle('hidden', !isRoot);
-  const ro = $('#domainRO');
-  ro.textContent = S.domain;
-  ro.classList.toggle('hidden', isRoot || !S.domain);
-  ro.classList.toggle('flex', !isRoot && !!S.domain);
   $('#pageSelect').innerHTML = site.pages.map(p => `<option value="${p}">${p}</option>`).join('');
   updateLiveInfo();
   loadPage(site.pages[0]);
@@ -361,7 +267,6 @@ function closeEditor() {
   $('#viewList').classList.remove('hidden');
   $('#editControls').classList.add('hidden');
   $('#editRight').classList.add('hidden');
-  $('#userBox').classList.remove('hidden');
   loadSites();
 }
 async function loadPage(p) {
@@ -414,9 +319,7 @@ async function saveSettings(key, value) {
 function updateLiveInfo() {
   $('#liveInfo').innerHTML = S.domain
     ? `Servi sur <span class="font-mono text-emerald-400">${esc(S.domain)}</span> dès que le DNS pointe ici (enregistrement <span class="font-mono">A</span>). Chaque « Enregistrer » est en ligne immédiatement.`
-    : (ME && ME.root
-      ? `Aucun domaine branché. Renseignez-le en haut à droite puis pointez un enregistrement <span class="font-mono">A</span> de votre DNS vers ce serveur.`
-      : `Aucun domaine branché. L'administrateur peut en brancher un pour ce site.`);
+    : `Aucun domaine branché. Renseignez-le en haut à droite puis pointez un enregistrement <span class="font-mono">A</span> de votre DNS vers ce serveur.`;
 }
 
 const frameWin = () => $('#frame').contentWindow;
@@ -583,36 +486,8 @@ document.addEventListener('click', async (e) => {
   if (rm && confirm('Supprimer définitivement ce site ?')) {
     await fetch('/api/sites/' + rm.dataset.remove, { method: 'DELETE' });
     toast('Site supprimé');
-    await loadSites();
-    if (ME && ME.root) loadAccounts();
-    return;
+    return loadSites();
   }
-  const upass = e.target.closest('[data-upass]');
-  if (upass) {
-    const pass = prompt('Nouveau mot de passe pour ' + upass.dataset.upass + ' (8 caractères minimum) :');
-    if (!pass) return;
-    const res = await fetch('/api/users/' + encodeURIComponent(upass.dataset.upass), {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: pass }),
-    });
-    const data = await res.json();
-    return toast(res.ok ? 'Mot de passe mis à jour' : (data.error || 'Échec'), res.ok);
-  }
-  const udel = e.target.closest('[data-udel]');
-  if (udel && confirm('Supprimer le compte ' + udel.dataset.udel + ' ? (ses sites restent en place)')) {
-    await fetch('/api/users/' + encodeURIComponent(udel.dataset.udel), { method: 'DELETE' });
-    toast('Compte supprimé');
-    return loadAccounts();
-  }
-});
-document.addEventListener('change', (e) => {
-  if (e.target.matches('[data-assign]')) saveAssignments(e.target.dataset.assign);
-});
-$('#nuAdd').addEventListener('click', addUser);
-$('#btnLogout').addEventListener('click', async () => {
-  await fetch('/api/logout', { method: 'POST' }).catch(() => {});
-  location.href = '/login';
 });
 $('#btnBack').addEventListener('click', () => {
   if (S.dirty && !confirm('Modifications non enregistrées. Quitter quand même ?')) return;
@@ -648,19 +523,7 @@ document.addEventListener('keydown', (e) => {
 });
 window.addEventListener('beforeunload', (e) => { if (S.dirty) e.preventDefault(); });
 
-/* ───────── Boot : session d'abord, puis les vues selon le rôle ───────── */
-(async function boot() {
-  const res = await fetch('/api/me').catch(() => null);
-  if (!res || res.status === 401) { location.href = '/login?next=' + encodeURIComponent('/sites'); return; }
-  ME = await res.json();
-  $('#userEmail').textContent = ME.email;
-  if (!ME.root) $('#dropzone').classList.add('hidden'); // l'import est réservé à root
-  await loadSites();
-  if (ME.root) {
-    $('#accountsCard').classList.remove('hidden');
-    loadAccounts();
-  }
-})();
+loadSites();
 </script>
 </body>
 </html>

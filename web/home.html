@@ -587,10 +587,11 @@
                     <span class="grid-tag" data-i18n="newsletter_tag">Le Signal</span>
                     <h3 data-i18n="newsletter_title">Désintermédiation.</h3>
                     <p data-i18n="newsletter_sub" style="margin-bottom: 0rem;">L'algorithme vous censure. Les plateformes vous taxent. Rejoignez la liste pour découvrir comment sortir du système.</p>
-                    <form onsubmit="event.preventDefault(); alert('Subscribed!')" style="margin-top: auto; display: flex; border-bottom: 2px solid var(--text-main);">
-                        <input type="email" placeholder="email@artist.com" style="flex: 1; border: none; background: transparent; padding: 1rem 0; font-family: var(--font-body); font-size: 1.2rem; color: var(--text-main); outline: none;">
+                    <form onsubmit="joinWaitlist(event)" style="margin-top: auto; display: flex; border-bottom: 2px solid var(--text-main);">
+                        <input type="email" required placeholder="email@artist.com" style="flex: 1; border: none; background: transparent; padding: 1rem 0; font-family: var(--font-body); font-size: 1.2rem; color: var(--text-main); outline: none;">
                         <button type="submit" style="background: transparent; color: var(--text-main); border: none; font-family: var(--font-display); font-size: 2rem; cursor: pointer; padding: 0 1rem;">→</button>
                     </form>
+                    <a href="/waiting-list" style="font-family: var(--font-body); font-size: 0.8rem; color: var(--text-main); opacity: 0.6; text-decoration: underline; margin-top: 0.75rem; display: inline-block" data-i18n="newsletter_more">Accès sur invitation — rejoindre la liste d'attente</a>
                 </div>
 
                 <div class="grid-item">
@@ -646,6 +647,7 @@
                 newsletter_tag: "Le Signal",
                 newsletter_title: "Désintermédiation.",
                 newsletter_sub: "L'algorithme vous censure. Les plateformes vous taxent. Rejoignez la liste pour découvrir comment sortir du système.",
+                newsletter_more: "Accès sur invitation — rejoindre la liste d'attente",
                 who_tag: "Contact",
 
                 app_main_title: "L'APPLICATION<br><span class=\"outline\">DÉFINITIVE</span>",
@@ -702,6 +704,7 @@
                 newsletter_tag: "The Signal",
                 newsletter_title: "Disintermediation.",
                 newsletter_sub: "Algorithms censor you. Platforms tax you. Join the list to find out how to exit the system.",
+                newsletter_more: "Invitation only — join the waiting list",
                 who_tag: "Contact",
 
                 app_main_title: "THE DEFINITIVE<br><span class=\"outline\">APPLICATION</span>",
@@ -799,6 +802,21 @@
                 heroTitle.style.transform = 'translateY(0)';
             }, 500);
         }, 5000);
+
+        // Le Signal → liste d'attente (POST /waiting-list, stockée côté serveur)
+        function joinWaitlist(event) {
+            event.preventDefault();
+            const form = event.target;
+            const email = form.querySelector('input[type="email"]').value.trim();
+            fetch('/waiting-list', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email, message: 'Le Signal — inscription depuis la page d\'accueil', website: '' })
+            }).then(r => {
+                if (!r.ok) throw new Error();
+                form.innerHTML = '<p style="padding: 1rem 0; font-family: var(--font-display); font-size: 1.5rem;">✓ OK</p>';
+            }).catch(() => alert('Envoi impossible — réessayez ou écrivez à contact@nadaprod.com'));
+        }
 
         // Navigation Tab Logic
         function switchTab(tabId) {

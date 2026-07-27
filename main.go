@@ -60,9 +60,44 @@ func main() {
 	if sitesRoot == "" {
 		sitesRoot = "./sites"
 	}
-	store, err := NewSiteStore(sitesRoot)
+
+	// Binaire standalone Tailwind (compilation locale des sites publiés).
+	// Absent ⇒ dégradation douce : les pages publiées gardent le CDN.
+	twBin := os.Getenv("TAILWIND_BIN")
+	if twBin == "" {
+		twBin = "./bin/tailwindcss"
+	}
+	if _, err := os.Stat(twBin); err != nil {
+		log.Printf("tailwindcss introuvable (%s) — compilation locale désactivée, CDN conservé", twBin)
+		twBin = ""
+	}
+
+	store, err := NewSiteStore(sitesRoot, twBin)
 	if err != nil {
 		log.Fatal("initialisation du stockage sites : ", err)
+	}
+	go store.BuildAll() // publie tous les sites en arrière-plan au démarrage
+
+	// Comptes : root vient de l'environnement, les autres de users.json.
+	rootEmail := os.Getenv("ROOT_EMAIL")
+	if rootEmail == "" {
+		rootEmail = "web@l3dlp.com"
+	}
+	rootPassword := os.Getenv("ROOT_PASSWORD")
+	if rootPassword == "" {
+		log.Fatal("ROOT_PASSWORD manquant : l'application est protégée par authentification, définissez-le dans .env")
+	}
+	usersFile := os.Getenv("USERS_FILE")
+	if usersFile == "" {
+		usersFile = "./users.json"
+	}
+	waitlistFile := os.Getenv("WAITLIST_FILE")
+	if waitlistFile == "" {
+		waitlistFile = "./waiting-list.json"
+	}
+	users, err := NewUserStore(usersFile, waitlistFile, rootEmail, rootPassword, os.Getenv("AUTH_SECRET"))
+	if err != nil {
+		log.Fatal("initialisation des comptes : ", err)
 	}
 
 	if os.Getenv("GIN_MODE") == "" {
@@ -75,11 +110,12 @@ func main() {
 	// paramétré, on le sert directement et on court-circuite l'éditeur.
 	r.Use(store.HostMiddleware())
 
-	// Front statique
-	r.StaticFile("/", "./web/home.html")          // page vitrine publique NADAPROD
+	// Front statique public (vitrine, connexion, liste d'attente)
+	r.StaticFile("/", "./web/home.html") // page vitrine publique NADAPROD
 	r.StaticFile("/robots.txt", "./web/robots.txt")
-	r.StaticFile("/editor", "./web/index.html")   // studio de blocs (l'app)
-	r.StaticFile("/sites", "./web/sites.html")
+	r.StaticFile("/demo", "./web/demo.html")
+	r.StaticFile("/login", "./web/login.html")
+	r.StaticFile("/waiting-list", "./web/waiting-list.html")
 
 	r.StaticFile("/about", "./web/about.html")
 	r.StaticFile("/legal", "./web/legal.html")
@@ -92,20 +128,28 @@ func main() {
 	r.Static("/static", "./web/static")
 	r.MaxMultipartMemory = 32 << 20
 
-	api := r.Group("/api")
-	store.RegisterRoutes(r, api)
+	// L'app elle-même (studio, sites, édition) exige une session valide.
+	authed := r.Group("/", users.RequireAuth())
+	authed.StaticFile("/editor", "./web/index.html") // studio de blocs (l'app)
+	authed.StaticFile("/sites", "./web/sites.html")
+	authed.StaticFile("/drafts", "./web/drafts.html")
+
+	api := r.Group("/api")                          // login, health
+	apiAuthed := api.Group("", users.RequireAuth()) // tout le reste
+	users.RegisterAuthRoutes(r, api, apiAuthed)
+	store.RegisterRoutes(authed, apiAuthed, users)
 	{
 		api.GET("/health", func(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{"ok": true, "model": model})
 		})
 
 		// Catalogue des blocs (types, labels, presets) consommé par l'éditeur.
-		api.GET("/blocks", func(c *gin.Context) {
+		apiAuthed.GET("/blocks", func(c *gin.Context) {
 			c.JSON(http.StatusOK, BlockCatalog())
 		})
 
 		// Génération d'un bloc via le générateur spécialisé.
-		api.POST("/generate", func(c *gin.Context) {
+		apiAuthed.POST("/generate", func(c *gin.Context) {
 			var req GenerateRequest
 			if err := c.ShouldBindJSON(&req); err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "requête invalide : " + err.Error()})
@@ -138,7 +182,8 @@ func main() {
 		// c.File passerait par http.ServeFile qui force un statut 200.
 		page, err := os.ReadFile("./web/404.html")
 		if err != nil {
-			c.String(http.StatusNotFound, "404 — page introuvable")
+			// c.String(http.StatusNotFound, "404 — page introuvable")
+			c.Redirect(301, "/")
 			return
 		}
 		c.Data(http.StatusNotFound, "text/html; charset=utf-8", page)

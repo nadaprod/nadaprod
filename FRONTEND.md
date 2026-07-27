@@ -6,12 +6,17 @@ Three application surfaces + a set of static marketing/legal pages:
 
 | File | Route | Role |
 |---|---|---|
-| `web/home.html` | `/` | Public landing (marketing, FR/EN, light/dark) |
-| `web/index.html` | `/editor` | Block studio — the app |
-| `web/sites.html` | `/sites` | Imported-sites manager & visual/code editor host |
+| `web/home.html` | `/` | Public landing (marketing, FR/EN, light/dark) — « Le Signal » form posts to `/waiting-list` |
+| `web/login.html` | `/login` | Login page (public) — `POST /api/login`, then redirect to `?next` (internal paths only) or `/sites` |
+| `web/waiting-list.html` | `/waiting-list` | Public application form (name/email/project + honeypot) → `POST /waiting-list` |
+| `web/index.html` | `/editor` | Block studio — the app *(requires session)* |
+| `web/sites.html` | `/sites` | Imported-sites manager & visual/code editor host *(requires session)* |
+| `web/drafts.html` | `/drafts` | Same manager, filtered to sites **without** a domain (drafts) *(requires session)* |
 | `web/static/inject.js` `.css` | *(injected)* | In-page editor for imported sites |
 | `web/about,legal,privacy,terms,solutions,opensource,404.html` | *(matching routes)* | Static brand/legal pages |
 | `web/gfx/` | `/gfx/*` | Logo, favicon, images |
+
+Auth: unauthenticated page loads are redirected server-side to `/login?next=…`; `sites.html` additionally boots on `GET /api/me` and self-redirects on 401.
 
 External CDNs (the only network dependencies): Tailwind Play CDN (`cdn.tailwindcss.com`), Google Fonts (Space Grotesk / Inter / JetBrains Mono), and Monaco from jsDelivr (`monaco-editor@0.52.2`, lazy-loaded).
 
@@ -65,21 +70,27 @@ Guards on `S.generating` → button spinner state → `POST /api/generate` with 
 
 ## 2. Imported-sites manager — `web/sites.html`
 
-### 2.1 Two views, one page
+### 2.1 Two views, one page — role-aware
 
-- **List view** (`#viewList`): dropzone (click or drag-drop → `upload(file)` → `POST /api/sites` multipart) + site cards from `GET /api/sites` (id, page count, domain badge, Aperçu link to `/preview/<id>/`, Éditer, Supprimer with `confirm()`).
-- **Edit view** (`#viewEdit`): page `<select>`, **Visuel · IA ⇄ Code** mode toggle, "Enregistrer la page", amber dirty dot, domain input + "Brancher le domaine", and a right aside (selected element info, Parent/Supprimer, AI retouch prompt, go-live info).
+Boot (`boot()`): `GET /api/me` → module-level `ME = {email, root, sites}` (401 ⇒ redirect `/login?next=/sites`), header shows the email + a « Déconnexion » button (`POST /api/logout` → `/login`).
+
+- **List view** (`#viewList`): dropzone (click or drag-drop → `upload(file)` → `POST /api/sites` multipart; **hidden for non-root**) + site cards from `GET /api/sites` — already filtered server-side to the account's sites (id, page count, domain badge, Consulter, Éditer; Supprimer with `confirm()` is root-only). Root also gets the **« Comptes » card** (§2.9). Only sites **with** a domain are listed here — domain-less sites live on `/drafts` (§2.8).
+- **Edit view** (`#viewEdit`): page `<select>`, **Visuel · IA ⇄ Code** mode toggle, "Enregistrer la page", amber dirty dot, domain input + "Brancher le domaine" (**root-only** — users see the domain read-only in `#domainRO`), a **⚙ settings popover** (see §2.7, available to everyone), and a right aside (selected element info, Parent/Supprimer, AI retouch prompt, go-live info).
 
 ### 2.2 State
 
 ```js
+ME = { email, root, sites }   // compte connecté, chargé au boot
 S = { siteId, page, domain, dirty, hasSelection, aiBusy,
       saveResolve,        // pending resolver for the iframe HTML round-trip
       mode: 'visual'|'code',
       editor,             // Monaco instance (created on first code switch)
       settingValue,       // true during programmatic setValue (don't mark dirty)
-      frameStale }        // file rewritten while in code mode → reload iframe
+      frameStale,         // file rewritten while in code mode → reload iframe
+      settings }          // publication settings {compile, pwa, gdpr} (⚙ panel)
 ```
+
+`openEditor(site)` takes the full site object from `sitesCache` (id, pages, domain, settings).
 
 ### 2.3 Visual mode — postMessage protocol with the injected editor
 
@@ -111,6 +122,18 @@ Source depends on the mode: Monaco buffer, or the serialized iframe DOM. `PUT /a
 
 "Brancher le domaine" → `PUT /api/sites/<id>/domain`; effective immediately (backend reloads its host map). `updateLiveInfo()` explains the DNS A-record step; after that, every "Enregistrer" is live instantly.
 
+### 2.7 Publication settings — the ⚙ popover
+
+The cog button next to "Brancher le domaine" opens `#settingsPanel`: three checkboxes (`data-setting="compile|pwa|gdpr"`) mapping 1:1 to the backend publish pipeline (local Tailwind compile, generated PWA, GDPR notice — BACKEND.md §4.7). Each change immediately `PUT /api/sites/<id>/settings` with just that key; on failure the checkbox reverts (`saveSettings` keeps the previous value). The panel closes on any outside click. A footer note reminds that settings apply to the **published** version — the editor always works on the source, which is why toggles never change what the edit iframe shows.
+
+### 2.8 Drafts — `web/drafts.html`
+
+A near-copy of `sites.html` whose list view filters to sites **without** a domain (`!s.domain`; `sites.html` shows the inverse) and links « Aperçu » to `/preview/<id>/` instead of « Consulter ». The top-bar nav cross-links the two pages (« Sites en ligne » ⇄ « Brouillons »). **Not yet role-aware**: it predates the auth pass — no `/api/me` boot, and the delete button / domain input render for everyone. Harmless (the server returns 403 and unauthenticated loads are redirected to `/login`), but the copy drift is tracked in TODO §3 alongside the shared-JS dedupe item.
+
+### 2.9 « Comptes » card (root only) — `#accountsCard`
+
+`loadAccounts()` fetches `/api/users` + `/api/waiting-list` in parallel. Per user: email, « Mot de passe… » (a `prompt()` → `PUT /api/users/:email {password}`), delete (`DELETE`, sites stay in place), and one checkbox per site from `sitesCache` — **each click saves immediately** (`saveAssignments` → `PUT {sites}` with the full checked list; on failure the panel re-renders from the server). Below: the add-account form (`POST /api/users`) and the waiting-list entries (newest first: date, email, name, message — all `esc()`-escaped). Delegated handlers: `data-upass` / `data-udel` on the document click listener, `data-assign` on a document `change` listener.
+
 ---
 
 ## 3. Injected editor — `web/static/inject.js` + `inject.css`
@@ -135,6 +158,7 @@ Fully self-contained (~800 lines: inline CSS + JS, zero external requests beyond
 - **i18n**: `translations = {fr:{…}, en:{…}}` keyed by `data-i18n` attributes; `applyLanguage()` swaps `innerHTML` on every tagged node. Initial language sniffs `navigator.language` (`fr*` ⇒ FR, else EN); `toggleLanguage()` flips it. **Language is not persisted** (theme is).
 - **Theme**: `data-theme="light|dark"` on `<html>`, CSS variables per theme, persisted in `localStorage['nadaprod-theme']`, `initTheme()` also honors `prefers-color-scheme`.
 - **Hero rotator**: `setInterval` (5 s) cycles three FR/EN message pairs with an opacity/translate transition on `#hero-title`.
+- **« Le Signal » form** (Network tab): `joinWaitlist(event)` posts the email to `/waiting-list` (message tagged « inscription depuis la page d'accueil ») and swaps the form for a ✓; a discreet link below it leads to the full `/waiting-list` page.
 
 The other static pages (`about`, `legal`, `privacy`, `terms`, `solutions`, `opensource`, `404`) follow the same visual language, each self-contained; they contain no API calls. `404.html` is also gin's `NoRoute` fallback.
 
@@ -142,6 +166,6 @@ The other static pages (`about`, `legal`, `privacy`, `terms`, `solutions`, `open
 
 ## 5. Cross-cutting notes
 
-- **Security posture**: everything the frontends do is unauthenticated (mirrors the backend — see BACKEND.md §5). Generated block HTML is trusted and rendered in a same-origin `srcdoc` iframe; the block contract (Tailwind-only, JS only where allowed) plus server-side `cleanHTML` are the current guards.
+- **Security posture**: the app pages sit behind session auth (BACKEND.md §0/§5); role gating in the UI (`ME.root`) is cosmetic — every rule is enforced server-side. Generated block HTML is trusted and rendered in a same-origin `srcdoc` iframe; the block contract (Tailwind-only, JS only where allowed) plus server-side `cleanHTML` are the current guards.
 - **Failure modes handled**: backend unreachable at studio boot (toast), Monaco CDN down (textarea fallback in the studio; explicit refusal to enter code mode in /sites), generation errors (red toast, button restored), iframe not answering `wp:get-html` (3 s timeout, save aborted with a toast).
 - **Known quirks and planned improvements are tracked in TODO.md** — notably the duplicated Monaco/toast/config code between the two editors and the Tailwind-CDN-in-production issue.

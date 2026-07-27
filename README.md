@@ -8,6 +8,8 @@ Three surfaces share one server:
 2. **Block studio** (`/editor`) — build a page from AI-generated blocks. Project state lives in the browser's `localStorage`; the server is stateless for this flow.
 3. **Imported sites** (`/sites`) — upload a static site, edit any page visually (click-to-select, AI element retouch) or in a full-page Monaco code editor, and point a domain at it. The filesystem is the database.
 
+Access is **invitation-only**: the app surfaces sit behind a login (`/login`). The root account (from `.env`) creates user accounts and assigns sites to them — users edit their own sites (including the ⚙ publication settings), while import, delete, domains and account management stay root-only. Candidates apply through the public `/waiting-list` page (stored in a JSON file). Sites served on a mapped domain remain fully public.
+
 Note: the product UI and the generation prompts are in French.
 
 ## Architecture
@@ -15,28 +17,39 @@ Note: the product UI and the generation prompts are in French.
 ```
 nadaprod/
 ├── main.go       # gin-gonic server: static + API
+├── auth.go       # Accounts (root + users), HMAC sessions, waiting list
 ├── gemini.go     # Gemini REST client (generateContent) + HTML cleanup
 ├── prompts.go    # Registry of specialized generators (1 expert prompt / block)
 ├── sites.go      # Imported sites: upload, edit, domain routing (filesystem-backed)
+├── build.go      # Publish pipeline: local Tailwind compile, PWA files, GDPR notice
 ├── go.mod
 └── web/
-    ├── home.html   # Public landing page
-    ├── index.html  # Studio: block palette, live preview, AI + code panel
-    └── sites.html  # Imported-sites manager
+    ├── home.html         # Public landing page
+    ├── login.html        # Login (invitation-only)
+    ├── waiting-list.html # Public application form
+    ├── index.html        # Studio: block palette, live preview, AI + code panel
+    ├── sites.html        # Imported-sites manager (+ root: accounts panel)
+    └── drafts.html       # Same manager, filtered to sites without a domain
 ```
 
 ### API
 
+All routes below require a session except `GET /api/health`, `POST /api/login` and `POST /waiting-list`. Site-scoped routes check the site is assigned to the account (root sees everything).
+
 | Route | Description |
 |---|---|
-| `GET /api/health` | Status + active model |
+| `GET /api/health` | Status + active model *(public)* |
+| `POST /api/login` · `POST /api/logout` · `GET /api/me` | Session (HMAC-signed cookie, 30 days) |
 | `GET /api/blocks` | Block catalog (labels, presets) — system prompts stay server-side |
 | `POST /api/generate` | `{ block, prompt, brand{name,colors,tone}, current_html }` → `{ html, model, elapsed_ms }` |
-| `POST /api/sites` | Upload a `.zip` / `.tar.gz` static site |
-| `GET /api/sites` | List imported sites |
+| `POST /api/sites` | Upload a `.zip` / `.tar.gz` static site *(root)* |
+| `GET /api/sites` | List the sites accessible to the account |
 | `PUT /api/sites/:id/file` | Rewrite one file of a site (visual save & code editor) |
-| `PUT /api/sites/:id/domain` | Attach a custom domain |
-| `DELETE /api/sites/:id` | Delete a site |
+| `PUT /api/sites/:id/domain` | Attach a custom domain *(root)* |
+| `PUT /api/sites/:id/settings` | Publication settings `{compile, pwa, gdpr}` (⚙ panel) |
+| `DELETE /api/sites/:id` | Delete a site *(root)* |
+| `GET/POST/PUT/DELETE /api/users*` | Account management *(root)* |
+| `POST /waiting-list` | Public application form → `waiting-list.json` (root reads it via `GET /api/waiting-list`) |
 | `GET /edit/:id/*filepath` | Serve a page with the visual editor injected |
 | `GET /preview/:id/*filepath` | Serve the same page without injection |
 
@@ -59,6 +72,12 @@ go run .
 | `GEMINI_MODEL` | `gemini-flash-latest` | Model (alias for the latest stable Flash) |
 | `ADDR` | `:8080` | HTTP listen address (`host:port`) |
 | `SITES_DIR` | `./sites` | Storage root for imported sites |
+| `TAILWIND_BIN` | `./bin/tailwindcss` | Tailwind v3 standalone binary (fetched by `bin/build.sh`); missing ⇒ published sites keep the Play CDN |
+| `ROOT_EMAIL` | `web@l3dlp.com` | Root account email |
+| `ROOT_PASSWORD` | — (required) | Root password — the server refuses to start without it |
+| `AUTH_SECRET` | *(random per boot)* | Session-cookie signing secret; leave empty and sessions expire on restart |
+| `USERS_FILE` | `./users.json` | User accounts storage (bcrypt hashes, gitignored) |
+| `WAITLIST_FILE` | `./waiting-list.json` | Waiting-list storage (gitignored) |
 | `GIN_MODE` | *(release)* | `debug` for verbose logs |
 
 ## Usage
@@ -78,10 +97,15 @@ Add an entry to `blockSpecs` (`prompts.go`): type, label, presets, and a special
 
 ## Imported sites
 
-Three primitives, zero database:
+Four primitives, zero database:
 
-1. **Import** — `POST /api/sites` with a `.zip` or `.tar.gz` (archive type sniffed from magic bytes, a lone top-level directory is flattened automatically). One site = one `sites/<id>/public/` directory served as-is, plus a one-line `site.json`.
-2. **Universal editing** — `/edit/<id>/<page>` serves the real page with a script injected before `</body>`: click = select, double-click = edit text, AI panel to retouch the selected element (the `element` generator, which preserves the page's stack). A Visual · AI ⇄ Code toggle switches to a full-page Monaco editor over the raw file. "Save" serializes the DOM (editing artifacts removed) and rewrites the file.
-3. **Domain** — `PUT /api/sites/<id>/domain`. A gin middleware at the head of the chain matches `Host` against the domain→site table: on a match, the site is served directly. Point an A record at the server and it's live.
+1. **Import** — `POST /api/sites` with a `.zip` or `.tar.gz` (archive type sniffed from magic bytes, a lone top-level directory is flattened automatically). One site = one directory: `sites/<id>/dev/` (the editable source), `sites/<id>/public/` (the published build, fully regenerable), plus a `site.json`.
+2. **Universal editing** — `/edit/<id>/<page>` serves the real page with a script injected before `</body>`: click = select, double-click = edit text, AI panel to retouch the selected element (the `element` generator, which preserves the page's stack). A Visual · AI ⇄ Code toggle switches to a full-page Monaco editor over the raw file. "Save" serializes the DOM (editing artifacts removed) and rewrites the file in `dev/`.
+3. **Publication (automatic)** — every save/upload triggers a background rebuild of `public/`, all steps toggleable per site from the ⚙ panel next to the domain controls:
+   - **Compiled Tailwind**: `cdn.tailwindcss.com` is replaced by locally compiled, purged CSS (Tailwind v3 standalone binary — no Node, no `node_modules`); inline `tailwind.config` blocks are honored per page. Compilation failure ⇒ the page keeps its CDN.
+   - **Automatic PWA**: `manifest.webmanifest`, icon and a versioned offline `sw.js` are generated and registered — unless the site ships its own, which are respected.
+   - **GDPR notice**: a small "Zéro stress : tout est local" banner (OK button, link to [nadaprod.com/legal](https://nadaprod.com/legal)), dismissed once per visitor.
+   Domain serving overlays `public/` on top of `dev/`, so untransformed files (images, videos…) are never duplicated.
+4. **Domain** — `PUT /api/sites/<id>/domain`. A gin middleware at the head of the chain matches `Host` against the domain→site table: on a match, the published site is served directly. Point an A record at the server and it's live.
 
-UI: `http://localhost:8080/sites`. For multi-domain HTTPS in production, put Caddy in front (`on_demand_tls`) or add `autocert`.
+UI: `http://localhost:8080/sites` (sites with a domain) and `/drafts` (sites without one). For multi-domain HTTPS in production, put Caddy in front (`on_demand_tls`) or add `autocert`.
