@@ -3,16 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NADAPROD | MAISON D'AUTOÉDITION</title>
+    <title>NADAPROD | ŒUVRES WEB AUTONOMES</title>
 
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="description" content="L'outil définitif pour les artistes. Reprenez le contrôle total de votre art, de la création à la monétisation.">
+    <meta name="description" content="L'outil open source qui fait de chaque publication web une œuvre d'art autonome. Composez avec l'IA, importez l'existant, publiez sans dépendance.">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="/static/fonts.css" rel="stylesheet">
+    <script src="/static/i18n.js"></script>
 
     <style>
         :root {
@@ -174,7 +173,9 @@
         header {
             position: fixed;
             top: 0; left: 0; right: 0;
-            padding: 1.5rem 2rem;
+            padding: 1.5rem 1.55rem;
+            max-width: 1213px;
+            margin-inline: auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -219,6 +220,8 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
+
+        #auth-btn .auth-icon { display: none; }
 
         .icon-btn:hover {
             background: var(--text-main);
@@ -461,6 +464,9 @@
             section { padding-top: 0; padding-bottom: 8rem; }
             header { padding: 1rem; }
             .service-details { grid-template-columns: 1fr; }
+            #auth-btn { padding: 0 10px; }
+            #auth-btn .auth-icon { display: block; }
+            #auth-btn .auth-label { display: none; }
         }
 	#tab-home, #tab-app, #tab-services, #tab-network { padding-top: 10vh; }
         .logo-img { height: 48px; width: auto; filter: var(--logo-filter); display: block; }
@@ -476,6 +482,10 @@
         </a>
 
         <div class="header-controls">
+            <a href="/login" id="auth-btn" class="icon-btn" style="text-decoration: none;" aria-label="Connexion" data-i18n-aria-label="home.nav_login">
+                <svg class="auth-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                <span class="auth-label" data-i18n="home.nav_login">Connexion</span>
+            </a>
             <button class="icon-btn" onclick="toggleLanguage()" id="lang-btn">FR</button>
             <button class="icon-btn" onclick="toggleTheme()" aria-label="Toggle Theme">◐</button>
         </div>
@@ -484,60 +494,65 @@
     <main id="app">
         <!-- TAB 1: ACCUEIL -->
         <section id="tab-home" class="active">
-            <h1 class="display-text" id="hero-title" data-i18n="hero_title">
-                <span class="outline">ARTISTES,</span><br>REPRENEZ LE CONTRÔLE.
+            <h1 class="display-text" id="hero-title">
+                <span class="outline">CHAQUE PAGE,</span><br>UNE ŒUVRE AUTONOME.
             </h1>
 
-            <p class="section-intro" data-i18n="home_intro">
-                Arrêtez de construire vos forteresses sur des terres louées. NADAPROD est la maison d'autoédition conçue pour l'indépendance absolue des créateurs.
+            <p class="section-intro" data-i18n="home.home_intro">
+                Le web moderne enchaîne chaque page à dix serveurs qui ne vous appartiennent pas. NADAPROD est l'outil open source qui fait de chaque publication web une œuvre d'art autonome : complète, auto-portée, sans une seule dépendance.
+            </p>
+
+            <p style="margin-top: 2.5rem; display: flex; gap: 1.25rem; flex-wrap: wrap; align-items: center;">
+                <a href="/waiting-list" class="icon-btn" style="text-decoration: none;" data-i18n="home.cta_waitlist">Rejoindre la liste d'attente</a>
+                <a href="/login" style="font-family: var(--font-body); font-size: 0.9rem; color: var(--text-main); opacity: 0.7;" data-i18n="home.cta_login">Déjà un compte ? Se connecter</a>
             </p>
         </section>
 
         <!-- TAB 2: L'APP (Manifesto) -->
         <section id="tab-app">
-            <h2 class="display-text" data-i18n="app_main_title">L'APPLICATION<br><span class="outline">DÉFINITIVE</span></h2>
-            <p class="section-intro" data-i18n="app_intro">
-                Nous avons condensé le manifeste en une technologie. Tout ce dont un artiste a besoin pour exister, diffuser et monétiser, réuni dans une seule interface. Vous créez. L'app fait le reste.
+            <h2 class="display-text" data-i18n="home.app_main_title">L'OUTIL<br><span class="outline">RÉVOLUTIONNAIRE</span></h2>
+            <p class="section-intro" data-i18n="home.app_intro">
+                Deux ateliers, un seul but : des pages qui n'ont besoin de personne. Composez de zéro avec l'IA, ou importez l'existant — dans les deux cas, l'outil rend le résultat autonome.
             </p>
 
             <div class="grid-container">
                 <!-- FEATURE 1: SITE -->
                 <div class="grid-item double">
-                    <span class="grid-tag" data-i18n="f1_tag">01. Votre Espace</span>
-                    <h3 data-i18n="f1_title">Le QG Numérique</h3>
-                    <p data-i18n="f1_desc">Fini les templates rigides et les plateformes qui dictent votre design. Déployez un espace immersif, ultra-rapide et qui vous appartient à 100%. L'outil s'efface, l'œuvre respire.</p>
+                    <span class="grid-tag" data-i18n="home.f1_tag">01. Le Studio</span>
+                    <h3 data-i18n="home.f1_title">Un expert IA par bloc</h3>
+                    <p data-i18n="home.f1_desc">Header, hero, tarifs, FAQ… chaque type de bloc a son générateur spécialisé, dressé pour produire du Tailwind de niveau agence. Décrivez, générez, puis itérez par retouches — « passe le fond en clair » suffit.</p>
                     <div class="service-details">
-                        <span data-i18n="f1_d1">Vitrine Sur-Mesure</span>
-                        <span data-i18n="f1_d2">Indépendant des Réseaux</span>
-                        <span data-i18n="f1_d3">Zéro Maintenance</span>
-                        <span data-i18n="f1_d4">Vitesse Maximale</span>
+                        <span data-i18n="home.f1_d1">8 générateurs spécialisés</span>
+                        <span data-i18n="home.f1_d2">Itération par retouche</span>
+                        <span data-i18n="home.f1_d3">Contexte de marque partagé</span>
+                        <span data-i18n="home.f1_d4">Export HTML en un clic</span>
                     </div>
                 </div>
 
                 <!-- FEATURE 2: AUDIENCE -->
                 <div class="grid-item">
-                    <span class="grid-tag" data-i18n="f2_tag">02. Votre Audience</span>
-                    <h3 data-i18n="f2_title">Lien Direct</h3>
-                    <p data-i18n="f2_desc">Si les réseaux ferment, vous perdez tout. Gérez votre propre base de fans et communiquez sans aucun filtre algorithmique.</p>
+                    <span class="grid-tag" data-i18n="home.f2_tag">02. L'Import</span>
+                    <h3 data-i18n="home.f2_title">Apportez l'existant</h3>
+                    <p data-i18n="home.f2_desc">Déposez un .zip ou .tar.gz de n'importe quel site statique — quelle que soit la stack, du moment que c'est du HTML. Il devient éditable immédiatement.</p>
                 </div>
 
                 <!-- FEATURE 3: MONETIZATION -->
                 <div class="grid-item">
-                    <span class="grid-tag" data-i18n="f3_tag">03. Vos Revenus</span>
-                    <h3 data-i18n="f3_title">Boutique Intégrée</h3>
-                    <p data-i18n="f3_desc">Vendez votre musique, vos œuvres ou vos billets directement. 100% de la valeur va au créateur.</p>
+                    <span class="grid-tag" data-i18n="home.f3_tag">03. L'Édition</span>
+                    <h3 data-i18n="home.f3_title">Cliquez, retouchez</h3>
+                    <p data-i18n="home.f3_desc">Édition visuelle directement dans la page : un clic sélectionne, un double-clic édite, l'IA retouche l'élément sans casser son style. Les puristes ont Monaco plein écran.</p>
                 </div>
 
                 <!-- FEATURE 4: ADMIN -->
                 <div class="grid-item double">
-                    <span class="grid-tag" data-i18n="f4_tag">04. Votre Liberté</span>
-                    <h3 data-i18n="f4_title">Pilotez votre carrière</h3>
-                    <p data-i18n="f4_desc">Automatisez tout ce qui freine la création. De la gestion des factures à la diffusion de vos dossiers de presse (EPK), centralisez votre industrie personnelle.</p>
+                    <span class="grid-tag" data-i18n="home.f4_tag">04. La Mise en ligne</span>
+                    <h3 data-i18n="home.f4_title">Un domaine, et c'est vivant</h3>
+                    <p data-i18n="home.f4_desc">Branchez un domaine, pointez un enregistrement A : chaque « Enregistrer » est en ligne dans la seconde. Pas de déploiement, pas de base de données — le filesystem fait foi.</p>
                     <div class="service-details">
-                        <span data-i18n="f4_d1">0% de Commission</span>
-                        <span data-i18n="f4_d2">Outils Pro (EPK, Fiches techniques)</span>
-                        <span data-i18n="f4_d3">Paiements Instantanés</span>
-                        <span data-i18n="f4_d4">Propriété Totale des Données</span>
+                        <span data-i18n="home.f4_d1">Publication instantanée</span>
+                        <span data-i18n="home.f4_d2">Un champ, un domaine</span>
+                        <span data-i18n="home.f4_d3">Le filesystem est la base</span>
+                        <span data-i18n="home.f4_d4">Rien à administrer</span>
                     </div>
                 </div>
             </div>
@@ -545,57 +560,57 @@
 
         <!-- TAB 3: SERVICES IRL -->
         <section id="tab-services">
-            <h2 class="display-text" data-i18n="services_title">LA RÉALITÉ <span class="outline">PHYSIQUE</span></h2>
-            <p class="section-intro" data-i18n="services_subtitle">Le digital ne suffit pas. L'art s'incarne. La maison d'autoédition vous accompagne pour matérialiser vos projets dans le monde réel.</p>
+            <h2 class="display-text" data-i18n="home.services_title">L'ŒUVRE <span class="outline">AUTONOME</span></h2>
+            <p class="section-intro" data-i18n="home.services_subtitle">Publier ne suffit pas. À chaque sauvegarde, le pipeline reconstruit la version publiée en artefact complet : tout ce qu'il faut pour vivre est à l'intérieur.</p>
 
             <div class="marquee-wrapper">
                 <div class="marquee-track">
-                    <span class="marquee-content" data-i18n="marquee">CRÉEZ L'ART. ON GÈRE LE RESTE. / SOUVERAINETÉ TOTALE. / AUCUNE CONCESSION. / </span>
-                    <span class="marquee-content" data-i18n="marquee">CRÉEZ L'ART. ON GÈRE LE RESTE. / SOUVERAINETÉ TOTALE. / AUCUNE CONCESSION. / </span>
-                    <span class="marquee-content" data-i18n="marquee">CRÉEZ L'ART. ON GÈRE LE RESTE. / SOUVERAINETÉ TOTALE. / AUCUNE CONCESSION. / </span>
+                    <span class="marquee-content" data-i18n="home.marquee">TOUT EST LOCAL. / ZÉRO REQUÊTE EXTERNE. / AUCUNE CONCESSION. / </span>
+                    <span class="marquee-content" data-i18n="home.marquee">TOUT EST LOCAL. / ZÉRO REQUÊTE EXTERNE. / AUCUNE CONCESSION. / </span>
+                    <span class="marquee-content" data-i18n="home.marquee">TOUT EST LOCAL. / ZÉRO REQUÊTE EXTERNE. / AUCUNE CONCESSION. / </span>
                 </div>
             </div>
 
             <div class="grid-container">
                 <div class="grid-item double">
-                    <span class="grid-tag" data-i18n="svc_irl_tag">Production</span>
-                    <h3 data-i18n="svc_prod_title">Matérialisation</h3>
-                    <p data-i18n="svc_prod_desc">De l'usine à la main de vos fans. Nous gérons la production physique pour que votre art existe en dehors des écrans.</p>
+                    <span class="grid-tag" data-i18n="home.svc_irl_tag">Le Pipeline</span>
+                    <h3 data-i18n="home.svc_prod_title">Autonomie automatique</h3>
+                    <p data-i18n="home.svc_prod_desc">Le CDN Tailwind devient du CSS compilé sur place. Les Google Fonts deviennent des polices servies par votre propre site. Un service worker rend l'œuvre installable et consultable hors-ligne. Vous n'avez rien demandé : c'est le défaut.</p>
                     <div class="service-details">
-                        <span data-i18n="svc_prod_d1">Pressage Vinyle & CD</span>
-                        <span data-i18n="svc_prod_d2">Édition & Reliure de Livres</span>
-                        <span data-i18n="svc_prod_d3">Design & Prod de Merch</span>
+                        <span data-i18n="home.svc_prod_d1">Tailwind compilé — zéro CDN</span>
+                        <span data-i18n="home.svc_prod_d2">Polices auto-hébergées — zéro Google</span>
+                        <span data-i18n="home.svc_prod_d3">PWA installable, hors-ligne</span>
                     </div>
                 </div>
 
                 <div class="grid-item">
-                    <span class="grid-tag" data-i18n="svc_log_tag">Diffusion</span>
-                    <h3 data-i18n="svc_log_title">Logistique & Événementiel</h3>
-                    <p data-i18n="svc_log_desc">Concerts, expositions, expéditions mondiales. L'infrastructure d'un label major, à votre service exclusif.</p>
+                    <span class="grid-tag" data-i18n="home.svc_log_tag">Le Respect</span>
+                    <h3 data-i18n="home.svc_log_title">RGPD par construction</h3>
+                    <p data-i18n="home.svc_log_desc">Aucun cookie de suivi, aucune donnée collectée, aucune requête qui fuit vers un tiers. Le bandeau ne demande pas pardon : il annonce « tout est local », dans la langue du visiteur.</p>
                 </div>
             </div>
         </section>
 
         <!-- TAB 4: NETWORK -->
         <section id="tab-network">
-            <h2 class="display-text" data-i18n="nav_network">LE<br><span class="outline">RÉSEAU</span></h2>
-            <p class="section-intro" data-i18n="network_intro">Le collectif autogéré. Les artistes et entités qui soutiennent et opèrent sur notre infrastructure.</p>
+            <h2 class="display-text" data-i18n="home.os_title">OPEN<br><span class="outline">SOURCE</span></h2>
+            <p class="section-intro" data-i18n="home.network_intro">Le code est à vous. Licence DWTFYW — « Do What The Fuck You Want » — compatible MIT : utilisez, modifiez, revendez, republiez. En dessous, des œuvres déjà publiées avec l'outil.</p>
 
 
             <div class="grid-container">
                 <div class="grid-item double">
-                    <span class="grid-tag" data-i18n="newsletter_tag">Le Signal</span>
-                    <h3 data-i18n="newsletter_title">Désintermédiation.</h3>
-                    <p data-i18n="newsletter_sub" style="margin-bottom: 0rem;">L'algorithme vous censure. Les plateformes vous taxent. Rejoignez la liste pour découvrir comment sortir du système.</p>
+                    <span class="grid-tag" data-i18n="home.newsletter_tag">Le Signal</span>
+                    <h3 data-i18n="home.newsletter_title">Accès sur invitation.</h3>
+                    <p data-i18n="home.newsletter_sub" style="margin-bottom: 0rem;">L'instance publique ouvre par vagues. Laissez votre email pour la prochaine — ou clonez le dépôt et hébergez la vôtre ce soir.</p>
                     <form onsubmit="joinWaitlist(event)" style="margin-top: auto; display: flex; border-bottom: 2px solid var(--text-main);">
                         <input type="email" required placeholder="email@artist.com" style="flex: 1; border: none; background: transparent; padding: 1rem 0; font-family: var(--font-body); font-size: 1.2rem; color: var(--text-main); outline: none;">
                         <button type="submit" style="background: transparent; color: var(--text-main); border: none; font-family: var(--font-display); font-size: 2rem; cursor: pointer; padding: 0 1rem;">→</button>
                     </form>
-                    <a href="/waiting-list" style="font-family: var(--font-body); font-size: 0.8rem; color: var(--text-main); opacity: 0.6; text-decoration: underline; margin-top: 0.75rem; display: inline-block" data-i18n="newsletter_more">Accès sur invitation — rejoindre la liste d'attente</a>
+                    <a href="/waiting-list" style="font-family: var(--font-body); font-size: 0.8rem; color: var(--text-main); opacity: 0.6; text-decoration: underline; margin-top: 0.75rem; display: inline-block" data-i18n="home.newsletter_more">Candidature détaillée — rejoindre la liste d'attente</a>
                 </div>
 
                 <div class="grid-item">
-                    <span class="grid-tag" data-i18n="who_tag">Contact</span>
+                    <span class="grid-tag" data-i18n="home.who_tag">Contact</span>
                     <a href="mailto:contact@nadaprod.com" style="font-family: var(--font-display); font-size: 2.5rem; color: var(--text-main); text-decoration: none; margin-top: auto; display: block">
                         CONTACT@<br>NADAPROD.COM
                     </a>
@@ -613,191 +628,60 @@
     </main>
 
     <nav>
-        <button class="nav-item active" onclick="switchTab('home')" data-i18n="nav_home">Accueil</button>
-        <button class="nav-item" onclick="switchTab('app')" data-i18n="nav_app">L'App</button>
-        <button class="nav-item" onclick="switchTab('services')" data-i18n="nav_services">Services</button>
-        <button class="nav-item" onclick="switchTab('network')" data-i18n="nav_network">Réseau</button>
+        <button class="nav-item active" onclick="switchTab('home')" data-i18n="home.nav_home">Manifeste</button>
+        <button class="nav-item" onclick="switchTab('app')" data-i18n="home.nav_app">L'Outil</button>
+        <button class="nav-item" onclick="switchTab('services')" data-i18n="home.nav_services">L'Œuvre</button>
+        <button class="nav-item" onclick="switchTab('network')" data-i18n="home.nav_network">Open Source</button>
     </nav>
 
     <script>
-        // Dynamic Hero Logic Configuration
-        const heroMessages = {
-            fr: [
-                { top: "ARTISTES,", bot: "REPRENEZ LE CONTRÔLE." },
-                { top: "ZÉRO ALGORITHME,", bot: "100% INDÉPENDANCE." },
-                { top: "CRÉEZ L'ART,", bot: "ON GÈRE LE RESTE." }
-            ],
-            en: [
-                { top: "ARTISTS,", bot: "TAKE BACK CONTROL." },
-                { top: "ZERO ALGORITHMS,", bot: "100% INDEPENDENCE." },
-                { top: "CREATE THE ART,", bot: "WE HANDLE THE REST." }
-            ]
-        };
-
+        
         let msgIndex = 0;
 
-        const translations = {
-            fr: {
-                nav_home: "Accueil",
-                nav_app: "L'App",
-                nav_services: "Physique",
-                nav_network: "Réseau",
+        
+        // Session déjà ouverte ⇒ le bouton « Connexion » devient « Mon compte ».
+        // (data-i18n mis à jour : le libellé suit aussi les bascules de langue.)
+        Promise.all([I18N.ready, fetch('/api/me')]).then(([, r]) => {
+            if (!r.ok) return;
+            const btn = document.getElementById('auth-btn');
+            btn.href = '/sites';
+            btn.setAttribute('data-i18n-aria-label', 'home.nav_account');
+            btn.setAttribute('aria-label', t('home.nav_account'));
+            const label = btn.querySelector('.auth-label');
+            label.setAttribute('data-i18n', 'home.nav_account');
+            label.textContent = t('home.nav_account');
+        }).catch(() => {});
 
-                home_intro: "Arrêtez de construire vos forteresses sur des terres louées. NADAPROD est la maison d'autoédition conçue pour l'indépendance absolue des créateurs.",
-                newsletter_tag: "Le Signal",
-                newsletter_title: "Désintermédiation.",
-                newsletter_sub: "L'algorithme vous censure. Les plateformes vous taxent. Rejoignez la liste pour découvrir comment sortir du système.",
-                newsletter_more: "Accès sur invitation — rejoindre la liste d'attente",
-                who_tag: "Contact",
-
-                app_main_title: "L'APPLICATION<br><span class=\"outline\">DÉFINITIVE</span>",
-                app_intro: "Nous avons condensé le manifeste en une technologie. Tout ce dont un artiste a besoin pour exister, diffuser et monétiser, réuni dans une seule interface. Vous créez. L'app fait le reste.",
-
-                f1_tag: "01. Votre Espace",
-                f1_title: "Le QG Numérique",
-                f1_desc: "Fini les templates rigides et les plateformes qui dictent votre design. Déployez un espace immersif, ultra-rapide et qui vous appartient à 100%. L'outil s'efface, l'œuvre respire.",
-                f1_d1: "Vitrine Sur-Mesure",
-                f1_d2: "Indépendant des Réseaux",
-                f1_d3: "Zéro Maintenance",
-                f1_d4: "Vitesse Maximale",
-
-                f2_tag: "02. Votre Audience",
-                f2_title: "Lien Direct",
-                f2_desc: "Si les réseaux ferment, vous perdez tout. Gérez votre propre base de fans et communiquez sans aucun filtre algorithmique.",
-
-                f3_tag: "03. Vos Revenus",
-                f3_title: "Boutique Intégrée",
-                f3_desc: "Vendez votre musique, vos œuvres ou vos billets directement. 100% de la valeur va au créateur.",
-
-                f4_tag: "04. Votre Liberté",
-                f4_title: "Pilotez votre carrière",
-                f4_desc: "Automatisez tout ce qui freine la création. De la gestion des factures à la diffusion de vos dossiers de presse (EPK), centralisez votre industrie personnelle.",
-                f4_d1: "0% de Commission",
-                f4_d2: "Outils Pro (EPK, Fiches tech)",
-                f4_d3: "Paiements Instantanés",
-                f4_d4: "Propriété Totale des Données",
-
-                services_title: "LA RÉALITÉ <span class=\"outline\">PHYSIQUE</span>",
-                services_subtitle: "Le digital ne suffit pas. L'art s'incarne. La maison d'autoédition vous accompagne pour matérialiser vos projets dans le monde réel.",
-                marquee: "CRÉEZ L'ART. ON GÈRE LE RESTE. / SOUVERAINETÉ TOTALE. / AUCUNE CONCESSION. / ",
-
-                svc_irl_tag: "Production",
-                svc_prod_title: "Matérialisation",
-                svc_prod_desc: "De l'usine à la main de vos fans. Nous gérons la production physique pour que votre art existe en dehors des écrans.",
-                svc_prod_d1: "Pressage Vinyle & CD",
-                svc_prod_d2: "Édition & Reliure de Livres",
-                svc_prod_d3: "Design & Prod de Merch",
-
-                svc_log_tag: "Diffusion",
-                svc_log_title: "Logistique & Événementiel",
-                svc_log_desc: "Concerts, expositions, expéditions mondiales. L'infrastructure d'un label major, à votre service exclusif.",
-
-                network_intro: "Le collectif autogéré. Les artistes et entités qui soutiennent et opèrent sur notre infrastructure."
-            },
-            en: {
-                nav_home: "Home",
-                nav_app: "The App",
-                nav_services: "Physical",
-                nav_network: "Network",
-
-                home_intro: "Stop building your fortress on rented land. NADAPROD is the self-publishing house built for absolute creator independence.",
-                newsletter_tag: "The Signal",
-                newsletter_title: "Disintermediation.",
-                newsletter_sub: "Algorithms censor you. Platforms tax you. Join the list to find out how to exit the system.",
-                newsletter_more: "Invitation only — join the waiting list",
-                who_tag: "Contact",
-
-                app_main_title: "THE DEFINITIVE<br><span class=\"outline\">APPLICATION</span>",
-                app_intro: "We condensed the manifesto into technology. Everything an artist needs to exist, broadcast, and monetize, packed into one interface. You create. The app does the rest.",
-
-                f1_tag: "01. Your Space",
-                f1_title: "Digital HQ",
-                f1_desc: "No more rigid templates or platforms dictating your design. Deploy an immersive, ultra-fast space that you own 100%. The tool fades, the art breathes.",
-                f1_d1: "Custom Showcase",
-                f1_d2: "Network Independent",
-                f1_d3: "Zero Maintenance",
-                f1_d4: "Maximum Speed",
-
-                f2_tag: "02. Your Audience",
-                f2_title: "Direct Link",
-                f2_desc: "If the networks shut down, you lose everything. Manage your own fanbase and communicate without any algorithmic filter.",
-
-                f3_tag: "03. Your Revenue",
-                f3_title: "Built-in Shop",
-                f3_desc: "Sell your music, artworks, or tickets directly. 100% of the value goes to the creator.",
-
-                f4_tag: "04. Your Freedom",
-                f4_title: "Drive Your Career",
-                f4_desc: "Automate everything that slows down creation. From invoicing to Electronic Press Kits (EPK), centralize your personal industry.",
-                f4_d1: "0% Commission",
-                f4_d2: "Pro Tools (EPK, Tech Riders)",
-                f4_d3: "Instant Payouts",
-                f4_d4: "Total Data Ownership",
-
-                services_title: "PHYSICAL <span class=\"outline\">REALITY</span>",
-                services_subtitle: "Digital is not enough. Art embodies itself. The self-publishing house helps materialize your projects in the real world.",
-                marquee: "CREATE THE ART. WE HANDLE THE REST. / TOTAL SOVEREIGNTY. / NO COMPROMISE. / ",
-
-                svc_irl_tag: "Production",
-                svc_prod_title: "Materialization",
-                svc_prod_desc: "From the factory to your fans' hands. We handle physical production so your art exists outside screens.",
-                svc_prod_d1: "Vinyl & CD Pressing",
-                svc_prod_d2: "Book Editing & Binding",
-                svc_prod_d3: "Merch Design & Prod",
-
-                svc_log_tag: "Distribution",
-                svc_log_title: "Logistics & Events",
-                svc_log_desc: "Concerts, exhibitions, worldwide shipping. The infrastructure of a major label, exclusively for you.",
-
-                network_intro: "The self-managed collective. Artists and entities that support and operate on our infrastructure."
-            }
-        };
-
-        const browserLang = navigator.language || navigator.userLanguage || 'en';
-        let currentLang = browserLang.startsWith('fr') ? 'fr' : 'en';
+        // Langue : gérée par /static/i18n.js (choix persisté, repli en.json).
+        const HERO_COUNT = 3;
+        const heroHTML = () => `<span class="outline">${t('home.hero' + (msgIndex + 1) + 'Top')}</span><br>${t('home.hero' + (msgIndex + 1) + 'Bot')}`;
 
         function toggleLanguage() {
-            currentLang = currentLang === 'fr' ? 'en' : 'fr';
-            applyLanguage();
+            I18N.setLang(I18N.lang === 'fr' ? 'en' : 'fr');
         }
 
-        function applyLanguage() {
-            document.getElementById('lang-btn').textContent = currentLang.toUpperCase();
-            
-            // Translate all standard fields
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (key !== 'hero_title' && translations[currentLang][key]) {
-                    el.innerHTML = translations[currentLang][key];
-                }
-            });
-
-            // Instant update for the dynamic hero title using the exact current index
+        // Ce que data-i18n ne couvre pas : bouton de langue, héro animé, marquee.
+        function applyDynamicTexts() {
+            document.getElementById('lang-btn').textContent = I18N.lang.toUpperCase();
             const heroTitle = document.getElementById('hero-title');
-            if (heroTitle) {
-                const currentMsg = heroMessages[currentLang][msgIndex];
-                heroTitle.innerHTML = `<span class="outline">${currentMsg.top}</span><br>${currentMsg.bot}`;
-            }
-
-            // Marquee update
+            if (heroTitle) heroTitle.innerHTML = heroHTML();
             document.querySelectorAll('.marquee-content').forEach(el => {
-                el.textContent = translations[currentLang]['marquee'];
+                el.textContent = t('home.marquee');
             });
         }
+        I18N.onChange(applyDynamicTexts);
 
         // Interval Loop for the Hero Title
         const heroTitle = document.getElementById('hero-title');
         setInterval(() => {
-            const msgs = heroMessages[currentLang];
-            msgIndex = (msgIndex + 1) % msgs.length;
-            const nextMsg = msgs[msgIndex];
+            msgIndex = (msgIndex + 1) % HERO_COUNT;
 
             heroTitle.style.opacity = '0';
             heroTitle.style.transform = 'translateY(15px)';
             heroTitle.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
 
             setTimeout(() => {
-                heroTitle.innerHTML = `<span class="outline">${nextMsg.top}</span><br>${nextMsg.bot}`;
+                heroTitle.innerHTML = heroHTML();
                 heroTitle.style.opacity = '1';
                 heroTitle.style.transform = 'translateY(0)';
             }, 500);
@@ -815,7 +699,7 @@
             }).then(r => {
                 if (!r.ok) throw new Error();
                 form.innerHTML = '<p style="padding: 1rem 0; font-family: var(--font-display); font-size: 1.5rem;">✓ OK</p>';
-            }).catch(() => alert('Envoi impossible — réessayez ou écrivez à contact@nadaprod.com'));
+            }).catch(() => alert(t('home.sendError')));
         }
 
         // Navigation Tab Logic
@@ -851,7 +735,7 @@
 
         // Initialize App
         initTheme();
-        applyLanguage();
+        I18N.ready.then(applyDynamicTexts);
     </script>
 </body>
 </html>

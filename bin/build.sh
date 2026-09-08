@@ -22,8 +22,17 @@ if [[ ! -x bin/tailwindcss ]]; then
 		|| echo "Échec du téléchargement — la compilation locale restera désactivée (CDN conservé)."
 fi
 
+# CSS des pages de l'app (fini le CDN Tailwind dans notre propre UI) : purgé
+# sur les 5 pages listées dans tools/appcss/tailwind.config.js.
+if [[ -x bin/tailwindcss ]]; then
+	echo "CSS de l'app (web/static/tw.css)..."
+	bin/tailwindcss -c tools/appcss/tailwind.config.js -i tools/appcss/input.css \
+		-o web/static/tw.css --minify \
+		|| echo "Compilation du CSS de l'app échouée — tw.css existant conservé."
+fi
+
 echo "Compilation..."
-go build -ldflags "-s -w" -o nadaprod .
+go build -ldflags "-s -w" -o nadaprod ./cmd/nadaprod
 
 # Git
 if [[ ! -z "$2" ]]; then

@@ -1,0 +1,26 @@
+/* Polices de l'app, servies localement depuis le miroir /webfonts —
+   remplace fonts.googleapis.com (zéro requête externe, RGPD-friendly).
+   Familles/graisse utilisées par home, login, waiting-list, editor, sites, drafts. */
+
+/* Bebas Neue (home) */
+@font-face { font-family: 'Bebas Neue'; font-style: normal; font-weight: 400; font-display: swap; src: url('/webfonts/Bebas%20Neue/regular.ttf') format('truetype'); }
+
+/* Inter (toutes les pages) */
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 300; font-display: swap; src: url('/webfonts/Inter/300.ttf') format('truetype'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 400; font-display: swap; src: url('/webfonts/Inter/regular.ttf') format('truetype'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 500; font-display: swap; src: url('/webfonts/Inter/500.ttf') format('truetype'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 600; font-display: swap; src: url('/webfonts/Inter/600.ttf') format('truetype'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 700; font-display: swap; src: url('/webfonts/Inter/700.ttf') format('truetype'); }
+
+/* JetBrains Mono (éditeurs, badges) */
+@font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 400; font-display: swap; src: url('/webfonts/JetBrains%20Mono/regular.ttf') format('truetype'); }
+@font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 500; font-display: swap; src: url('/webfonts/JetBrains%20Mono/500.ttf') format('truetype'); }
+
+/* Space Mono (opensource) */
+@font-face { font-family: 'Space Mono'; font-style: normal; font-weight: 400; font-display: swap; src: url('/webfonts/Space%20Mono/regular.ttf') format('truetype'); }
+@font-face { font-family: 'Space Mono'; font-style: normal; font-weight: 700; font-display: swap; src: url('/webfonts/Space%20Mono/700.ttf') format('truetype'); }
+
+/* Space Grotesk (titres) */
+@font-face { font-family: 'Space Grotesk'; font-style: normal; font-weight: 500; font-display: swap; src: url('/webfonts/Space%20Grotesk/500.ttf') format('truetype'); }
+@font-face { font-family: 'Space Grotesk'; font-style: normal; font-weight: 600; font-display: swap; src: url('/webfonts/Space%20Grotesk/600.ttf') format('truetype'); }
+@font-face { font-family: 'Space Grotesk'; font-style: normal; font-weight: 700; font-display: swap; src: url('/webfonts/Space%20Grotesk/700.ttf') format('truetype'); }

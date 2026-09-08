@@ -3,15 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NADAPROD — Liste d'attente</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script>
-tailwind.config = { theme: { extend: {
-  fontFamily: { display:['"Space Grotesk"','sans-serif'], sans:['Inter','sans-serif'], mono:['"JetBrains Mono"','monospace'] },
-  colors: { ink:{950:'#07090D',900:'#0A0C11',850:'#0E1117',800:'#131722',700:'#1C2230',600:'#2A3245',400:'#5C687F',300:'#8A94A8',200:'#B9C0CF',100:'#E7EAF1'}, vio:{500:'#8B5CF6',400:'#A78BFA',600:'#7C3AED'} }
-}}}
-</script>
+<title data-i18n="wl.docTitle">NADAPROD — Liste d'attente</title>
+<link href="/static/tw.css" rel="stylesheet">
+<link href="/static/fonts.css" rel="stylesheet">
+<script src="/static/i18n.js"></script>
 </head>
 <body class="h-full bg-black text-ink-100 font-sans antialiased">
 
@@ -20,22 +15,22 @@ tailwind.config = { theme: { extend: {
 
   <form id="wlForm" class="w-full max-w-md rounded-2xl border border-ink-700 bg-ink-900 p-6 space-y-4">
     <div>
-      <h1 class="font-display font-semibold text-lg tracking-tight">Liste d'attente</h1>
-      <p class="text-xs text-ink-400 mt-1 leading-relaxed">NADAPROD est accessible sur invitation. Laissez-nous votre email et quelques mots sur votre projet — nous revenons vers vous dès qu'une place se libère.</p>
+      <h1 class="font-display font-semibold text-lg tracking-tight" data-i18n="wl.title">Liste d'attente</h1>
+      <p class="text-xs text-ink-400 mt-1 leading-relaxed" data-i18n="wl.intro">NADAPROD est accessible sur invitation. Laissez-nous votre email et quelques mots sur votre projet — nous revenons vers vous dès qu'une place se libère.</p>
     </div>
     <div>
-      <label for="name" class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-1.5">Nom</label>
+      <label for="name" class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-1.5" data-i18n="wl.name">Nom</label>
       <input id="name" type="text" maxlength="100"
         class="w-full h-10 rounded-lg bg-ink-800 border border-ink-600 text-sm px-3 outline-none focus:border-vio-500">
     </div>
     <div>
-      <label for="email" class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-1.5">Email</label>
+      <label for="email" class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-1.5" data-i18n="wl.email">Email</label>
       <input id="email" type="email" required maxlength="200"
         class="w-full h-10 rounded-lg bg-ink-800 border border-ink-600 text-sm px-3 outline-none focus:border-vio-500">
     </div>
     <div>
-      <label for="message" class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-1.5">Votre projet</label>
-      <textarea id="message" rows="4" maxlength="2000" placeholder="Ex. : un site vitrine pour mon atelier de céramique…"
+      <label for="message" class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-1.5" data-i18n="wl.project">Votre projet</label>
+      <textarea id="message" rows="4" maxlength="2000" placeholder="Ex. : un site vitrine pour mon atelier de céramique…" data-i18n-placeholder="wl.projectPh"
         class="w-full rounded-lg bg-ink-800 border border-ink-600 text-sm p-3 outline-none focus:border-vio-500 resize-y"></textarea>
     </div>
     <!-- Pot de miel anti-bots : invisible pour les humains, rempli par les robots. -->
@@ -43,19 +38,19 @@ tailwind.config = { theme: { extend: {
       style="position:absolute;left:-9999px;opacity:0;height:0;width:0">
     <p id="error" class="hidden text-xs text-red-400"></p>
     <button id="btnSend" type="submit"
-      class="w-full h-11 rounded-xl bg-gradient-to-r from-vio-600 to-indigo-600 hover:from-vio-500 hover:to-indigo-500 text-white text-sm font-semibold disabled:opacity-50">
+      class="w-full h-11 rounded-xl bg-gradient-to-r from-vio-600 to-indigo-600 hover:from-vio-500 hover:to-indigo-500 text-white text-sm font-semibold disabled:opacity-50" data-i18n="wl.submit">
       Rejoindre la liste d'attente
     </button>
-    <p class="text-xs text-ink-400 text-center pt-1">Déjà un compte ? <a href="/login" class="text-vio-400 hover:underline">Se connecter</a></p>
+    <p class="text-xs text-ink-400 text-center pt-1" data-i18n="wl.haveAccount">Déjà un compte ? <a href="/login" class="text-vio-400 hover:underline">Se connecter</a></p>
   </form>
 
   <div id="done" class="hidden w-full max-w-md rounded-2xl border border-ink-700 bg-ink-900 p-8 text-center space-y-3">
     <div class="mx-auto h-12 w-12 rounded-2xl bg-ink-800 grid place-items-center">
       <svg class="h-6 w-6 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 13 4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <p class="font-display font-semibold text-lg">C'est noté !</p>
-    <p class="text-sm text-ink-300 leading-relaxed">Votre candidature est enregistrée. Nous vous écrirons dès qu'une place se libère.</p>
-    <a href="/" class="inline-block text-xs text-vio-400 hover:underline pt-1">← Retour à l'accueil</a>
+    <p class="font-display font-semibold text-lg" data-i18n="wl.doneTitle">C'est noté !</p>
+    <p class="text-sm text-ink-300 leading-relaxed" data-i18n="wl.doneText">Votre candidature est enregistrée. Nous vous écrirons dès qu'une place se libère.</p>
+    <a href="/" class="inline-block text-xs text-vio-400 hover:underline pt-1" data-i18n="wl.backHome">← Retour à l'accueil</a>
   </div>
 </div>
 
@@ -69,7 +64,7 @@ form.addEventListener('submit', async (e) => {
   e.preventDefault();
   errEl.classList.add('hidden');
   btn.disabled = true;
-  btn.textContent = 'Envoi…';
+  btn.textContent = t('wl.submitting');
   try {
     const res = await fetch('/waiting-list', {
       method: 'POST',
@@ -82,14 +77,14 @@ form.addEventListener('submit', async (e) => {
       }),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Erreur ' + res.status);
+    if (!res.ok) throw new Error(data.error || t('common.errorCode', { code: res.status }));
     form.classList.add('hidden');
     document.getElementById('done').classList.remove('hidden');
   } catch (err) {
     errEl.textContent = err.message;
     errEl.classList.remove('hidden');
     btn.disabled = false;
-    btn.textContent = 'Rejoindre la liste d’attente';
+    btn.textContent = t('wl.submit');
   }
 });
 </script>

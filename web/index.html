@@ -3,35 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NADAPROD — Éditeur de blocs Tailwind</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script>
-tailwind.config = {
-  theme: {
-    extend: {
-      fontFamily: {
-        display: ['"Space Grotesk"', 'sans-serif'],
-        sans: ['Inter', 'sans-serif'],
-        mono: ['"JetBrains Mono"', 'monospace'],
-      },
-      colors: {
-        ink:   { 950:'#07090D', 900:'#0A0C11', 850:'#0E1117', 800:'#131722', 700:'#1C2230', 600:'#2A3245', 400:'#5C687F', 300:'#8A94A8', 200:'#B9C0CF', 100:'#E7EAF1' },
-        vio:   { 500:'#8B5CF6', 400:'#A78BFA', 600:'#7C3AED' },
-      }
-    }
-  }
-}
-</script>
-<style type="text/tailwindcss">
-  @layer utilities {
-    .canvas-dots { background-image: radial-gradient(circle, #1C2230 1px, transparent 1px); background-size: 22px 22px; }
-    .scrollbar-thin::-webkit-scrollbar { width: 8px; height: 8px; }
-    .scrollbar-thin::-webkit-scrollbar-thumb { background: #2A3245; border-radius: 8px; }
-    .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
-  }
-</style>
+<title data-i18n="editor.docTitle">NADAPROD — Éditeur de blocs Tailwind</title>
+<link href="/static/tw.css" rel="stylesheet">
+<link href="/static/fonts.css" rel="stylesheet">
+<script src="/static/i18n.js"></script>
 </head>
 <body class="h-full bg-black text-ink-100 font-sans antialiased overflow-hidden select-none">
 
@@ -46,28 +21,28 @@ tailwind.config = {
     </div>
 
     <!-- Bascule d'aperçu -->
-    <div class="mx-auto flex items-center gap-1 rounded-lg bg-ink-800 p-1 border border-ink-700" role="group" aria-label="Largeur d'aperçu">
-      <button data-vp="desktop" class="vp-btn px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 text-ink-300 hover:text-ink-100" title="Bureau">
-        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4" stroke-linecap="round"/></svg>Bureau
+    <div class="mx-auto flex items-center gap-1 rounded-lg bg-ink-800 p-1 border border-ink-700" role="group" aria-label="Largeur d'aperçu" data-i18n-aria-label="editor.vpGroup">
+      <button data-vp="desktop" class="vp-btn px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 text-ink-300 hover:text-ink-100" title="Bureau" data-i18n-title="editor.vpDesktop">
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4" stroke-linecap="round"/></svg><span data-i18n="editor.vpDesktop">Bureau</span>
       </button>
-      <button data-vp="tablet" class="vp-btn px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 text-ink-300 hover:text-ink-100" title="Tablette">
-        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01" stroke-linecap="round"/></svg>Tablette
+      <button data-vp="tablet" class="vp-btn px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 text-ink-300 hover:text-ink-100" title="Tablette" data-i18n-title="editor.vpTablet">
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01" stroke-linecap="round"/></svg><span data-i18n="editor.vpTablet">Tablette</span>
       </button>
-      <button data-vp="mobile" class="vp-btn px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 text-ink-300 hover:text-ink-100" title="Mobile">
-        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="2" width="8" height="20" rx="2"/><path d="M12 18h.01" stroke-linecap="round"/></svg>Mobile
+      <button data-vp="mobile" class="vp-btn px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 text-ink-300 hover:text-ink-100" title="Mobile" data-i18n-title="editor.vpMobile">
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="2" width="8" height="20" rx="2"/><path d="M12 18h.01" stroke-linecap="round"/></svg><span data-i18n="editor.vpMobile">Mobile</span>
       </button>
     </div>
 
     <div class="flex items-center gap-2">
-      <span id="modelBadge" class="hidden h-9 px-2.5 rounded-lg border border-ink-700 bg-ink-850 text-[10px] font-mono text-ink-400 items-center" title="Modèle de génération actif"></span>
+      <span id="modelBadge" class="hidden h-9 px-2.5 rounded-lg border border-ink-700 bg-ink-850 text-[10px] font-mono text-ink-400 items-center" title="Modèle de génération actif" data-i18n-title="editor.modelTitle"></span>
       <a href="/sites" class="h-9 px-3 rounded-lg text-xs font-medium text-ink-300 hover:text-ink-100 hover:bg-ink-800 flex items-center gap-1.5">
-        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3Z"/></svg>Sites importés
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3Z"/></svg><span data-i18n="editor.sitesLink">Sites importés</span>
       </a>
       <button id="btnCopyPage" class="h-9 px-3 rounded-lg text-xs font-medium border border-ink-600 text-ink-200 hover:bg-ink-800 flex items-center gap-1.5">
-        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copier la page
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span data-i18n="editor.copyPage">Copier la page</span>
       </button>
       <button id="btnExport" class="h-9 px-4 rounded-lg text-xs font-semibold bg-gradient-to-r from-vio-600 to-indigo-600 hover:from-vio-500 hover:to-indigo-500 text-white flex items-center gap-1.5 shadow-lg shadow-vio-600/20">
-        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke-linecap="round" stroke-linejoin="round"/></svg>Exporter le HTML
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="editor.export">Exporter le HTML</span>
       </button>
     </div>
   </header>
@@ -77,11 +52,11 @@ tailwind.config = {
     <!-- ══════════ Rail gauche : blocs + structure ══════════ -->
     <aside class="w-64 shrink-0 border-r border-ink-700 bg-ink-900 flex flex-col min-h-0">
       <div class="p-3 border-b border-ink-700">
-        <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 mb-2">Ajouter un bloc</p>
+        <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 mb-2" data-i18n="editor.addBlock">Ajouter un bloc</p>
         <div id="palette" class="grid grid-cols-2 gap-1.5"><!-- rempli via /api/blocks --></div>
       </div>
       <div class="flex-1 min-h-0 flex flex-col">
-        <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 px-3 pt-3 pb-2">Structure de la page</p>
+        <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 px-3 pt-3 pb-2" data-i18n="editor.structure">Structure de la page</p>
         <div id="structure" class="flex-1 overflow-y-auto scrollbar-thin px-3 pb-3 space-y-1.5"></div>
       </div>
     </aside>
@@ -90,7 +65,7 @@ tailwind.config = {
     <main class="flex-1 min-w-0 canvas-dots bg-black relative flex flex-col">
       <div class="flex-1 min-h-0 overflow-auto scrollbar-thin p-6 grid place-items-start justify-center">
         <div id="frameShell" class="transition-all duration-300 w-full max-w-full rounded-xl overflow-hidden ring-1 ring-ink-700 shadow-2xl shadow-black/50 bg-white" style="height: calc(100vh - 8.5rem);">
-          <iframe id="preview" title="Aperçu de la page" class="w-full h-full bg-white"></iframe>
+          <iframe id="preview" title="Aperçu de la page" data-i18n-title="editor.previewTitle" class="w-full h-full bg-white"></iframe>
         </div>
       </div>
       <div id="emptyState" class="absolute inset-0 grid place-items-center pointer-events-none">
@@ -98,8 +73,8 @@ tailwind.config = {
           <div class="mx-auto h-12 w-12 rounded-2xl border border-dashed border-ink-600 grid place-items-center mb-4">
             <svg class="h-5 w-5 text-ink-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
           </div>
-          <p class="font-display font-semibold text-ink-200">Votre page est vide</p>
-          <p class="text-sm text-ink-400 mt-1">Ajoutez un bloc depuis le rail de gauche, puis décrivez-le pour le générer avec l'IA.</p>
+          <p class="font-display font-semibold text-ink-200" data-i18n="editor.emptyTitle">Votre page est vide</p>
+          <p class="text-sm text-ink-400 mt-1" data-i18n="editor.emptyDesc">Ajoutez un bloc depuis le rail de gauche, puis décrivez-le pour le générer avec l'IA.</p>
         </div>
       </div>
     </main>
@@ -108,55 +83,55 @@ tailwind.config = {
     <aside id="rightPanel" class="w-[22.5rem] shrink-0 border-l border-ink-700 bg-ink-900 flex flex-col min-h-0 transition-all duration-300">
       <!-- Onglets -->
       <div class="shrink-0 flex border-b border-ink-700">
-        <button data-tab="generate" class="tab-btn flex-1 h-11 text-xs font-semibold border-b-2">Générer</button>
-        <button data-tab="code" class="tab-btn flex-1 h-11 text-xs font-semibold border-b-2">Code</button>
-        <button data-tab="brand" class="tab-btn flex-1 h-11 text-xs font-semibold border-b-2">Marque</button>
+        <button data-tab="generate" class="tab-btn flex-1 h-11 text-xs font-semibold border-b-2" data-i18n="editor.tabGenerate">Générer</button>
+        <button data-tab="code" class="tab-btn flex-1 h-11 text-xs font-semibold border-b-2" data-i18n="editor.tabCode">Code</button>
+        <button data-tab="brand" class="tab-btn flex-1 h-11 text-xs font-semibold border-b-2" data-i18n="editor.tabBrand">Marque</button>
       </div>
 
       <div class="flex-1 min-h-0 overflow-y-auto scrollbar-thin">
 
         <!-- Onglet Générer -->
         <section id="tab-generate" class="p-4 space-y-4">
-          <div id="noSelection" class="text-sm text-ink-400 border border-dashed border-ink-600 rounded-xl p-4">
+          <div id="noSelection" class="text-sm text-ink-400 border border-dashed border-ink-600 rounded-xl p-4" data-i18n="editor.noSelection">
             Sélectionnez un bloc dans la structure (ou ajoutez-en un) pour ouvrir son générateur spécialisé.
           </div>
           <div id="generator" class="hidden space-y-4">
             <div>
-              <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400">Générateur spécialisé</p>
+              <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400" data-i18n="editor.genLabel">Générateur spécialisé</p>
               <p id="genBlockLabel" class="font-display font-semibold text-lg tracking-tight mt-0.5"></p>
               <p id="genBlockDesc" class="text-xs text-ink-400 mt-0.5"></p>
             </div>
             <div>
-              <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 mb-2">Suggestions</p>
+              <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 mb-2" data-i18n="editor.suggestions">Suggestions</p>
               <div id="presets" class="space-y-1.5"></div>
             </div>
             <div>
-              <label for="promptInput" class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2">Votre brief</label>
-              <textarea id="promptInput" rows="4" placeholder="Ex. : un header sombre pour une startup SaaS, accent violet en dégradé, CTA « Commencer »…"
+              <label for="promptInput" class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" data-i18n="editor.brief">Votre brief</label>
+              <textarea id="promptInput" rows="4" placeholder="Ex. : un header sombre pour une startup SaaS, accent violet en dégradé, CTA « Commencer »…" data-i18n-placeholder="editor.briefPh"
                 class="w-full rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm p-3 placeholder:text-ink-400/70 resize-y select-text"></textarea>
             </div>
             <button id="btnGenerate" class="w-full h-11 rounded-xl bg-gradient-to-r from-vio-600 to-indigo-600 hover:from-vio-500 hover:to-indigo-500 text-white text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shadow-vio-600/25 disabled:opacity-60 disabled:cursor-wait">
               <svg id="genIcon" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.7 4.6L18 9l-4.3 1.4L12 15l-1.7-4.6L6 9l4.3-1.4L12 3ZM19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15ZM5 16l.6 1.7L7 18l-1.4.6L5 20l-.6-1.4L3 18l1.4-.3L5 16Z" stroke-linejoin="round"/></svg>
               <svg id="genSpin" class="h-4 w-4 animate-spin hidden" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.25" stroke-width="3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
-              <span id="genLabel">Générer ce bloc</span>
+              <span id="genLabel" data-i18n="editor.generate">Générer ce bloc</span>
             </button>
             <p id="genMeta" class="text-[11px] font-mono text-ink-400 text-center hidden"></p>
-            <p class="text-[11px] text-ink-400 leading-relaxed">Le bloc existant est envoyé comme contexte : écrivez une retouche (« passe le fond en clair ») pour itérer plutôt que repartir de zéro.</p>
+            <p class="text-[11px] text-ink-400 leading-relaxed" data-i18n="editor.iterHint">Le bloc existant est envoyé comme contexte : écrivez une retouche (« passe le fond en clair ») pour itérer plutôt que repartir de zéro.</p>
           </div>
         </section>
 
         <!-- Onglet Code -->
         <section id="tab-code" class="p-4 space-y-3 hidden">
-          <div id="noCode" class="text-sm text-ink-400 border border-dashed border-ink-600 rounded-xl p-4">Aucun bloc sélectionné.</div>
+          <div id="noCode" class="text-sm text-ink-400 border border-dashed border-ink-600 rounded-xl p-4" data-i18n="editor.noCode">Aucun bloc sélectionné.</div>
           <div id="codePanel" class="hidden space-y-3">
             <div class="flex items-center justify-between">
-              <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400">HTML du bloc</p>
+              <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400" data-i18n="editor.blockHtml">HTML du bloc</p>
               <div class="flex items-center gap-3">
                 <button id="btnExpandCode" class="text-xs font-medium text-ink-300 hover:text-ink-100 flex items-center gap-1">
-                  <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" stroke-linecap="round" stroke-linejoin="round"/></svg>Agrandir
+                  <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="editor.expand">Agrandir</span>
                 </button>
                 <button id="btnCopyBlock" class="text-xs font-medium text-ink-300 hover:text-ink-100 flex items-center gap-1">
-                  <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copier
+                  <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span data-i18n="editor.copy">Copier</span>
                 </button>
               </div>
             </div>
@@ -164,24 +139,24 @@ tailwind.config = {
             <textarea id="codeEditor" rows="18" spellcheck="false"
               class="w-full rounded-xl bg-ink-850 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none font-mono text-[11px] leading-relaxed p-3 text-ink-200 resize-y select-text"></textarea>
             <div id="codeMonaco" class="hidden h-[60vh] min-h-[16rem] rounded-xl overflow-hidden border border-ink-600 select-text"></div>
-            <button id="btnApplyCode" class="w-full h-10 rounded-xl border border-ink-600 hover:bg-ink-800 text-sm font-medium">Appliquer à l'aperçu</button>
+            <button id="btnApplyCode" class="w-full h-10 rounded-xl border border-ink-600 hover:bg-ink-800 text-sm font-medium" data-i18n="editor.apply">Appliquer à l'aperçu</button>
           </div>
         </section>
 
         <!-- Onglet Marque -->
         <section id="tab-brand" class="p-4 space-y-4 hidden">
-          <p class="text-xs text-ink-400 leading-relaxed">Ce contexte est transmis à chaque génération pour garder la page cohérente.</p>
+          <p class="text-xs text-ink-400 leading-relaxed" data-i18n="editor.brandHint">Ce contexte est transmis à chaque génération pour garder la page cohérente.</p>
           <div>
-            <label class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" for="brandName">Nom du produit</label>
-            <input id="brandName" placeholder="Ex. : Nébula" class="w-full h-10 rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm px-3 select-text">
+            <label class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" for="brandName" data-i18n="editor.brandName">Nom du produit</label>
+            <input id="brandName" placeholder="Ex. : Nébula" data-i18n-placeholder="editor.brandNamePh" class="w-full h-10 rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm px-3 select-text">
           </div>
           <div>
-            <label class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" for="brandColors">Palette</label>
-            <input id="brandColors" placeholder="Ex. : fond sombre #0B0D12, accent violet #8B5CF6" class="w-full h-10 rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm px-3 select-text">
+            <label class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" for="brandColors" data-i18n="editor.brandColors">Palette</label>
+            <input id="brandColors" placeholder="Ex. : fond sombre #0B0D12, accent violet #8B5CF6" data-i18n-placeholder="editor.brandColorsPh" class="w-full h-10 rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm px-3 select-text">
           </div>
           <div>
-            <label class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" for="brandTone">Ton & secteur</label>
-            <input id="brandTone" placeholder="Ex. : SaaS B2B, moderne, direct" class="w-full h-10 rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm px-3 select-text">
+            <label class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" for="brandTone" data-i18n="editor.brandTone">Ton & secteur</label>
+            <input id="brandTone" placeholder="Ex. : SaaS B2B, moderne, direct" data-i18n-placeholder="editor.brandTonePh" class="w-full h-10 rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm px-3 select-text">
           </div>
         </section>
       </div>
@@ -229,7 +204,7 @@ const skeleton = (label) => `
 <section class="border-2 border-dashed border-slate-300 bg-slate-50 py-16">
   <div class="max-w-7xl mx-auto px-6 text-center">
     <p class="text-xs font-semibold uppercase tracking-widest text-slate-400">${label}</p>
-    <p class="mt-2 text-sm text-slate-400">Bloc en attente de génération — décrivez-le dans le panneau de droite.</p>
+    <p class="mt-2 text-sm text-slate-400">${t('editor.skeletonHint')}</p>
   </div>
 </section>`;
 
@@ -273,7 +248,7 @@ function renderPalette() {
 function renderStructure() {
   const el = $('#structure');
   if (!S.page.length) {
-    el.innerHTML = `<p class="text-xs text-ink-400 px-1">Aucun bloc pour l'instant.</p>`;
+    el.innerHTML = `<p class="text-xs text-ink-400 px-1">${t('editor.emptyStructure')}</p>`;
     return;
   }
   el.innerHTML = S.page.map((b, i) => {
@@ -286,14 +261,14 @@ function renderStructure() {
       <span class="${sel ? 'text-vio-400' : 'text-ink-400'} pl-1">${icon(c.icon)}</span>
       <div class="flex-1 min-w-0">
         <p class="text-xs font-medium truncate ${sel ? 'text-ink-100' : 'text-ink-200'}">${c.label}</p>
-        <p class="text-[10px] font-mono ${b.html ? 'text-emerald-400/80' : 'text-ink-400'}">${b.html ? 'généré' : 'vide'}</p>
+        <p class="text-[10px] font-mono ${b.html ? 'text-emerald-400/80' : 'text-ink-400'}">${b.html ? t('editor.stGenerated') : t('editor.stEmpty')}</p>
       </div>
       <div class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button data-up="${b.id}" ${i===0?'disabled':''} class="p-1 rounded hover:bg-ink-700 disabled:opacity-30" title="Monter" aria-label="Monter le bloc">
+        <button data-up="${b.id}" ${i===0?'disabled':''} class="p-1 rounded hover:bg-ink-700 disabled:opacity-30" title="${t('editor.up')}" aria-label="${t('editor.up')}">
           <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5m0 0-6 6m6-6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <button data-down="${b.id}" ${i===S.page.length-1?'disabled':''} class="p-1 rounded hover:bg-ink-700 disabled:opacity-30" title="Descendre" aria-label="Descendre le bloc">
+        <button data-down="${b.id}" ${i===S.page.length-1?'disabled':''} class="p-1 rounded hover:bg-ink-700 disabled:opacity-30" title="${t('editor.down')}" aria-label="${t('editor.down')}">
           <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14m0 0 6-6m-6 6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <button data-del="${b.id}" class="p-1 rounded hover:bg-red-500/20 text-red-400" title="Supprimer" aria-label="Supprimer le bloc">
+        <button data-del="${b.id}" class="p-1 rounded hover:bg-red-500/20 text-red-400" title="${t('editor.delBlock')}" aria-label="${t('editor.delBlock')}">
           <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-9 0 1 13h8l1-13" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </div>
     </div>`;
@@ -307,7 +282,7 @@ function pageHTML(forExport = false) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${$('#brandName').value || 'Ma page'} — générée avec NADAPROD</title>
+<title>${$('#brandName').value || t('editor.defaultPageName')} — ${t('editor.exportSuffix')}</title>
 <script src="https://cdn.tailwindcss.com"><\/script>
 </head>
 <body class="antialiased">
@@ -381,7 +356,7 @@ async function generate() {
   $('#btnGenerate').disabled = true;
   $('#genIcon').classList.add('hidden');
   $('#genSpin').classList.remove('hidden');
-  $('#genLabel').textContent = 'Génération en cours…';
+  $('#genLabel').textContent = t('editor.generating');
   $('#genMeta').classList.add('hidden');
 
   try {
@@ -396,20 +371,20 @@ async function generate() {
       }),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || ('Erreur ' + res.status));
+    if (!res.ok) throw new Error(data.error || t('common.errorCode', { code: res.status }));
     b.html = data.html;
     renderAll();
     $('#genMeta').textContent = `${data.model} · ${(data.elapsed_ms/1000).toFixed(1)} s`;
     $('#genMeta').classList.remove('hidden');
-    toast('Bloc généré');
+    toast(t('editor.toastGenerated'));
   } catch (err) {
-    toast(err.message || 'La génération a échoué', false);
+    toast(err.message || t('editor.genFailed'), false);
   } finally {
     S.generating = false;
     $('#btnGenerate').disabled = false;
     $('#genIcon').classList.remove('hidden');
     $('#genSpin').classList.add('hidden');
-    $('#genLabel').textContent = 'Générer ce bloc';
+    $('#genLabel').textContent = t('editor.generate');
   }
 }
 
@@ -488,7 +463,7 @@ async function mountCodeEditor() {
     codeMonaco.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => $('#btnApplyCode').click());
     $('#codeEditor').classList.add('hidden');
   } catch (_) {
-    toast('Éditeur Monaco indisponible — zone de texte simple conservée', false);
+    toast(t('editor.monacoDown'), false);
   } finally {
     mountingCode = false;
   }
@@ -526,22 +501,22 @@ $('#promptInput').addEventListener('keydown', (e) => {
 $('#btnApplyCode').addEventListener('click', () => {
   const b = selected(); if (!b) return;
   b.html = getCode();
-  renderAll(); toast('Code appliqué à l\u2019aperçu');
+  renderAll(); toast(t('editor.applied'));
 });
 $('#btnExpandCode').addEventListener('click', () => {
   const panel = $('#rightPanel');
   const wide = panel.classList.toggle('w-[44rem]');
   panel.classList.toggle('w-[22.5rem]', !wide);
-  $('#btnExpandCode').lastChild.textContent = wide ? 'Réduire' : 'Agrandir';
+  $('#btnExpandCode').lastChild.textContent = wide ? t('editor.collapse') : t('editor.expand');
 });
 $('#btnCopyBlock').addEventListener('click', async () => {
   const b = selected(); if (!b) return;
   await navigator.clipboard.writeText(b.html || '');
-  toast('HTML du bloc copié');
+  toast(t('editor.copiedBlock'));
 });
 $('#btnCopyPage').addEventListener('click', async () => {
   await navigator.clipboard.writeText(pageHTML(true));
-  toast('Page complète copiée');
+  toast(t('editor.copiedPage'));
 });
 $('#btnExport').addEventListener('click', () => {
   const blob = new Blob([pageHTML(true)], { type: 'text/html' });
@@ -550,12 +525,13 @@ $('#btnExport').addEventListener('click', () => {
   a.download = (($('#brandName').value || 'page').toLowerCase().replace(/\s+/g,'-')) + '.html';
   a.click();
   URL.revokeObjectURL(a.href);
-  toast('Fichier HTML exporté');
+  toast(t('editor.exported'));
 });
 ['brandName','brandColors','brandTone'].forEach(id => $('#'+id).addEventListener('input', save));
 
 /* ───────────────────── Démarrage ───────────────────── */
 (async function init() {
+  await I18N.ready;
   try {
     const [blocks, health] = await Promise.all([
       fetch('/api/blocks').then(r => r.json()),
@@ -569,7 +545,7 @@ $('#btnExport').addEventListener('click', () => {
       badge.classList.add('flex');
     }
   } catch (_) {
-    toast('Impossible de joindre le backend (/api/blocks)', false);
+    toast(t('editor.backendDown'), false);
   }
   restore();
   renderPalette();

@@ -3,15 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NADAPROD — Sites importés</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script>
-tailwind.config = { theme: { extend: {
-  fontFamily: { display:['"Space Grotesk"','sans-serif'], sans:['Inter','sans-serif'], mono:['"JetBrains Mono"','monospace'] },
-  colors: { ink:{950:'#07090D',900:'#0A0C11',850:'#0E1117',800:'#131722',700:'#1C2230',600:'#2A3245',400:'#5C687F',300:'#8A94A8',200:'#B9C0CF',100:'#E7EAF1'}, vio:{500:'#8B5CF6',400:'#A78BFA',600:'#7C3AED'} }
-}}}
-</script>
+<title data-i18n="sites.docTitle">NADAPROD — Sites importés</title>
+<link href="/static/tw.css" rel="stylesheet">
+<link href="/static/fonts.css" rel="stylesheet">
+<script src="/static/i18n.js"></script>
 </head>
 <body class="h-full bg-black text-ink-100 font-sans antialiased overflow-hidden select-none">
 
@@ -24,48 +19,52 @@ tailwind.config = { theme: { extend: {
     </a>
     
     &nbsp;
-    <p class="text-sm text-ink-300"><a href="/sites">Sites en ligne</a> &nbsp;&nbsp;&nbsp; <a href="/drafts" class="text-white">Brouillons</a></p>
+    <p class="text-sm text-ink-300"><a href="/sites" data-i18n="sites.navOnline">Sites en ligne</a> &nbsp;&nbsp;&nbsp; <a href="/drafts" class="text-white" data-i18n="sites.navDrafts">Brouillons</a></p>
 
     <!-- Contrôles visibles uniquement en édition -->
     <div id="editControls" class="hidden mx-auto flex items-center gap-2">
       <select id="pageSelect" class="h-9 rounded-lg bg-ink-800 border border-ink-600 text-xs px-2 outline-none focus:border-vio-500"></select>
-      <div class="flex items-center gap-1 rounded-lg bg-ink-800 p-1 border border-ink-700" role="group" aria-label="Mode d'édition">
-        <button data-mode="visual" class="mode-btn px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 text-ink-300 hover:text-ink-100" title="Édition visuelle assistée par IA">
-          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4l1.5 4L18 9.5 13.5 11 12 15l-1.5-4L6 9.5 10.5 8 12 4Z" stroke-linejoin="round"/></svg>Visuel · IA
+      <div class="flex items-center gap-1 rounded-lg bg-ink-800 p-1 border border-ink-700" role="group" aria-label="Mode d'édition" data-i18n-aria-label="sites.modeGroup">
+        <button data-mode="visual" class="mode-btn px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 text-ink-300 hover:text-ink-100" title="Édition visuelle assistée par IA" data-i18n-title="sites.modeVisualTitle">
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4l1.5 4L18 9.5 13.5 11 12 15l-1.5-4L6 9.5 10.5 8 12 4Z" stroke-linejoin="round"/></svg><span data-i18n="sites.modeVisual">Visuel · IA</span>
         </button>
-        <button data-mode="code" class="mode-btn px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 text-ink-300 hover:text-ink-100" title="Édition manuelle du code (Monaco)">
-          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M13 5l-2 14" stroke-linecap="round" stroke-linejoin="round"/></svg>Code
+        <button data-mode="code" class="mode-btn px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 text-ink-300 hover:text-ink-100" title="Édition manuelle du code (Monaco)" data-i18n-title="sites.modeCodeTitle">
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M13 5l-2 14" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="sites.modeCode">Code</span>
         </button>
       </div>
-      <button id="btnSave" class="h-9 px-4 rounded-lg text-xs font-semibold bg-gradient-to-r from-vio-600 to-indigo-600 hover:from-vio-500 hover:to-indigo-500 text-white shadow-lg shadow-vio-600/20">Enregistrer la page</button>
-      <span id="dirtyDot" class="hidden h-2 w-2 rounded-full bg-amber-400" title="Modifications non enregistrées"></span>
+      <button id="btnSave" class="h-9 px-4 rounded-lg text-xs font-semibold bg-gradient-to-r from-vio-600 to-indigo-600 hover:from-vio-500 hover:to-indigo-500 text-white shadow-lg shadow-vio-600/20" data-i18n="sites.save">Enregistrer la page</button>
+      <span id="dirtyDot" class="hidden h-2 w-2 rounded-full bg-amber-400" title="Modifications non enregistrées" data-i18n-title="sites.dirtyTitle"></span>
     </div>
 
     <div id="editRight" class="hidden flex items-center gap-2">
-      <input id="domainInput" placeholder="votre-domaine.fr" class="h-9 w-48 rounded-lg bg-ink-800 border border-ink-600 text-xs px-3 outline-none focus:border-vio-500 select-text">
-      <button id="btnDomain" class="h-9 px-3 rounded-lg text-xs font-medium border border-ink-600 hover:bg-ink-800">Brancher le domaine</button>
+      <input id="domainInput" placeholder="votre-domaine.fr" data-i18n-placeholder="sites.domainPh" class="h-9 w-48 rounded-lg bg-ink-800 border border-ink-600 text-xs px-3 outline-none focus:border-vio-500 select-text">
+      <button id="btnDomain" class="h-9 px-3 rounded-lg text-xs font-medium border border-ink-600 hover:bg-ink-800" data-i18n="sites.domainAttach">Brancher le domaine</button>
       <div class="relative">
-        <button id="btnSettings" title="Réglages de publication" aria-label="Réglages de publication" aria-expanded="false" class="h-9 w-9 rounded-lg border border-ink-600 hover:bg-ink-800 grid place-items-center text-ink-300 hover:text-ink-100">
+        <button id="btnSettings" title="Réglages de publication" data-i18n-title="sites.settingsBtn" aria-label="Réglages de publication" data-i18n-aria-label="sites.settingsBtn" aria-expanded="false" class="h-9 w-9 rounded-lg border border-ink-600 hover:bg-ink-800 grid place-items-center text-ink-300 hover:text-ink-100">
           <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.56-1.11 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.08A1.7 1.7 0 0 0 10.1 4.1V4a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56h.08a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.08a1.7 1.7 0 0 0 1.56 1.03H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.56 1.03Z" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <div id="settingsPanel" class="hidden absolute right-0 top-11 w-80 rounded-xl border border-ink-700 bg-ink-900 shadow-2xl shadow-black/60 p-4 space-y-4 z-50">
-          <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400">Publication</p>
+          <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400" data-i18n="sites.settingsTitle">Publication</p>
           <label class="flex items-start gap-3 cursor-pointer">
             <input type="checkbox" data-setting="compile" class="mt-0.5 h-4 w-4 rounded border-ink-600 bg-ink-800 accent-vio-500">
-            <span class="text-xs leading-relaxed"><span class="font-semibold text-ink-100 block">Tailwind compilé</span><span class="text-ink-400">Remplace <span class="font-mono">cdn.tailwindcss.com</span> par un CSS compilé sur le serveur — plus rapide, sans dépendance externe.</span></span>
+            <span class="text-xs leading-relaxed"><span class="font-semibold text-ink-100 block" data-i18n="sites.setCompileTitle">Tailwind compilé</span><span class="text-ink-400" data-i18n="sites.setCompileDesc">Remplace <span class="font-mono">cdn.tailwindcss.com</span> par un CSS compilé sur le serveur — plus rapide, sans dépendance externe.</span></span>
+          </label>
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" data-setting="fonts" class="mt-0.5 h-4 w-4 rounded border-ink-600 bg-ink-800 accent-vio-500">
+            <span class="text-xs leading-relaxed"><span class="font-semibold text-ink-100 block" data-i18n="sites.setFontsTitle">Polices locales</span><span class="text-ink-400" data-i18n="sites.setFontsDesc">Les polices <span class="font-mono">fonts.googleapis.com</span> sont copiées et servies par votre site — aucune requête vers Google.</span></span>
           </label>
           <label class="flex items-start gap-3 cursor-pointer">
             <input type="checkbox" data-setting="pwa" class="mt-0.5 h-4 w-4 rounded border-ink-600 bg-ink-800 accent-vio-500">
-            <span class="text-xs leading-relaxed"><span class="font-semibold text-ink-100 block">PWA automatique</span><span class="text-ink-400">Manifest, icône et service worker générés : site installable et consultable hors-ligne. Si le site fournit déjà les siens, ils sont respectés.</span></span>
+            <span class="text-xs leading-relaxed"><span class="font-semibold text-ink-100 block" data-i18n="sites.setPwaTitle">PWA automatique</span><span class="text-ink-400" data-i18n="sites.setPwaDesc">Manifest, icône et service worker générés : site installable et consultable hors-ligne. Si le site fournit déjà les siens, ils sont respectés.</span></span>
           </label>
           <label class="flex items-start gap-3 cursor-pointer">
             <input type="checkbox" data-setting="gdpr" class="mt-0.5 h-4 w-4 rounded border-ink-600 bg-ink-800 accent-vio-500">
-            <span class="text-xs leading-relaxed"><span class="font-semibold text-ink-100 block">Bandeau RGPD</span><span class="text-ink-400">« Zéro stress : tout est local » — bouton OK et lien vers les <a href="https://nadaprod.com/legal" target="_blank" rel="noopener" class="text-vio-400 hover:underline">mentions légales</a>.</span></span>
+            <span class="text-xs leading-relaxed"><span class="font-semibold text-ink-100 block" data-i18n="sites.setGdprTitle">Bandeau RGPD</span><span class="text-ink-400" data-i18n="sites.setGdprDesc">« Zéro stress : tout est local » — bouton OK et lien vers les <a href="https://nadaprod.com/legal" target="_blank" rel="noopener" class="text-vio-400 hover:underline">mentions légales</a>.</span></span>
           </label>
-          <p class="text-[11px] text-ink-400 leading-relaxed border-t border-ink-700 pt-3">Appliqué à la version publiée (domaine branché). L'éditeur travaille toujours sur la source d'origine.</p>
+          <p class="text-[11px] text-ink-400 leading-relaxed border-t border-ink-700 pt-3" data-i18n="sites.settingsNote">Appliqué à la version publiée (domaine branché). L'éditeur travaille toujours sur la source d'origine.</p>
         </div>
       </div>
-      <button id="btnBack" class="h-9 px-3 rounded-lg text-xs font-medium text-ink-300 hover:text-ink-100">← Mes sites</button>
+      <button id="btnBack" class="h-9 px-3 rounded-lg text-xs font-medium text-ink-300 hover:text-ink-100" data-i18n="sites.back">← Mes sites</button>
     </div>
   </header>
 
@@ -78,8 +77,8 @@ tailwind.config = { theme: { extend: {
         <div class="mx-auto h-12 w-12 rounded-2xl bg-ink-800 grid place-items-center mb-4">
           <svg class="h-5 w-5 text-vio-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4m0 0 4 4m-4-4-4 4M4 17v1a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
-        <p class="font-display font-semibold">Importer un site</p>
-        <p class="text-sm text-ink-400 mt-1">Déposez un <span class="font-mono text-ink-300">.zip</span> ou <span class="font-mono text-ink-300">.tar.gz</span> — n'importe quelle stack, du moment que ce sont des fichiers HTML.</p>
+        <p class="font-display font-semibold" data-i18n="sites.dropTitle">Importer un site</p>
+        <p class="text-sm text-ink-400 mt-1" data-i18n="sites.dropDesc">Déposez un <span class="font-mono text-ink-300">.zip</span> ou <span class="font-mono text-ink-300">.tar.gz</span> — n'importe quelle stack, du moment que ce sont des fichiers HTML.</p>
         <p id="uploadStatus" class="text-xs font-mono text-vio-400 mt-3 hidden"></p>
         <input id="fileInput" type="file" accept=".zip,.gz,.tgz,application/zip,application/gzip" class="hidden">
       </label>
@@ -91,33 +90,33 @@ tailwind.config = { theme: { extend: {
   <div id="viewEdit" class="hidden flex-1 min-h-0 flex">
     <main class="flex-1 min-w-0 bg-black p-4">
       <div id="visualWrap" class="h-full rounded-xl overflow-hidden ring-1 ring-ink-700 shadow-2xl shadow-black/50 bg-white">
-        <iframe id="frame" title="Page en cours d'édition" class="w-full h-full"></iframe>
+        <iframe id="frame" title="Page en cours d'édition" data-i18n-title="sites.frameTitle" class="w-full h-full"></iframe>
       </div>
       <div id="codeWrap" class="hidden h-full rounded-xl overflow-hidden ring-1 ring-ink-700 shadow-2xl shadow-black/50 bg-ink-850 select-text"></div>
     </main>
     <aside id="editAside" class="w-[22.5rem] shrink-0 border-l border-ink-700 bg-ink-900 flex flex-col min-h-0">
       <div class="p-4 space-y-4 flex-1 overflow-y-auto">
         <div>
-          <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400">Élément sélectionné</p>
-          <p id="selInfo" class="font-display font-semibold text-lg tracking-tight mt-0.5 text-ink-400">aucun</p>
-          <p class="text-xs text-ink-400 mt-1 leading-relaxed">Cliquez sur un élément dans la page pour le sélectionner, double-cliquez pour éditer son texte, <span class="font-mono">Échap</span> pour désélectionner.</p>
+          <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400" data-i18n="sites.selLabel">Élément sélectionné</p>
+          <p id="selInfo" class="font-display font-semibold text-lg tracking-tight mt-0.5 text-ink-400" data-i18n="sites.selNone">aucun</p>
+          <p class="text-xs text-ink-400 mt-1 leading-relaxed" data-i18n="sites.selHelp">Cliquez sur un élément dans la page pour le sélectionner, double-cliquez pour éditer son texte, <span class="font-mono">Échap</span> pour désélectionner.</p>
         </div>
         <div class="flex gap-2">
-          <button id="btnParent" disabled class="flex-1 h-9 rounded-lg text-xs font-medium border border-ink-600 hover:bg-ink-800 disabled:opacity-40">Parent ↰</button>
-          <button id="btnDelete" disabled class="flex-1 h-9 rounded-lg text-xs font-medium border border-red-500/40 text-red-400 hover:bg-red-500/10 disabled:opacity-40">Supprimer</button>
+          <button id="btnParent" disabled class="flex-1 h-9 rounded-lg text-xs font-medium border border-ink-600 hover:bg-ink-800 disabled:opacity-40" data-i18n="sites.parent">Parent ↰</button>
+          <button id="btnDelete" disabled class="flex-1 h-9 rounded-lg text-xs font-medium border border-red-500/40 text-red-400 hover:bg-red-500/10 disabled:opacity-40" data-i18n="sites.deleteEl">Supprimer</button>
         </div>
         <div>
-          <label for="aiPrompt" class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2">Retoucher avec l'IA</label>
-          <textarea id="aiPrompt" rows="4" placeholder="Ex. : passe ce bouton en style outline violet, arrondi complet…"
+          <label for="aiPrompt" class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" data-i18n="sites.aiLabel">Retoucher avec l'IA</label>
+          <textarea id="aiPrompt" rows="4" placeholder="Ex. : passe ce bouton en style outline violet, arrondi complet…" data-i18n-placeholder="sites.aiPh"
             class="w-full rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm p-3 placeholder:text-ink-400/70 resize-y select-text"></textarea>
           <button id="btnAI" disabled class="mt-2 w-full h-11 rounded-xl bg-gradient-to-r from-vio-600 to-indigo-600 hover:from-vio-500 hover:to-indigo-500 text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             <svg id="aiSpin" class="h-4 w-4 animate-spin hidden" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.25" stroke-width="3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
-            <span id="aiLabel">Modifier l'élément</span>
+            <span id="aiLabel" data-i18n="sites.aiButton">Modifier l'élément</span>
           </button>
         </div>
         <div class="rounded-xl border border-ink-700 bg-ink-850 p-3">
-          <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 mb-2">Mise en ligne</p>
-          <p id="liveInfo" class="text-xs text-ink-300 leading-relaxed">Aucun domaine branché. Renseignez-le en haut à droite puis pointez un enregistrement <span class="font-mono">A</span> de votre DNS vers ce serveur : le site sera servi dès que l'hôte correspondra.</p>
+          <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 mb-2" data-i18n="sites.liveTitle">Mise en ligne</p>
+          <p id="liveInfo" class="text-xs text-ink-300 leading-relaxed" data-i18n="sites.liveNoneRoot">Aucun domaine branché. Renseignez-le en haut à droite puis pointez un enregistrement <span class="font-mono">A</span> de votre DNS vers ce serveur : le site sera servi dès que l'hôte correspondra.</p>
         </div>
       </div>
     </aside>
@@ -142,7 +141,7 @@ const S = {
   editor: null,       // instance Monaco, créée au premier passage en mode code
   settingValue: false,// vrai pendant un setValue programmatique (à ne pas compter comme "dirty")
   frameStale: false,  // vrai si le fichier a été réécrit pendant le mode code → recharger l'iframe
-  settings: { compile: true, pwa: true, gdpr: true }, // réglages de publication (panneau ⚙)
+  settings: { compile: true, pwa: true, gdpr: true, fonts: true }, // réglages de publication (panneau ⚙)
 };
 
 /* ───────── Monaco (chargé à la demande depuis le CDN) ───────── */
@@ -205,29 +204,29 @@ async function loadSites() {
       </div>
       <div class="flex-1 min-w-0">
         <p class="font-display font-semibold truncate">${esc(s.id)}</p>
-        <p class="text-xs font-mono text-ink-400 truncate">${s.pages.length} page${s.pages.length>1?'s':''}${s.domain ? ' · <span class="text-emerald-400">'+esc(s.domain)+'</span>' : ''}</p>
+        <p class="text-xs font-mono text-ink-400 truncate">${s.pages.length>1 ? t('sites.pageCountMany',{n:s.pages.length}) : t('sites.pageCountOne')}${s.domain ? ' · <span class="text-emerald-400">'+esc(s.domain)+'</span>' : ''}</p>
       </div>
-      <a href="/preview/${encodeURIComponent(s.id)}/" target="_blank" class="h-9 px-3 rounded-lg text-xs font-medium border border-ink-600 hover:bg-ink-800 grid place-items-center">Aperçu</a>
-      <button data-open="${esc(s.id)}" class="h-9 px-4 rounded-lg text-xs font-semibold bg-gradient-to-r from-vio-600 to-indigo-600 hover:from-vio-500 hover:to-indigo-500 text-white">Éditer</button>
-      <button data-remove="${esc(s.id)}" class="h-9 w-9 rounded-lg border border-red-500/40 text-red-400 hover:bg-red-500/10 grid place-items-center" title="Supprimer le site" aria-label="Supprimer le site">
+      <a href="/preview/${encodeURIComponent(s.id)}/" target="_blank" class="h-9 px-3 rounded-lg text-xs font-medium border border-ink-600 hover:bg-ink-800 grid place-items-center">${t('sites.preview')}</a>
+      <button data-open="${esc(s.id)}" class="h-9 px-4 rounded-lg text-xs font-semibold bg-gradient-to-r from-vio-600 to-indigo-600 hover:from-vio-500 hover:to-indigo-500 text-white">${t('sites.edit')}</button>
+      <button data-remove="${esc(s.id)}" class="h-9 w-9 rounded-lg border border-red-500/40 text-red-400 hover:bg-red-500/10 grid place-items-center" title="${t('sites.deleteSite')}" aria-label="${t('sites.deleteSite')}">
         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-9 0 1 13h8l1-13" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
     </div>` : ``).join('')
-  : `<p class="text-sm text-ink-400 text-center">Aucun site pour l'instant — importez votre première archive ci-dessus.</p>`;
+  : `<p class="text-sm text-ink-400 text-center">${t('sites.emptyList')}</p>`;
 }
 
 async function upload(file) {
   const st = $('#uploadStatus');
   st.classList.remove('hidden');
-  st.textContent = 'Import de ' + file.name + '…';
+  st.textContent = t('sites.importing', { name: file.name });
   const fd = new FormData();
   fd.append('archive', file);
   try {
     const res = await fetch('/api/sites', { method: 'POST', body: fd });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Erreur ' + res.status);
-    st.textContent = data.pages.length + ' pages importées';
-    toast('Site « ' + data.id + ' » importé');
+    if (!res.ok) throw new Error(data.error || t('common.errorCode', { code: res.status }));
+    st.textContent = t('sites.importedPages', { n: data.pages.length });
+    toast(t('sites.importedToast', { id: data.id }));
     await loadSites();
   } catch (err) {
     st.textContent = '';
@@ -247,7 +246,7 @@ $('#fileInput').addEventListener('change', (e) => e.target.files[0] && upload(e.
 /* ───────── Vue édition ───────── */
 function openEditor(site) {
   S.siteId = site.id; S.domain = site.domain || ''; S.dirty = false;
-  S.settings = Object.assign({ compile: true, pwa: true, gdpr: true }, site.settings || {});
+  S.settings = Object.assign({ compile: true, pwa: true, gdpr: true, fonts: true }, site.settings || {});
   S.mode = 'visual'; S.frameStale = false; renderMode();
   renderSettings();
   $('#viewList').classList.add('hidden');
@@ -270,7 +269,7 @@ function closeEditor() {
   loadSites();
 }
 async function loadPage(p) {
-  S.page = p; S.dirty = false; S.frameStale = false; setSelection(false, 'aucun');
+  S.page = p; S.dirty = false; S.frameStale = false; setSelection(false, t('sites.selNone'));
   $('#dirtyDot').classList.add('hidden');
   $('#frame').src = '/edit/' + S.siteId + '/' + p;
   if (S.mode === 'code' && S.editor) {
@@ -306,9 +305,9 @@ async function saveSettings(key, value) {
       body: JSON.stringify({ [key]: value }),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Erreur ' + res.status);
+    if (!res.ok) throw new Error(data.error || t('common.errorCode', { code: res.status }));
     S.settings = data.settings;
-    toast('Réglages enregistrés — republication en cours');
+    toast(t('sites.toastSettings'));
   } catch (err) {
     S.settings[key] = prev;
     toast(err.message, false);
@@ -318,8 +317,8 @@ async function saveSettings(key, value) {
 
 function updateLiveInfo() {
   $('#liveInfo').innerHTML = S.domain
-    ? `Servi sur <span class="font-mono text-emerald-400">${esc(S.domain)}</span> dès que le DNS pointe ici (enregistrement <span class="font-mono">A</span>). Chaque « Enregistrer » est en ligne immédiatement.`
-    : `Aucun domaine branché. Renseignez-le en haut à droite puis pointez un enregistrement <span class="font-mono">A</span> de votre DNS vers ce serveur.`;
+    ? t('sites.liveOn', { domain: esc(S.domain) })
+    : t('sites.liveNoneRoot');
 }
 
 const frameWin = () => $('#frame').contentWindow;
@@ -377,12 +376,12 @@ async function enterCode() {
   let html;
   if (S.dirty) {
     html = await getVisualHTML();
-    if (html == null) return toast('La page ne répond pas — enregistrez-la avant de passer en mode code', false);
+    if (html == null) return toast(t('sites.pageNoAnswerSave'), false);
   } else {
     html = await fetchRawPage();
-    if (html == null) return toast('Impossible de lire la page', false);
+    if (html == null) return toast(t('sites.cantRead'), false);
   }
-  try { await ensureEditor(); } catch (_) { return toast('Éditeur de code indisponible (CDN Monaco inaccessible)', false); }
+  try { await ensureEditor(); } catch (_) { return toast(t('sites.monacoDown'), false); }
   const wasDirty = S.dirty;
   setEditorValue(html);
   if (wasDirty) markDirty();
@@ -393,7 +392,7 @@ async function enterCode() {
 async function enterVisual() {
   if (S.mode === 'visual') return;
   if (S.dirty) {
-    if (!confirm('Enregistrer les modifications du code pour les voir en mode visuel ?')) return;
+    if (!confirm(t('sites.confirmSaveCode'))) return;
     if (!await savePage()) return;
   }
   S.mode = 'visual'; renderMode();
@@ -408,7 +407,7 @@ window.addEventListener('message', (e) => {
       setSelection(true, '<' + e.data.tag + '>');
       break;
     case 'wp:deselected':
-      setSelection(false, 'aucun');
+      setSelection(false, t('sites.selNone'));
       break;
     case 'wp:html':
       if (S.saveResolve) { S.saveResolve(e.data.html); S.saveResolve = null; }
@@ -426,29 +425,29 @@ function markDirty(){ S.dirty = true; $('#dirtyDot').classList.remove('hidden');
 async function savePage() {
   if (!S.siteId || !S.page) return false;
   const html = (S.mode === 'code' && S.editor) ? S.editor.getValue() : await getVisualHTML();
-  if (html == null) { toast('La page ne répond pas — rechargez-la', false); return false; }
+  if (html == null) { toast(t('sites.pageNoAnswer'), false); return false; }
   const res = await fetch('/api/sites/' + S.siteId + '/file', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ path: S.page, html }),
   });
   const data = await res.json();
-  if (!res.ok) { toast(data.error || 'Échec de la sauvegarde', false); return false; }
+  if (!res.ok) { toast(data.error || t('sites.saveFailed'), false); return false; }
   S.dirty = false;
   $('#dirtyDot').classList.add('hidden');
   if (S.mode === 'code') S.frameStale = true; // l'iframe visuelle montre encore l'ancien fichier
-  toast('Page enregistrée' + (S.domain ? ' — en ligne sur ' + S.domain : ''));
+  toast(S.domain ? t('sites.toastSavedLive', { domain: S.domain }) : t('sites.toastSaved'));
   return true;
 }
 
 async function aiEdit() {
   if (!S.hasSelection || S.aiBusy) return;
   const prompt = $('#aiPrompt').value.trim();
-  if (!prompt) return toast('Décrivez la retouche souhaitée', false);
+  if (!prompt) return toast(t('sites.aiDescribe'), false);
   S.aiBusy = true;
   $('#btnAI').disabled = true;
   $('#aiSpin').classList.remove('hidden');
-  $('#aiLabel').textContent = 'Retouche en cours…';
+  $('#aiLabel').textContent = t('sites.aiBusy');
   try {
     const res = await fetch('/api/generate', {
       method: 'POST',
@@ -456,17 +455,17 @@ async function aiEdit() {
       body: JSON.stringify({ block: 'element', prompt, current_html: lastSelectedHTML, brand: {} }),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Erreur ' + res.status);
+    if (!res.ok) throw new Error(data.error || t('common.errorCode', { code: res.status }));
     frameWin().postMessage({ type: 'wp:replace', html: data.html }, location.origin);
     markDirty();
-    toast('Élément retouché — pensez à enregistrer');
+    toast(t('sites.toastAiDone'));
   } catch (err) {
     toast(err.message, false);
   } finally {
     S.aiBusy = false;
     $('#btnAI').disabled = !S.hasSelection;
     $('#aiSpin').classList.add('hidden');
-    $('#aiLabel').textContent = 'Modifier l\u2019élément';
+    $('#aiLabel').textContent = t('sites.aiButton');
   }
 }
 
@@ -483,18 +482,18 @@ document.addEventListener('click', async (e) => {
   if (e.target.closest('#btnSettings')) return toggleSettingsPanel();
   if (!e.target.closest('#settingsPanel')) toggleSettingsPanel(false);
   const rm = e.target.closest('[data-remove]');
-  if (rm && confirm('Supprimer définitivement ce site ?')) {
+  if (rm && confirm(t('sites.confirmDeleteSite'))) {
     await fetch('/api/sites/' + rm.dataset.remove, { method: 'DELETE' });
-    toast('Site supprimé');
+    toast(t('sites.toastDeleted'));
     return loadSites();
   }
 });
 $('#btnBack').addEventListener('click', () => {
-  if (S.dirty && !confirm('Modifications non enregistrées. Quitter quand même ?')) return;
+  if (S.dirty && !confirm(t('sites.confirmLeave'))) return;
   closeEditor();
 });
 $('#pageSelect').addEventListener('change', (e) => {
-  if (S.dirty && !confirm('Modifications non enregistrées sur cette page. Changer quand même ?')) {
+  if (S.dirty && !confirm(t('sites.confirmSwitchPage'))) {
     e.target.value = S.page; return;
   }
   loadPage(e.target.value);
@@ -513,17 +512,17 @@ $('#btnDomain').addEventListener('click', async () => {
     body: JSON.stringify({ domain }),
   });
   const data = await res.json();
-  if (!res.ok) return toast(data.error || 'Échec', false);
+  if (!res.ok) return toast(data.error || t('sites.fail'), false);
   S.domain = data.domain;
   updateLiveInfo();
-  toast(domain ? 'Domaine branché : ' + data.domain : 'Domaine débranché');
+  toast(domain ? t('sites.domainOn', { domain: data.domain }) : t('sites.domainOff'));
 });
 document.addEventListener('keydown', (e) => {
   if ((e.metaKey || e.ctrlKey) && e.key === 's' && S.siteId) { e.preventDefault(); savePage(); }
 });
 window.addEventListener('beforeunload', (e) => { if (S.dirty) e.preventDefault(); });
 
-loadSites();
+I18N.ready.then(loadSites);
 </script>
 </body>
 </html>
