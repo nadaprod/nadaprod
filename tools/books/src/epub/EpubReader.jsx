@@ -1,1 +1,0 @@
-import ePub from 'epubjs'
