@@ -7,6 +7,7 @@
 <link href="/static/tw.css" rel="stylesheet">
 <link href="/static/fonts.css" rel="stylesheet">
 <script src="/static/i18n.js"></script>
+<script src="/static/sites-code.js"></script>
 </head>
 <body class="h-full bg-black text-ink-100 font-sans antialiased overflow-hidden select-none">
 
@@ -19,11 +20,13 @@
     </a>
     
     &nbsp;
-    <p class="text-sm text-ink-300"><a href="/sites" data-i18n="sites.navOnline">Sites en ligne</a> &nbsp;&nbsp;&nbsp; <a href="/drafts" class="text-white" data-i18n="sites.navDrafts">Brouillons</a></p>
+    <p class="text-sm text-ink-300"><a href="/sites" data-i18n="sites.navOnline">Sites en ligne</a> &nbsp;&nbsp;&nbsp; <a href="/drafts" class="text-white" data-i18n="sites.navDrafts">Brouillons</a> &nbsp;&nbsp;&nbsp; <a href="/editor" data-i18n="sites.navStudio">Studio</a></p>
 
     <!-- Contrôles visibles uniquement en édition -->
     <div id="editControls" class="hidden mx-auto flex items-center gap-2">
       <select id="pageSelect" class="h-9 rounded-lg bg-ink-800 border border-ink-600 text-xs px-2 outline-none focus:border-vio-500"></select>
+      <button id="btnNewPage" class="h-9 px-3 rounded-lg text-xs font-medium border border-ink-600 hover:bg-ink-800" title="Nouvelle page dans ce site" data-i18n-title="sites.newPageTitle" data-i18n="sites.newPage">+ Page</button>
+      <button id="btnStudio" class="h-9 px-3 rounded-lg text-xs font-medium border border-vio-500/60 text-vio-400 hover:bg-vio-500/10" title="Ouvrir cette page dans le studio de blocs" data-i18n-title="sites.openStudioTitle" data-i18n="sites.openStudio">Studio</button>
       <div class="flex items-center gap-1 rounded-lg bg-ink-800 p-1 border border-ink-700" role="group" aria-label="Mode d'édition" data-i18n-aria-label="sites.modeGroup">
         <button data-mode="visual" class="mode-btn px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 text-ink-300 hover:text-ink-100" title="Édition visuelle assistée par IA" data-i18n-title="sites.modeVisualTitle">
           <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4l1.5 4L18 9.5 13.5 11 12 15l-1.5-4L6 9.5 10.5 8 12 4Z" stroke-linejoin="round"/></svg><span data-i18n="sites.modeVisual">Visuel · IA</span>
@@ -82,7 +85,30 @@
         <p id="uploadStatus" class="text-xs font-mono text-vio-400 mt-3 hidden"></p>
         <input id="fileInput" type="file" accept=".zip,.gz,.tgz,application/zip,application/gzip" class="hidden">
       </label>
+      <div id="newSiteRow" class="hidden flex justify-end">
+        <button id="btnNewSite" class="h-9 px-4 rounded-lg text-xs font-semibold bg-gradient-to-r from-vio-600 to-indigo-600 hover:from-vio-500 hover:to-indigo-500 text-white" data-i18n="sites.newSite">+ Nouveau site (studio)</button>
+      </div>
       <div id="siteList" class="space-y-3" style="padding-bottom:200px"></div>
+      <!-- Nouvelle page : vierge dans le studio, copie d'une page, ou page vierge simple -->
+      <dialog id="newPageDlg" class="rounded-2xl border border-ink-600 bg-ink-900 text-ink-100 p-0 w-full max-w-md backdrop:bg-black/70">
+        <form method="dialog" id="newPageForm" class="p-5 space-y-4">
+          <p class="font-display font-semibold tracking-tight" data-i18n="sites.newPageTitle">Nouvelle page dans ce site</p>
+          <div>
+            <label class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" for="npName" data-i18n="sites.newPageName">Nom de la page</label>
+            <input id="npName" required maxlength="120" placeholder="a-propos" class="w-full h-10 rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 outline-none text-sm px-3 select-text">
+          </div>
+          <div class="space-y-2 text-sm">
+            <label class="flex items-center gap-2"><input type="radio" name="npMode" value="studio" checked class="accent-vio-500"><span data-i18n="sites.newPageStudio">La composer dans le studio (IA)</span></label>
+            <label class="flex items-center gap-2"><input type="radio" name="npMode" value="copy" class="accent-vio-500"><span data-i18n="sites.newPageCopy">Copier une page existante :</span>
+              <select id="npFrom" class="h-8 flex-1 rounded-lg bg-ink-800 border border-ink-600 text-xs px-2 outline-none"></select></label>
+            <label class="flex items-center gap-2"><input type="radio" name="npMode" value="blank" class="accent-vio-500"><span data-i18n="sites.newPageBlank">Page vierge, à éditer ici</span></label>
+          </div>
+          <div class="flex justify-end gap-2">
+            <button type="button" id="npCancel" class="h-9 px-4 rounded-lg text-sm border border-ink-600 hover:bg-ink-800" data-i18n="studio.cancel">Annuler</button>
+            <button type="submit" class="h-9 px-4 rounded-lg text-sm font-semibold bg-vio-600 hover:bg-vio-500 text-white" data-i18n="sites.newPageGo">Créer</button>
+          </div>
+        </form>
+      </dialog>
     </div>
   </main>
 
@@ -135,6 +161,7 @@
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let sitesCache = []; // dernier GET /api/sites — évite de faire transiter pages/domain par le DOM
+let ME = null;       // compte connecté ({email, root, sites}) — /api/me au boot (le serveur fait foi)
 const S = {
   siteId: null, page: null, domain: '', dirty: false, hasSelection: false, aiBusy: false, saveResolve: null,
   mode: 'visual',     // 'visual' (IA) ou 'code' (Monaco)
@@ -204,15 +231,66 @@ async function loadSites() {
       </div>
       <div class="flex-1 min-w-0">
         <p class="font-display font-semibold truncate">${esc(s.id)}</p>
-        <p class="text-xs font-mono text-ink-400 truncate">${s.pages.length>1 ? t('sites.pageCountMany',{n:s.pages.length}) : t('sites.pageCountOne')}${s.domain ? ' · <span class="text-emerald-400">'+esc(s.domain)+'</span>' : ''}</p>
+        <p class="text-xs font-mono text-ink-400 truncate">${(s.pages||[]).length!==1 ? t('sites.pageCountMany',{n:(s.pages||[]).length}) : t('sites.pageCountOne')}${s.domain ? ' · <span class="text-emerald-400">'+esc(s.domain)+'</span>' : ''}</p>
       </div>
       <a href="/preview/${encodeURIComponent(s.id)}/" target="_blank" class="h-9 px-3 rounded-lg text-xs font-medium border border-ink-600 hover:bg-ink-800 grid place-items-center">${t('sites.preview')}</a>
+      <button data-newpage="${esc(s.id)}" class="h-9 px-3 rounded-lg text-xs font-medium border border-ink-600 hover:bg-ink-800" title="${t('sites.newPageTitle')}">${t('sites.newPage')}</button>
       <button data-open="${esc(s.id)}" class="h-9 px-4 rounded-lg text-xs font-semibold bg-gradient-to-r from-vio-600 to-indigo-600 hover:from-vio-500 hover:to-indigo-500 text-white">${t('sites.edit')}</button>
       <button data-remove="${esc(s.id)}" class="h-9 w-9 rounded-lg border border-red-500/40 text-red-400 hover:bg-red-500/10 grid place-items-center" title="${t('sites.deleteSite')}" aria-label="${t('sites.deleteSite')}">
         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-9 0 1 13h8l1-13" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
     </div>` : ``).join('')
   : `<p class="text-sm text-ink-400 text-center">${t('sites.emptyList')}</p>`;
+  $('#newSiteRow').classList.toggle('hidden', !(ME && ME.root));
+}
+
+/* ───────── Nouveau site / nouvelle page (passerelle avec le studio) ───────── */
+
+// Site créé de zéro (root) : dossier vide, puis le studio pour composer index.html.
+async function newSite() {
+  const name = prompt(t('sites.newSitePrompt'));
+  if (!name || !name.trim()) return;
+  try {
+    const res = await fetch('/api/sites/new', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name.trim() }) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || t('common.errorCode', { code: res.status }));
+    location.href = '/editor?site=' + encodeURIComponent(data.id) + '&path=index.html';
+  } catch (err) { toast(err.message, false); }
+}
+
+let npSite = null; // site visé par le dialogue « nouvelle page »
+function openNewPage(siteId) {
+  const site = sitesCache.find(s => s.id === siteId);
+  if (!site) return;
+  npSite = site;
+  $('#npName').value = '';
+  $('#npFrom').innerHTML = (site.pages||[]).map(p => `<option value="${esc(p)}">${esc(p)}</option>`).join('');
+  $('#npFrom').disabled = !(site.pages||[]).length;
+  $('#newPageDlg').showModal();
+  $('#npName').focus();
+}
+async function createNewPage() {
+  const name = $('#npName').value.trim();
+  const mode = document.querySelector('input[name=npMode]:checked').value;
+  if (!name || !npSite) return;
+  $('#newPageDlg').close();
+  if (mode === 'studio') {
+    const path = /\.html$/i.test(name) || name.includes('/') ? name : name.toLowerCase().replace(/[^a-z0-9/._-]+/g, '-').replace(/^-|-$/g, '') + '.html';
+    location.href = '/editor?site=' + encodeURIComponent(npSite.id) + '&path=' + encodeURIComponent(path);
+    return;
+  }
+  try {
+    const body = { name };
+    if (mode === 'copy') body.from = $('#npFrom').value;
+    const res = await fetch('/api/sites/' + encodeURIComponent(npSite.id) + '/pages', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || t('common.errorCode', { code: res.status }));
+    toast(t('sites.newPageDone', { path: data.path }));
+    const sites = await fetch('/api/sites').then(r => r.json());
+    sitesCache = sites;
+    const site = sites.find(s => s.id === npSite.id);
+    if (site) { openEditor(site); loadPage(data.path); $('#pageSelect').value = data.path; }
+  } catch (err) { toast(err.message, false); }
 }
 
 async function upload(file) {
@@ -255,9 +333,9 @@ function openEditor(site) {
   $('#editControls').classList.remove('hidden');
   $('#editRight').classList.remove('hidden');
   $('#domainInput').value = S.domain;
-  $('#pageSelect').innerHTML = site.pages.map(p => `<option value="${p}">${p}</option>`).join('');
+  $('#pageSelect').innerHTML = (site.pages||[]).map(p => `<option value="${p}">${p}</option>`).join('');
   updateLiveInfo();
-  loadPage(site.pages[0]);
+  if ((site.pages||[]).length) loadPage(site.pages[0]); else openNewPage(site.id);
 }
 function closeEditor() {
   S.siteId = null;
@@ -272,9 +350,8 @@ async function loadPage(p) {
   S.page = p; S.dirty = false; S.frameStale = false; setSelection(false, t('sites.selNone'));
   $('#dirtyDot').classList.add('hidden');
   $('#frame').src = '/edit/' + S.siteId + '/' + p;
-  if (S.mode === 'code' && S.editor) {
-    const html = await fetchRawPage();
-    if (html != null) setEditorValue(html);
+  if (S.mode === 'code') {
+    try { await CodeMode.open(S.siteId, p); } catch (_) { toast(t('sites.cantRead'), false); }
   }
 }
 function setSelection(has, label) {
@@ -333,20 +410,11 @@ function renderMode() {
   });
   $('#visualWrap').classList.toggle('hidden', S.mode !== 'visual');
   $('#codeWrap').classList.toggle('hidden', S.mode !== 'code');
+  if (S.mode === 'code') CodeMode.layout();
   $('#editAside').classList.toggle('hidden', S.mode === 'code');
 }
 
-function setEditorValue(html) {
-  S.settingValue = true;
-  S.editor.setValue(html);
-  S.settingValue = false;
-}
 
-/* Contenu brut du fichier sur disque (l'aperçu sert la page sans injection). */
-function fetchRawPage() {
-  return fetch('/preview/' + S.siteId + '/' + S.page, { cache: 'no-store' })
-    .then(r => r.ok ? r.text() : null).catch(() => null);
-}
 
 /* HTML courant de l'iframe, sérialisé sans artefacts d'édition. */
 function getVisualHTML() {
@@ -357,44 +425,28 @@ function getVisualHTML() {
   });
 }
 
-async function ensureEditor() {
-  if (S.editor) return;
-  const monaco = await loadMonaco();
-  S.editor = monaco.editor.create($('#codeWrap'), {
-    value: '', language: 'html', theme: 'nadaprod',
-    automaticLayout: true, minimap: { enabled: true }, wordWrap: 'on',
-    fontSize: 13, fontFamily: '"JetBrains Mono", monospace', tabSize: 2,
-    scrollBeyondLastLine: false, padding: { top: 12 },
-  });
-  S.editor.onDidChangeModelContent(() => { if (!S.settingValue) markDirty(); });
-  S.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, savePage);
-}
 
 async function enterCode() {
   if (S.mode === 'code' || !S.siteId) return;
   // Les retouches visuelles non enregistrées sont reprises telles quelles dans le code.
-  let html;
+  let html = null;
   if (S.dirty) {
     html = await getVisualHTML();
     if (html == null) return toast(t('sites.pageNoAnswerSave'), false);
-  } else {
-    html = await fetchRawPage();
-    if (html == null) return toast(t('sites.cantRead'), false);
   }
-  try { await ensureEditor(); } catch (_) { return toast(t('sites.monacoDown'), false); }
-  const wasDirty = S.dirty;
-  setEditorValue(html);
-  if (wasDirty) markDirty();
+  CodeMode.configure({ loadMonaco, toast, t, onDirty: (d) => { S.dirty = d; $('#dirtyDot').classList.toggle('hidden', !d); } });
+  try { await CodeMode.open(S.siteId, S.page, { html }); } catch (_) { return toast(t('sites.monacoDown'), false); }
   S.mode = 'code'; renderMode();
-  S.editor.layout(); S.editor.focus();
+  CodeMode.layout();
 }
 
 async function enterVisual() {
   if (S.mode === 'visual') return;
-  if (S.dirty) {
+  if (CodeMode.isDirty()) {
     if (!confirm(t('sites.confirmSaveCode'))) return;
     if (!await savePage()) return;
   }
+  CodeMode.close();
   S.mode = 'visual'; renderMode();
   if (S.frameStale) loadPage(S.page);
 }
@@ -424,7 +476,17 @@ function markDirty(){ S.dirty = true; $('#dirtyDot').classList.remove('hidden');
 
 async function savePage() {
   if (!S.siteId || !S.page) return false;
-  const html = (S.mode === 'code' && S.editor) ? S.editor.getValue() : await getVisualHTML();
+  if (S.mode === 'code') {
+    // L'atelier écrit tous ses onglets modifiés (page + assets).
+    const ok = await CodeMode.saveAll();
+    if (!ok) return false;
+    S.dirty = false;
+    $('#dirtyDot').classList.add('hidden');
+    S.frameStale = true; // l'iframe visuelle montre encore l'ancien fichier
+    toast(S.domain ? t('sites.toastSavedLive', { domain: S.domain }) : t('sites.toastSaved'));
+    return true;
+  }
+  const html = await getVisualHTML();
   if (html == null) { toast(t('sites.pageNoAnswer'), false); return false; }
   const res = await fetch('/api/sites/' + S.siteId + '/file', {
     method: 'PUT',
@@ -435,7 +497,6 @@ async function savePage() {
   if (!res.ok) { toast(data.error || t('sites.saveFailed'), false); return false; }
   S.dirty = false;
   $('#dirtyDot').classList.add('hidden');
-  if (S.mode === 'code') S.frameStale = true; // l'iframe visuelle montre encore l'ancien fichier
   toast(S.domain ? t('sites.toastSavedLive', { domain: S.domain }) : t('sites.toastSaved'));
   return true;
 }
@@ -473,6 +534,8 @@ async function aiEdit() {
 document.addEventListener('click', async (e) => {
   const mode = e.target.closest('.mode-btn');
   if (mode) return mode.dataset.mode === 'code' ? enterCode() : enterVisual();
+  const np = e.target.closest('[data-newpage]');
+  if (np) return openNewPage(np.dataset.newpage);
   const open = e.target.closest('[data-open]');
   if (open) {
     const site = sitesCache.find(x => x.id === open.dataset.open);
@@ -488,6 +551,11 @@ document.addEventListener('click', async (e) => {
     return loadSites();
   }
 });
+$('#btnNewSite').addEventListener('click', newSite);
+$('#btnNewPage').addEventListener('click', () => openNewPage(S.siteId));
+$('#btnStudio').addEventListener('click', () => { location.href = '/editor?from=' + encodeURIComponent(S.siteId) + '&path=' + encodeURIComponent(S.page); });
+$('#newPageForm').addEventListener('submit', (e) => { e.preventDefault(); createNewPage(); });
+$('#npCancel').addEventListener('click', () => $('#newPageDlg').close());
 $('#btnBack').addEventListener('click', () => {
   if (S.dirty && !confirm(t('sites.confirmLeave'))) return;
   closeEditor();
@@ -522,7 +590,10 @@ document.addEventListener('keydown', (e) => {
 });
 window.addEventListener('beforeunload', (e) => { if (S.dirty) e.preventDefault(); });
 
-I18N.ready.then(loadSites);
+I18N.ready.then(async () => {
+  ME = await fetch('/api/me').then(r => r.ok ? r.json() : null).catch(() => null);
+  loadSites();
+});
 </script>
 </body>
 </html>

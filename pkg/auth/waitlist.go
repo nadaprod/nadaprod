@@ -3,6 +3,7 @@ package auth
 import (
 	"encoding/json"
 	"os"
+	"slices"
 )
 
 const maxWaitlist = 5000 // au-delà, on accepte sans stocker (anti-abus)
@@ -33,10 +34,8 @@ func (s *UserStore) AddToWaitlist(e WaitlistEntry) error {
 	if len(entries) >= maxWaitlist {
 		return nil // accepté silencieusement : le fichier ne grossit plus
 	}
-	for _, old := range entries {
-		if old.Email == e.Email {
-			return nil // déjà inscrit : idempotent
-		}
+	if slices.ContainsFunc(entries, func(old WaitlistEntry) bool { return old.Email == e.Email }) {
+		return nil // déjà inscrit : idempotent
 	}
 	entries = append(entries, e)
 	b, _ := json.MarshalIndent(entries, "", "  ")

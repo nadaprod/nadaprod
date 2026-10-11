@@ -34,6 +34,9 @@ fi
 echo "Compilation..."
 go build -ldflags "-s -w" -o nadaprod ./cmd/nadaprod
 
+# Droits
+chown -Rf www-data.www-data /intelligences/nadaprod/
+
 # Git
 if [[ ! -z "$2" ]]; then
         echo "Commit GitHub..."

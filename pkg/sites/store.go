@@ -2,6 +2,8 @@ package sites
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io/fs"
 	"log"
 	"os"
@@ -38,15 +40,24 @@ func (m Meta) FontsOn() bool   { return onByDefault(m.Fonts) }
 
 type Store struct {
 	root       string
-	twBin      string // binaire standalone Tailwind ("" = compilation désactivée)
-	fontsDir   string // miroir local Google Fonts ("" = polices locales désactivées)
-	gdprTag    string // bandeau RGPD injecté, traductions embarquées (build.go)
+	builds     sync.WaitGroup // republications en cours lancées par SavePage
+	twBin      string         // binaire standalone Tailwind ("" = compilation désactivée)
+	fontsDir   string         // miroir local Google Fonts ("" = polices locales désactivées)
+	gdprTag    string         // bandeau RGPD injecté, traductions embarquées (build.go)
 	mu         sync.RWMutex
 	domains    map[string]string // host → siteID
 	buildLocks sync.Map          // siteID → *sync.Mutex (build.go)
 }
 
 func NewStore(root, twBin, fontsDir, i18nDir string) (*Store, error) {
+	// compileTailwind lance le binaire depuis un répertoire temporaire : un
+	// chemin relatif (« ./bin/tailwindcss », la valeur par défaut) ne s'y
+	// résoudrait pas.
+	if twBin != "" {
+		if abs, err := filepath.Abs(twBin); err == nil {
+			twBin = abs
+		}
+	}
 	if err := os.MkdirAll(root, 0o755); err != nil {
 		return nil, err
 	}
@@ -113,12 +124,8 @@ func (s *Store) reloadDomains() error {
 		if !e.IsDir() {
 			continue
 		}
-		var meta Meta
-		if b, err := os.ReadFile(filepath.Join(s.root, e.Name(), "site.json")); err == nil {
-			_ = json.Unmarshal(b, &meta)
-		}
-		if meta.Domain != "" {
-			m[strings.ToLower(meta.Domain)] = e.Name()
+		if d := s.meta(e.Name()).Domain; d != "" {
+			m[strings.ToLower(d)] = e.Name()
 		}
 	}
 	s.mu.Lock()
@@ -140,10 +147,27 @@ func (s *Store) writeMeta(id string, meta Meta) error {
 	return os.WriteFile(filepath.Join(s.siteDir(id), "site.json"), b, 0o644)
 }
 
+// newSite réclame atomiquement (os.Mkdir) un id dérivé de base — suffixé
+// -2, -3, … s'il est pris, même par un appel concurrent — et crée son dev/.
+func (s *Store) newSite(base string) (string, error) {
+	id := base
+	for i := 2; ; i++ {
+		err := os.Mkdir(s.siteDir(id), 0o755)
+		if err == nil {
+			break
+		}
+		if !errors.Is(err, fs.ErrExist) {
+			return "", err
+		}
+		id = fmt.Sprintf("%s-%d", base, i)
+	}
+	return id, os.MkdirAll(s.devDir(id), 0o755)
+}
+
 // listPages renvoie les chemins relatifs de tous les *.html de la source.
 func (s *Store) listPages(id string) ([]string, error) {
 	root := s.srcDir(id)
-	var pages []string
+	pages := []string{} // jamais nil : un site vide doit donner [] en JSON, pas null
 	err := filepath.WalkDir(root, func(p string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err

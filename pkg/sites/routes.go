@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"io"
-	"io/fs"
 	"nadaprod/pkg/auth"
 	"net/http"
 	"os"
@@ -14,6 +13,11 @@ import (
 
 // ---------- Routes API ----------
 
+// settings : les réglages de publication effectifs, tels que l'UI les affiche.
+func (m Meta) settings() gin.H {
+	return gin.H{"compile": m.CompileOn(), "pwa": m.PWAOn(), "gdpr": m.GDPROn(), "fonts": m.FontsOn()}
+}
+
 // RegisterRoutes : pages et api sont déjà derrière RequireAuth (main.go).
 // Ici s'ajoute l'autorisation par site : root voit tout, un utilisateur
 // n'atteint que les sites qui lui sont attribués.
@@ -21,24 +25,21 @@ func (s *Store) RegisterRoutes(pages, api *gin.RouterGroup, users *auth.UserStor
 	// allowed : 400 si l'id n'a pas la forme d'un site (défense en profondeur
 	// avec safeJoin), 403 si le site n'est pas accessible au compte connecté.
 	allowed := func(c *gin.Context, id string) bool {
-		api := strings.HasPrefix(c.Request.URL.Path, "/api/")
-		if !validSiteID(id) {
-			if api {
-				c.JSON(http.StatusBadRequest, gin.H{"error": "site invalide"})
+		deny := func(code int, msg string) bool {
+			if strings.HasPrefix(c.Request.URL.Path, "/api/") {
+				c.JSON(code, gin.H{"error": msg})
 			} else {
-				c.String(http.StatusBadRequest, "400 — site invalide")
+				c.String(code, fmt.Sprintf("%d — %s", code, msg))
 			}
 			return false
 		}
-		if users.CanAccess(c.GetString("user"), id) {
-			return true
+		if !validSiteID(id) {
+			return deny(http.StatusBadRequest, "site invalide")
 		}
-		if api {
-			c.JSON(http.StatusForbidden, gin.H{"error": "accès refusé à ce site"})
-		} else {
-			c.String(http.StatusForbidden, "403 — accès refusé à ce site")
+		if !users.CanAccess(c.GetString("user"), id) {
+			return deny(http.StatusForbidden, "accès refusé à ce site")
 		}
-		return false
+		return true
 	}
 
 	// Mode édition : sert la page réelle avec l'éditeur injecté.
@@ -71,26 +72,14 @@ func (s *Store) RegisterRoutes(pages, api *gin.RouterGroup, users *auth.UserStor
 			return
 		}
 
-		// L'ID est réclamé atomiquement par os.Mkdir : deux uploads du même
-		// nom (même concurrents) obtiennent des suffixes -2, -3, … distincts.
-		base := slugify(header.Filename)
-		id := base
-		for i := 2; ; i++ {
-			err := os.Mkdir(s.siteDir(id), 0o755)
-			if err == nil {
-				break
-			}
-			if !errors.Is(err, fs.ErrExist) {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-				return
-			}
-			id = fmt.Sprintf("%s-%d", base, i)
-		}
-		dev := s.devDir(id)
-		if err := os.MkdirAll(dev, 0o755); err != nil {
+		// L'ID est réclamé atomiquement (newSite) : deux uploads du même nom,
+		// même concurrents, obtiennent des suffixes -2, -3, … distincts.
+		id, err := s.newSite(slugify(header.Filename))
+		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
+		dev := s.devDir(id)
 		if err := extractArchive(data, dev); err != nil {
 			os.RemoveAll(s.siteDir(id))
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -110,6 +99,63 @@ func (s *Store) RegisterRoutes(pages, api *gin.RouterGroup, users *auth.UserStor
 		c.JSON(http.StatusOK, gin.H{"id": id, "pages": pages})
 	})
 
+	// Site vide, créé de zéro (root) : le studio y déposera sa première page.
+	api.POST("/sites/new", auth.RequireRoot(), func(c *gin.Context) {
+		var body struct {
+			Name string `json:"name"`
+		}
+		if err := c.ShouldBindJSON(&body); err != nil || strings.TrimSpace(body.Name) == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "nom du site manquant"})
+			return
+		}
+		id, err := s.CreateSite(body.Name)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"id": id, "pages": []string{}})
+	})
+
+	// Nouvelle page dans un site : copie d'une page existante (from) ou page
+	// vierge. Pour partir du studio, le client ouvre /editor?site=…&path=….
+	api.POST("/sites/:id/pages", func(c *gin.Context) {
+		var body struct {
+			Name string `json:"name"` // « a-propos » ou « blog/mon-article.html »
+			From string `json:"from"` // page à copier (optionnel)
+		}
+		if err := c.ShouldBindJSON(&body); err != nil || strings.TrimSpace(body.Name) == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "nom de page manquant"})
+			return
+		}
+		id := c.Param("id")
+		if !allowed(c, id) {
+			return
+		}
+		rel := body.Name
+		if !strings.Contains(rel, "/") && !strings.HasSuffix(strings.ToLower(rel), ".html") {
+			rel = PageName(rel)
+		}
+		var (
+			out string
+			err error
+		)
+		if body.From != "" {
+			out, err = s.CopyPage(id, body.From, rel)
+		} else {
+			out, err = s.SavePage(id, rel, BlankPage(strings.TrimSuffix(body.Name, ".html")), false)
+		}
+		switch {
+		case errors.Is(err, ErrPageExists):
+			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		case errors.Is(err, ErrPageNotFound):
+			c.JSON(http.StatusNotFound, gin.H{"error": "page source introuvable"})
+		case err != nil:
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		default:
+			c.JSON(http.StatusOK, gin.H{"ok": true, "path": out})
+		}
+	})
+
 	// Liste des sites accessibles au compte connecté.
 	api.GET("/sites", func(c *gin.Context) {
 		entries, err := os.ReadDir(s.root)
@@ -126,7 +172,7 @@ func (s *Store) RegisterRoutes(pages, api *gin.RouterGroup, users *auth.UserStor
 			meta := s.meta(e.Name())
 			out = append(out, gin.H{
 				"id": e.Name(), "domain": meta.Domain, "pages": pages,
-				"settings": gin.H{"compile": meta.CompileOn(), "pwa": meta.PWAOn(), "gdpr": meta.GDPROn(), "fonts": meta.FontsOn()},
+				"settings": meta.settings(),
 			})
 		}
 		c.JSON(http.StatusOK, out)
@@ -198,7 +244,7 @@ func (s *Store) RegisterRoutes(pages, api *gin.RouterGroup, users *auth.UserStor
 		go s.BuildSite(id)
 		c.JSON(http.StatusOK, gin.H{
 			"ok":       true,
-			"settings": gin.H{"compile": meta.CompileOn(), "pwa": meta.PWAOn(), "gdpr": meta.GDPROn(), "fonts": meta.FontsOn()},
+			"settings": meta.settings(),
 		})
 	})
 
@@ -212,8 +258,8 @@ func (s *Store) RegisterRoutes(pages, api *gin.RouterGroup, users *auth.UserStor
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		if !strings.HasSuffix(strings.ToLower(body.Path), ".html") {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "seuls les fichiers .html sont éditables"})
+		if !Editable(body.Path) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "seuls les fichiers texte (html, css, js, json, svg…) sont éditables"})
 			return
 		}
 		id := c.Param("id")
@@ -231,8 +277,27 @@ func (s *Store) RegisterRoutes(pages, api *gin.RouterGroup, users *auth.UserStor
 		}
 		// Republication en arrière-plan (~3 s de compilation par page) :
 		// la sauvegarde reste instantanée, la version publiée suit juste après.
-		go s.RebuildPage(id, body.Path)
+		// Un asset (CSS, JS…) n'est pas transformé : public/ retombe sur dev/,
+		// il est servi tel quel dès l'écriture.
+		if strings.HasSuffix(strings.ToLower(body.Path), ".html") {
+			go s.RebuildPage(id, body.Path)
+		}
 		c.JSON(http.StatusOK, gin.H{"ok": true})
+	})
+
+	// Fichiers de l'atelier de code : CSS/JS locaux référencés par la page,
+	// puis les autres CSS/JS du site.
+	api.GET("/sites/:id/assets", func(c *gin.Context) {
+		id := c.Param("id")
+		if !allowed(c, id) {
+			return
+		}
+		referenced, others, err := s.Assets(id, c.Query("page"))
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"referenced": referenced, "others": others})
 	})
 
 	// Suppression d'un site (root uniquement).

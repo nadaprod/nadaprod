@@ -4,17 +4,38 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
-	"time"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 
 	"nadaprod/pkg/auth"
 	"nadaprod/pkg/gemini"
-	"nadaprod/pkg/prompts"
+	"nadaprod/pkg/images"
+	"nadaprod/pkg/projects"
 	"nadaprod/pkg/sites"
+	"nadaprod/pkg/studio"
 )
+
+// envOr : variable texte, valeur par défaut si absente ou vide.
+func envOr(key, def string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return def
+}
+
+// envFloat / envInt : variable numérique optionnelle (absente ou illisible ⇒ 0,
+// le destinataire applique alors sa valeur par défaut).
+func envFloat(key string) float64 {
+	v, _ := strconv.ParseFloat(os.Getenv(key), 64)
+	return v
+}
+
+func envInt(key string) int {
+	v, _ := strconv.Atoi(os.Getenv(key))
+	return v
+}
 
 // main — le câblage : config (.env), construction des stores, chaîne de
 // middlewares (domaine → statiques publics → auth) et API du studio de blocs.
@@ -32,25 +53,17 @@ func main() {
 		log.Fatal("GEMINI_API_KEY manquante. Exportez votre clé : export GEMINI_API_KEY=...")
 	}
 
-	model := os.Getenv("GEMINI_MODEL")
-	if model == "" {
-		// Alias officiel Google pointant toujours vers le dernier Flash stable.
-		model = "gemini-3.7-flash"
-	}
+	// Alias officiel Google pointant toujours vers le dernier Flash stable.
+	model := envOr("GEMINI_MODEL", "gemini-3.7-flash")
 
-	client := gemini.NewClient(apiKey, model)
-
-	sitesRoot := os.Getenv("SITES_DIR")
-	if sitesRoot == "" {
-		sitesRoot = "./sites"
-	}
+	client := gemini.NewClient(apiKey, model, gemini.Options{
+		Temperature:     envFloat("GEMINI_TEMPERATURE"), // défaut 0.7
+		MaxOutputTokens: envInt("GEMINI_MAX_TOKENS"),    // défaut 8192
+	})
 
 	// Binaire standalone Tailwind (compilation locale des sites publiés).
 	// Absent ⇒ dégradation douce : les pages publiées gardent le CDN.
-	twBin := os.Getenv("TAILWIND_BIN")
-	if twBin == "" {
-		twBin = "./bin/tailwindcss"
-	}
+	twBin := envOr("TAILWIND_BIN", "./bin/tailwindcss")
 	if _, err := os.Stat(twBin); err != nil {
 		log.Printf("tailwindcss introuvable (%s) — compilation locale désactivée, CDN conservé", twBin)
 		twBin = ""
@@ -58,42 +71,42 @@ func main() {
 
 	// Miroir local Google Fonts (servi sur /webfonts, réutilisé par le build).
 	// Absent ⇒ dégradation douce : les sites publiés gardent leurs liens Google.
-	fontsDir := os.Getenv("WEBFONTS_DIR")
-	if fontsDir == "" {
-		fontsDir = "./web/webfonts"
-	}
+	fontsDir := envOr("WEBFONTS_DIR", "./web/webfonts")
 	if st, err := os.Stat(fontsDir); err != nil || !st.IsDir() {
 		log.Printf("webfonts introuvable (%s) — polices locales désactivées sur les sites publiés", fontsDir)
 		fontsDir = ""
 	}
 
 	// Les traductions du bandeau RGPD injecté viennent des mêmes JSON que l'UI.
-	store, err := sites.NewStore(sitesRoot, twBin, fontsDir, "./web/static/i18n")
+	store, err := sites.NewStore(envOr("SITES_DIR", "./sites"), twBin, fontsDir, "./web/static/i18n")
 	if err != nil {
 		log.Fatal("initialisation du stockage sites : ", err)
 	}
 	go store.BuildAll() // publie tous les sites en arrière-plan au démarrage
 
 	// Comptes : root vient de l'environnement, les autres de users.json.
-	rootEmail := os.Getenv("ROOT_EMAIL")
-	if rootEmail == "" {
-		rootEmail = "web@l3dlp.com"
-	}
+	rootEmail := envOr("ROOT_EMAIL", "web@l3dlp.com")
 	rootPassword := os.Getenv("ROOT_PASSWORD")
 	if rootPassword == "" {
 		log.Fatal("ROOT_PASSWORD manquant : l'application est protégée par authentification, définissez-le dans .env")
 	}
-	usersFile := os.Getenv("USERS_FILE")
-	if usersFile == "" {
-		usersFile = "./users.json"
-	}
-	waitlistFile := os.Getenv("WAITLIST_FILE")
-	if waitlistFile == "" {
-		waitlistFile = "./waiting-list.json"
-	}
-	users, err := auth.NewUserStore(usersFile, waitlistFile, rootEmail, rootPassword, os.Getenv("AUTH_SECRET"))
+	users, err := auth.NewUserStore(envOr("USERS_FILE", "./users.json"), envOr("WAITLIST_FILE", "./waiting-list.json"),
+		rootEmail, rootPassword, os.Getenv("AUTH_SECRET"))
 	if err != nil {
 		log.Fatal("initialisation des comptes : ", err)
+	}
+
+	// Projets du studio de blocs (SQLite, un seul fichier).
+	projectStore, err := projects.Open(envOr("DB_FILE", "./nadaprod.db"))
+	if err != nil {
+		log.Fatal("initialisation de la base projets : ", err)
+	}
+	defer projectStore.Close()
+
+	// Banque d'images (optionnelle) : PEXELS_API_KEY, sinon UNSPLASH_ACCESS_KEY.
+	photos := images.FromEnv(os.Getenv)
+	if photos.Enabled() {
+		log.Printf("banque d'images : %s", photos.ProviderName())
 	}
 
 	if os.Getenv("GIN_MODE") == "" {
@@ -109,25 +122,23 @@ func main() {
 	// Front statique public (vitrine, connexion, liste d'attente)
 	r.StaticFile("/", "./web/home.html") // page vitrine publique NADAPROD
 	r.StaticFile("/robots.txt", "./web/robots.txt")
-	r.StaticFile("/demo", "./web/demo.html")
-	r.StaticFile("/login", "./web/login.html")
-	r.StaticFile("/waiting-list", "./web/waiting-list.html")
-
-	r.StaticFile("/about", "./web/about.html")
-	r.StaticFile("/legal", "./web/legal.html")
-	r.StaticFile("/opensource", "./web/opensource.html")
-	r.StaticFile("/privacy", "./web/privacy.html")
-	r.StaticFile("/solutions", "./web/solutions.html")
-	r.StaticFile("/terms", "./web/terms.html")
+	for _, page := range []string{"demo", "login", "waiting-list", // /<page> → ./web/<page>.html
+		"about", "legal", "opensource", "privacy", "solutions", "terms"} {
+		r.StaticFile("/"+page, "./web/"+page+".html")
+	}
 
 	r.Static("/gfx", "./web/gfx")
 	r.Static("/static", "./web/static")
-	r.Static("/webfonts", "./web/webfonts")
+	// Le miroir de polices est public par nature ; l'aperçu du studio tourne
+	// dans une iframe isolée (origine opaque) et a besoin de CORS pour les charger.
+	r.Group("/webfonts", func(c *gin.Context) { c.Header("Access-Control-Allow-Origin", "*") }).
+		Static("/", "./web/webfonts")
 	r.MaxMultipartMemory = 32 << 20
 
 	// L'app elle-même (studio, sites, édition) exige une session valide.
 	authed := r.Group("/", users.RequireAuth())
-	authed.StaticFile("/editor", "./web/index.html") // studio de blocs (l'app)
+	authed.StaticFile("/editor", "./web/studio.html") // studio de blocs (l'app)
+	authed.GET("/editor/:project", func(c *gin.Context) { c.File("./web/studio.html") })
 	authed.StaticFile("/sites", "./web/sites.html")
 	authed.StaticFile("/drafts", "./web/drafts.html")
 
@@ -135,60 +146,38 @@ func main() {
 	apiAuthed := api.Group("", users.RequireAuth()) // tout le reste
 	users.RegisterAuthRoutes(r, api, apiAuthed)
 	store.RegisterRoutes(authed, apiAuthed, users)
-	{
-		api.GET("/health", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{"ok": true, "model": model})
-		})
+	projectStore.RegisterRoutes(apiAuthed)
 
-		// Catalogue des blocs (types, labels, presets) consommé par l'éditeur.
-		apiAuthed.GET("/blocks", func(c *gin.Context) {
-			c.JSON(http.StatusOK, prompts.BlockCatalog())
-		})
-
-		// Génération d'un bloc via le générateur spécialisé.
-		apiAuthed.POST("/generate", func(c *gin.Context) {
-			var req gemini.GenerateRequest
-			if err := c.ShouldBindJSON(&req); err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error": "requête invalide : " + err.Error()})
-				return
-			}
-
-			spec, ok := prompts.GetBlockSpec(req.Block)
-			if !ok {
-				c.JSON(http.StatusBadRequest, gin.H{"error": "type de bloc inconnu : " + req.Block})
-				return
-			}
-
-			start := time.Now()
-			html, err := client.GenerateBlock(c.Request.Context(), spec, req)
-			if err != nil {
-				c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
-				return
-			}
-
-			c.JSON(http.StatusOK, gemini.GenerateResponse{
-				HTML:      strings.TrimSpace(html),
-				Block:     req.Block,
-				Model:     model,
-				ElapsedMs: time.Since(start).Milliseconds(),
-			})
-		})
+	var compile func([]byte, string) ([]byte, error)
+	if store.CanCompile() {
+		compile = store.CompileCSS
 	}
+	studio.Register(apiAuthed, studio.Deps{
+		Gen:        client,
+		Projects:   projectStore,
+		Images:     photos,
+		Compile:    compile,
+		FontsDir:   store.FontsDir(),
+		RatePerMin: envInt("GENERATE_RATE_PER_MIN"), // défaut 30
+		Sites:      store,
+		SiteAccess: users.CanAccess,
+	})
+
+	api.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"ok": true, "model": model})
+	})
 
 	r.NoRoute(func(c *gin.Context) {
 		// c.File passerait par http.ServeFile qui force un statut 200.
 		page, err := os.ReadFile("./web/404.html")
 		if err != nil {
-			c.Redirect(301, "/")
+			c.Redirect(http.StatusMovedPermanently, "/")
 			return
 		}
 		c.Data(http.StatusNotFound, "text/html; charset=utf-8", page)
 	})
 
-	addr := os.Getenv("ADDR")
-	if addr == "" {
-		addr = ":8080"
-	}
+	addr := envOr("ADDR", ":8080")
 	log.Printf("NADAPROD sur http://localhost%s (modèle %s)", addr, model)
 	if err := r.Run(addr); err != nil {
 		log.Fatal(err)

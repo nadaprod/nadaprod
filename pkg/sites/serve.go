@@ -36,6 +36,19 @@ func (s *Store) HostMiddleware() gin.HandlerFunc {
 	}
 }
 
+// resolve : chemin d'URL → fichier sous base (safeJoin), un dossier
+// désignant son index.html.
+func resolve(base, urlPath string) (string, error) {
+	target, err := safeJoin(base, urlPath)
+	if err != nil {
+		return "", err
+	}
+	if dirExists(target) {
+		target = filepath.Join(target, "index.html")
+	}
+	return target, nil
+}
+
 // serveStatic sert la version publiée : public/ (build) d'abord, repli sur la
 // source pour tout ce que le build n'a pas transformé (assets, pages brutes).
 func (s *Store) serveStatic(c *gin.Context, id, urlPath string) {
@@ -44,13 +57,10 @@ func (s *Store) serveStatic(c *gin.Context, id, urlPath string) {
 		bases = append(bases, src)
 	}
 	for _, base := range bases {
-		target, err := safeJoin(base, urlPath)
+		target, err := resolve(base, urlPath)
 		if err != nil {
 			c.String(http.StatusBadRequest, "chemin invalide")
 			return
-		}
-		if st, err := os.Stat(target); err == nil && st.IsDir() {
-			target = filepath.Join(target, "index.html")
 		}
 		if _, err := os.Stat(target); err == nil {
 			http.ServeFile(c.Writer, c.Request, target)
@@ -64,13 +74,10 @@ func (s *Store) serveStatic(c *gin.Context, id, urlPath string) {
 // serveSource sert la source telle quelle (dev/) : c'est ce que l'éditeur de
 // code lit via /preview — jamais les artefacts de build.
 func (s *Store) serveSource(c *gin.Context, id, urlPath string) {
-	target, err := safeJoin(s.srcDir(id), urlPath)
+	target, err := resolve(s.srcDir(id), urlPath)
 	if err != nil {
 		c.String(http.StatusBadRequest, "chemin invalide")
 		return
-	}
-	if st, err := os.Stat(target); err == nil && st.IsDir() {
-		target = filepath.Join(target, "index.html")
 	}
 	if _, err := os.Stat(target); err != nil {
 		c.String(http.StatusNotFound, "404 — page introuvable")
@@ -86,13 +93,10 @@ var bodyCloseRe = regexp.MustCompile(`(?i)</body>`)
 const injectTag = `<link id="__wp_style" rel="stylesheet" href="/static/inject.css"><script id="__wp_inject" src="/static/inject.js" defer></script>`
 
 func (s *Store) serveEdit(c *gin.Context, id, urlPath string) {
-	target, err := safeJoin(s.srcDir(id), urlPath)
+	target, err := resolve(s.srcDir(id), urlPath)
 	if err != nil {
 		c.String(http.StatusBadRequest, "chemin invalide")
 		return
-	}
-	if st, err := os.Stat(target); err == nil && st.IsDir() {
-		target = filepath.Join(target, "index.html")
 	}
 	// Les assets (css, js, images, vidéos) passent tels quels :
 	// les chemins relatifs du site fonctionnent donc dans l'iframe.
@@ -105,11 +109,5 @@ func (s *Store) serveEdit(c *gin.Context, id, urlPath string) {
 		c.String(http.StatusNotFound, "404 — page introuvable")
 		return
 	}
-	var out []byte
-	if loc := bodyCloseRe.FindIndex(raw); loc != nil {
-		out = append(append(append([]byte{}, raw[:loc[0]]...), []byte(injectTag)...), raw[loc[0]:]...)
-	} else {
-		out = append(raw, []byte(injectTag)...)
-	}
-	c.Data(http.StatusOK, "text/html; charset=utf-8", out)
+	c.Data(http.StatusOK, "text/html; charset=utf-8", insertBefore(raw, bodyCloseRe, injectTag))
 }

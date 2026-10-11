@@ -3,13 +3,15 @@ package auth
 import (
 	"crypto/rand"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"log"
+	"maps"
 	"os"
 	"regexp"
-	"sort"
+	"slices"
 	"strings"
 	"sync"
 )
@@ -72,6 +74,17 @@ func NewUserStore(path, wlPath, rootEmail, rootPassword, secret string) (*UserSt
 
 func normalizeEmail(e string) string { return strings.ToLower(strings.TrimSpace(e)) }
 
+var errUnknownUser = errors.New("compte inconnu")
+
+// hashPassword applique la règle de longueur commune puis hache (bcrypt).
+func hashPassword(password string) (string, error) {
+	if len(password) < 8 {
+		return "", errors.New("mot de passe trop court (8 caractères minimum)")
+	}
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	return string(hash), err
+}
+
 // save écrit users.json ; à appeler sous s.mu (écriture).
 func (s *UserStore) save() error {
 	b, _ := json.MarshalIndent(s.users, "", "  ")
@@ -115,15 +128,7 @@ func (s *UserStore) CanAccess(email, siteID string) bool {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	u, ok := s.users[email]
-	if !ok {
-		return false
-	}
-	for _, id := range u.Sites {
-		if id == siteID {
-			return true
-		}
-	}
-	return false
+	return ok && slices.Contains(u.Sites, siteID)
 }
 
 // Sites renvoie les sites attribués (nil pour root : « tous »).
@@ -143,24 +148,21 @@ func (s *UserStore) Sites(email string) []string {
 func (s *UserStore) AddUser(email, password string) error {
 	email = normalizeEmail(email)
 	if !emailRe.MatchString(email) {
-		return fmt.Errorf("email invalide")
+		return errors.New("email invalide")
 	}
 	if email == s.rootEmail {
-		return fmt.Errorf("cet email est le compte administrateur")
+		return errors.New("cet email est le compte administrateur")
 	}
-	if len(password) < 8 {
-		return fmt.Errorf("mot de passe trop court (8 caractères minimum)")
-	}
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	hash, err := hashPassword(password)
 	if err != nil {
 		return err
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if _, ok := s.users[email]; ok {
-		return fmt.Errorf("ce compte existe déjà")
+		return errors.New("ce compte existe déjà")
 	}
-	s.users[email] = &UserRecord{Hash: string(hash), Sites: []string{}}
+	s.users[email] = &UserRecord{Hash: hash, Sites: []string{}}
 	return s.save()
 }
 
@@ -172,17 +174,14 @@ func (s *UserStore) UpdateUser(email string, password *string, sites *[]string) 
 	defer s.mu.Unlock()
 	u, ok := s.users[email]
 	if !ok {
-		return fmt.Errorf("compte inconnu")
+		return errUnknownUser
 	}
 	if password != nil {
-		if len(*password) < 8 {
-			return fmt.Errorf("mot de passe trop court (8 caractères minimum)")
-		}
-		hash, err := bcrypt.GenerateFromPassword([]byte(*password), bcrypt.DefaultCost)
+		hash, err := hashPassword(*password)
 		if err != nil {
 			return err
 		}
-		u.Hash = string(hash)
+		u.Hash = hash
 	}
 	if sites != nil {
 		u.Sites = append([]string{}, *sites...)
@@ -195,7 +194,7 @@ func (s *UserStore) DeleteUser(email string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if _, ok := s.users[email]; !ok {
-		return fmt.Errorf("compte inconnu")
+		return errUnknownUser
 	}
 	delete(s.users, email)
 	return s.save()
@@ -204,13 +203,8 @@ func (s *UserStore) DeleteUser(email string) error {
 func (s *UserStore) Users() []gin.H {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	emails := make([]string, 0, len(s.users))
-	for e := range s.users {
-		emails = append(emails, e)
-	}
-	sort.Strings(emails)
-	out := make([]gin.H, 0, len(emails))
-	for _, e := range emails {
+	out := make([]gin.H, 0, len(s.users))
+	for _, e := range slices.Sorted(maps.Keys(s.users)) {
 		out = append(out, gin.H{"email": e, "sites": s.users[e].Sites})
 	}
 	return out

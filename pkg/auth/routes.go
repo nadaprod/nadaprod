@@ -11,6 +11,20 @@ const failedLoginWait = 300 * time.Millisecond
 
 // ---------- Routes ----------
 
+type credentials struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+// reply : {"ok": true}, ou 400 avec le message d'erreur.
+func reply(c *gin.Context, err error) {
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}
+
 func (s *UserStore) setSessionCookie(c *gin.Context, value string, maxAge int) {
 	secure := c.Request.TLS != nil || c.GetHeader("X-Forwarded-Proto") == "https"
 	c.SetSameSite(http.SameSiteLaxMode)
@@ -20,12 +34,9 @@ func (s *UserStore) setSessionCookie(c *gin.Context, value string, maxAge int) {
 // RegisterAuthRoutes : public = login + liste d'attente ; authed = le reste.
 func (s *UserStore) RegisterAuthRoutes(r *gin.Engine, api, apiAuthed *gin.RouterGroup) {
 	api.POST("/login", func(c *gin.Context) {
-		var body struct {
-			Email    string `json:"email"`
-			Password string `json:"password"`
-		}
+		var body credentials
 		if err := c.ShouldBindJSON(&body); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			reply(c, err)
 			return
 		}
 		if !s.Authenticate(body.Email, body.Password) {
@@ -74,7 +85,7 @@ func (s *UserStore) RegisterAuthRoutes(r *gin.Engine, api, apiAuthed *gin.Router
 
 	apiAuthed.POST("/logout", func(c *gin.Context) {
 		s.setSessionCookie(c, "", -1)
-		c.JSON(http.StatusOK, gin.H{"ok": true})
+		reply(c, nil)
 	})
 
 	apiAuthed.GET("/me", func(c *gin.Context) {
@@ -86,19 +97,12 @@ func (s *UserStore) RegisterAuthRoutes(r *gin.Engine, api, apiAuthed *gin.Router
 	admin.GET("/users", func(c *gin.Context) { c.JSON(http.StatusOK, s.Users()) })
 
 	admin.POST("/users", func(c *gin.Context) {
-		var body struct {
-			Email    string `json:"email"`
-			Password string `json:"password"`
-		}
+		var body credentials
 		if err := c.ShouldBindJSON(&body); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			reply(c, err)
 			return
 		}
-		if err := s.AddUser(body.Email, body.Password); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-		c.JSON(http.StatusOK, gin.H{"ok": true})
+		reply(c, s.AddUser(body.Email, body.Password))
 	})
 
 	admin.PUT("/users/:email", func(c *gin.Context) {
@@ -107,28 +111,23 @@ func (s *UserStore) RegisterAuthRoutes(r *gin.Engine, api, apiAuthed *gin.Router
 			Sites    *[]string `json:"sites"`
 		}
 		if err := c.ShouldBindJSON(&body); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			reply(c, err)
 			return
 		}
-		if err := s.UpdateUser(c.Param("email"), body.Password, body.Sites); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-		c.JSON(http.StatusOK, gin.H{"ok": true})
+		reply(c, s.UpdateUser(c.Param("email"), body.Password, body.Sites))
 	})
 
 	admin.DELETE("/users/:email", func(c *gin.Context) {
-		if err := s.DeleteUser(c.Param("email")); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-		c.JSON(http.StatusOK, gin.H{"ok": true})
+		reply(c, s.DeleteUser(c.Param("email")))
 	})
 
 	admin.GET("/waiting-list", func(c *gin.Context) {
 		s.wlMu.Lock()
 		entries := s.waitlist()
 		s.wlMu.Unlock()
+		if entries == nil {
+			entries = []WaitlistEntry{} // liste vide ⇒ [] et non null (le client itère dessus)
+		}
 		c.JSON(http.StatusOK, entries)
 	})
 }

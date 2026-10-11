@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -77,8 +78,7 @@ func parseCSS2Family(spec string) fontRequest {
 	req := fontRequest{Family: strings.TrimSpace(name)}
 	axesStr, tuples, hasTuples := strings.Cut(axesPart, "@")
 	if !hasAxes || !hasTuples {
-		req.Variants = []fontVariant{{Weight: 400}}
-		return req
+		return withRegular(req)
 	}
 	axes := strings.Split(axesStr, ",")
 	for _, tuple := range strings.Split(tuples, ";") {
@@ -110,10 +110,7 @@ func parseCSS2Family(spec string) fontRequest {
 			req.Variants = appendVariant(req.Variants, fontVariant{Weight: w, Italic: italic})
 		}
 	}
-	if len(req.Variants) == 0 {
-		req.Variants = []fontVariant{{Weight: 400}}
-	}
-	return req
+	return withRegular(req)
 }
 
 // parseLegacyFamily : « Name:400,700italic,bold » (API /css d'origine).
@@ -121,8 +118,7 @@ func parseLegacyFamily(spec string) fontRequest {
 	name, tokens, hasTokens := strings.Cut(spec, ":")
 	req := fontRequest{Family: strings.TrimSpace(name)}
 	if !hasTokens {
-		req.Variants = []fontVariant{{Weight: 400}}
-		return req
+		return withRegular(req)
 	}
 	for _, t := range strings.Split(tokens, ",") {
 		t = strings.ToLower(strings.TrimSpace(t))
@@ -151,6 +147,11 @@ func parseLegacyFamily(spec string) fontRequest {
 		}
 		req.Variants = appendVariant(req.Variants, v)
 	}
+	return withRegular(req)
+}
+
+// withRegular : sans variante reconnue, la famille est demandée en 400 normal.
+func withRegular(req fontRequest) fontRequest {
 	if len(req.Variants) == 0 {
 		req.Variants = []fontVariant{{Weight: 400}}
 	}
@@ -158,10 +159,8 @@ func parseLegacyFamily(spec string) fontRequest {
 }
 
 func appendVariant(list []fontVariant, v fontVariant) []fontVariant {
-	for _, x := range list {
-		if x == v {
-			return list
-		}
+	if slices.Contains(list, v) {
+		return list
 	}
 	return append(list, v)
 }

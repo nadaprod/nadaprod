@@ -5,13 +5,17 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/exec"
+	"os/user"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 	"unicode"
 )
@@ -185,7 +189,9 @@ func extractTailwindConfig(raw []byte) (body string, strict bool, found bool) {
 
 // rewriteTailwindHTML remplace le tag CDN par le CSS compilé inline.
 // Le script de config strict est retiré ; un script mixte est conservé mais
-// neutralisé (window.tailwind défini pour éviter la ReferenceError).
+// neutralisé (window.tailwind défini pour éviter la ReferenceError) — cas
+// devenu théorique : ParseTailwindConfig refuse une config mêlée à d'autres
+// instructions, la compilation échoue donc avant d'arriver ici.
 func rewriteTailwindHTML(raw, css []byte) []byte {
 	_, strict, found := extractTailwindConfig(raw)
 	repl := "<style data-np-tailwind>" + string(css) + "</style>"
@@ -216,41 +222,137 @@ func rewriteTailwindHTML(raw, css []byte) []byte {
 }
 
 // ---------- Compilation Tailwind (binaire standalone) ----------
+//
+// Le binaire standalone embarque Node et ÉVALUE son fichier de config. Deux
+// garde-fous, indépendants l'un de l'autre :
+//   1. la config qu'on lui donne n'est jamais le script de la page : c'est le
+//      JSON produit par ParseTailwindConfig (un littéral, ou rien) ;
+//   2. le binaire tourne confiné : répertoire temporaire pour seul monde
+//      (la page y est copiée), environnement minimal, et — quand le service
+//      est root — sous l'identité d'un compte sans droits (buildUser).
+
+// buildUser : compte sous lequel lancer le binaire quand le processus est
+// root. Résolu une fois ; nil ⇒ pas de changement d'identité (service déjà
+// non privilégié, ou compte introuvable — journalisé).
+var buildUser = func() *syscall.Credential {
+	if os.Geteuid() != 0 {
+		return nil
+	}
+	for _, name := range []string{"nobody", "www-data"} {
+		u, err := user.Lookup(name)
+		if err != nil {
+			continue
+		}
+		uid, err1 := strconv.ParseUint(u.Uid, 10, 32)
+		gid, err2 := strconv.ParseUint(u.Gid, 10, 32)
+		if err1 != nil || err2 != nil || uid == 0 {
+			continue
+		}
+		// Groups nil ⇒ setgroups(0, nil) : aucun groupe supplémentaire hérité
+		// de root (avec NoSetGroups, le binaire resterait membre du groupe 0).
+		return &syscall.Credential{Uid: uint32(uid), Gid: uint32(gid)}
+	}
+	log.Printf("build : processus root et aucun compte « nobody »/« www-data » — la compilation Tailwind restera privilégiée")
+	return nil
+}()
 
 // compileTailwind compile le CSS purgé d'une page via le binaire standalone.
 // cfgBody est le contenu du <script> de config inline (vide si absent) : il
-// est exécuté dans le config JS, tailwind.config y étant un objet neutre.
-func compileTailwind(twBin, pagePath, cfgBody string) ([]byte, error) {
+// est LU comme un littéral (ParseTailwindConfig) et réémis en JSON — jamais
+// exécuté. Config non littérale ⇒ erreur, la page garde son CDN.
+func compileTailwind(twBin string, page []byte, cfgBody string) ([]byte, error) {
+	cfgJSON, err := ParseTailwindConfig(cfgBody)
+	if err != nil {
+		return nil, err
+	}
+
 	tmp, err := os.MkdirTemp("", "np-tw-*")
 	if err != nil {
 		return nil, err
 	}
 	defer os.RemoveAll(tmp)
-
-	cfg := "const tailwind = {};\n" + cfgBody + "\n;module.exports = tailwind.config || {};\n"
-	if err := os.WriteFile(filepath.Join(tmp, "config.cjs"), []byte(cfg), 0o644); err != nil {
-		return nil, err
+	files := map[string][]byte{
+		// Un objet JSON est un littéral JS : rien d'autre ne s'évalue ici.
+		"config.cjs": []byte("module.exports = " + cfgJSON + ";\n"),
+		"input.css":  []byte("@tailwind base;\n@tailwind components;\n@tailwind utilities;\n"),
+		"page.html":  page,
 	}
-	input := "@tailwind base;\n@tailwind components;\n@tailwind utilities;\n"
-	if err := os.WriteFile(filepath.Join(tmp, "input.css"), []byte(input), 0o644); err != nil {
-		return nil, err
+	// Les fichiers sont écrits AVANT de céder le répertoire au compte de
+	// build : tant qu'il est 0700 root, personne ne peut y planter un lien
+	// que l'écriture suivrait.
+	for name, data := range files {
+		if err := os.WriteFile(filepath.Join(tmp, name), data, 0o644); err != nil {
+			return nil, err
+		}
+	}
+	cred := buildUser
+	if cred != nil {
+		// Le compte non privilégié doit pouvoir écrire le CSS : le répertoire
+		// de travail lui appartient (les fichiers déjà écrits restent lisibles).
+		if err := os.Chown(tmp, int(cred.Uid), int(cred.Gid)); err != nil {
+			return nil, fmt.Errorf("répertoire de build : %w", err)
+		}
 	}
 	outPath := filepath.Join(tmp, "out.css")
 
 	ctx, cancel := context.WithTimeout(context.Background(), buildTimeout)
 	defer cancel()
 	cmd := exec.CommandContext(ctx, twBin,
-		"-c", filepath.Join(tmp, "config.cjs"),
-		"-i", filepath.Join(tmp, "input.css"),
-		"--content", pagePath,
-		"-o", outPath,
+		"-c", "config.cjs",
+		"-i", "input.css",
+		"--content", "page.html",
+		"-o", "out.css",
 		"--minify")
+	cmd.Dir = tmp
+	cmd.Env = []string{"PATH=/usr/bin:/bin", "HOME=" + tmp, "TMPDIR=" + tmp, "LANG=C.UTF-8"}
+	if cred != nil {
+		cmd.SysProcAttr = &syscall.SysProcAttr{Credential: cred}
+	}
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	if err := cmd.Run(); err != nil {
 		return nil, fmt.Errorf("tailwindcss : %v — %s", err, strings.TrimSpace(stderr.String()))
 	}
-	return os.ReadFile(outPath)
+	return readBuildOutput(outPath, cred)
+}
+
+// readBuildOutput lit le CSS produit dans un répertoire cédé au compte de
+// build : root n'y suit jamais un lien, et n'accepte qu'un fichier régulier
+// créé par ce compte.
+func readBuildOutput(path string, cred *syscall.Credential) ([]byte, error) {
+	f, err := os.OpenFile(path, os.O_RDONLY|syscall.O_NOFOLLOW, 0)
+	if err != nil {
+		return nil, fmt.Errorf("sortie du build : %w", err)
+	}
+	defer f.Close()
+	fi, err := f.Stat()
+	if err != nil {
+		return nil, err
+	}
+	if !fi.Mode().IsRegular() {
+		return nil, fmt.Errorf("sortie du build : pas un fichier régulier")
+	}
+	if st, ok := fi.Sys().(*syscall.Stat_t); ok && cred != nil && st.Uid != cred.Uid {
+		return nil, fmt.Errorf("sortie du build : propriétaire inattendu (uid %d)", st.Uid)
+	}
+	return io.ReadAll(f)
+}
+
+// CanCompile : le binaire Tailwind est-il disponible ?
+func (s *Store) CanCompile() bool { return s.twBin != "" }
+
+// FontsDir : racine du miroir local de polices ("" si absent).
+func (s *Store) FontsDir() string { return s.fontsDir }
+
+// CompileCSS compile le CSS purgé d'un document HTML arbitraire — l'export du
+// studio de blocs réutilise ainsi le compilateur des sites publiés. cfgBody
+// suit les mêmes règles que pour une page importée : littéral uniquement
+// (ParseTailwindConfig), et on n'extrait rien du document lui-même.
+func (s *Store) CompileCSS(page []byte, cfgBody string) ([]byte, error) {
+	if s.twBin == "" {
+		return nil, fmt.Errorf("compilation Tailwind indisponible (binaire absent)")
+	}
+	return compileTailwind(s.twBin, page, cfgBody)
 }
 
 // ---------- Orchestration par site ----------
@@ -301,7 +403,7 @@ func (s *Store) buildPage(id, rel string, f buildFlags) (bool, error) {
 
 	if f.compile && cdnTagRe.Match(out) {
 		cfgBody, _, _ := extractTailwindConfig(out)
-		css, err := compileTailwind(s.twBin, srcPath, cfgBody)
+		css, err := compileTailwind(s.twBin, raw, cfgBody)
 		if err != nil {
 			// Dégradation douce : la page publiée garde le CDN.
 			log.Printf("build %s/%s : compilation Tailwind échouée, CDN conservé : %v", id, rel, err)

@@ -1,4 +1,5 @@
-// Config Tailwind des pages de l'app (web/{index,sites,drafts,login,waiting-list}.html).
+// Config Tailwind des pages de l'app (web/{studio,sites,drafts,login,waiting-list}.html
+// et les modules web/static/studio/*.js, qui produisent du HTML à classes Tailwind).
 // Miroir du `tailwind.config` inline historique de ces pages — compilée par
 // bin/build.sh en web/static/tw.css (fini cdn.tailwindcss.com dans notre UI,
 // cohérent avec ce que le pipeline impose aux sites publiés).
@@ -6,7 +7,9 @@
 // commande tailwindcss seule) pour régénérer tw.css.
 module.exports = {
   content: [
-    "./web/index.html",
+    "./web/studio.html",
+    "./web/static/studio/*.js",
+    "./web/static/sites-code.js",
     "./web/sites.html",
     "./web/drafts.html",
     "./web/login.html",

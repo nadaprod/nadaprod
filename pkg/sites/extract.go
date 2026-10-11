@@ -113,16 +113,9 @@ func writeFileCapped(target string, r io.Reader, budget *int64) error {
 	if *budget <= 0 {
 		return errArchiveTooLarge
 	}
-	if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
-		return err
-	}
-	f, err := os.Create(target)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	n, err := io.Copy(f, io.LimitReader(r, *budget+1))
-	*budget -= n
+	lr := &io.LimitedReader{R: r, N: *budget + 1}
+	err := writeFile(target, lr)
+	*budget = lr.N - 1 // budget - octets écrits
 	if err != nil {
 		return err
 	}

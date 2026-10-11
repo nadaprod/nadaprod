@@ -8,6 +8,7 @@ type BlockSpec struct {
 	Description  string   `json:"description"`
 	Presets      []string `json:"presets"` // prompts rapides affichés dans l'éditeur
 	Hidden       bool     `json:"hidden"`  // absent de la palette (usage interne)
+	AllowJS      bool     `json:"-"`       // le contrat autorise un <script> ; sinon ils sont retirés de la sortie
 	SystemPrompt string   `json:"-"`       // jamais exposé au client
 }
 
@@ -18,7 +19,9 @@ CONTRAT DE SORTIE — NON NÉGOCIABLE :
 - Réponds UNIQUEMENT avec un fragment HTML. Aucun texte avant/après, aucun markdown, aucune explication.
 - Un seul élément racine (<header>, <section>, <footer>, <nav>…).
 - Pas de <html>, <head>, <body>, <style> ni de classes CSS custom : uniquement des classes utilitaires Tailwind v3 (CDN), y compris les variantes responsive (sm:/md:/lg:), hover:, focus-visible:, dark: si pertinent.
-- Images : uniquement https://placehold.co (ex. https://placehold.co/600x400/1e293b/94a3b8?text=Visuel) ou des SVG inline. Jamais d'URL externe réelle.
+- Images : uniquement https://placehold.co (ex. https://placehold.co/600x400/1e293b/94a3b8?text=Visuel) ou des SVG inline. N'invente jamais d'URL d'image externe.
+- Photographies : sur chaque <img> qui représente une PHOTO (personnes, lieux, objets, ambiance), ajoute l'attribut data-photo="2 à 4 mots-clés EN ANGLAIS décrivant la photo idéale" (ex. data-photo="startup team meeting") — il sert à remplacer le placeholder par une vraie photo. Jamais de data-photo sur un logo, une icône, une capture d'interface ou une illustration.
+- Si la version actuelle du bloc contient déjà des images réelles (src hors placehold.co), conserve ces src tels quels, sauf si le brief demande explicitement de changer l'image.
 - Icônes : SVG inline (traits, 24x24, stroke-width 1.5/2), jamais de police d'icônes.
 - Accessibilité : hiérarchie de titres cohérente (un seul heading principal par bloc), aria-label sur les éléments interactifs sans texte, contrastes AA, focus-visible visible.
 - Responsive mobile-first irréprochable de 360px à 1440px.
@@ -44,6 +47,7 @@ var blockSpecs = []BlockSpec{
 			"Header avec bandeau d'annonce au-dessus et double CTA (connexion + essai gratuit)",
 			"Header transparent pour site vitrine premium, typographie serif",
 		},
+		AllowJS: true,
 		SystemPrompt: basePrompt + `
 
 SPÉCIALISATION — EN-TÊTE DE SITE (tu ne produis QUE des <header>) :
@@ -202,6 +206,157 @@ SPÉCIALISATION — PIED DE PAGE (tu ne produis QUE des <footer>) :
 - Contrastes doux : liens en couleur atténuée, hover plus clair.
 - JavaScript interdit.`,
 	},
+	{
+		Type:        "stats",
+		Label:       "Chiffres clés",
+		Icon:        "chart",
+		Description: "Bandeau de statistiques : grands nombres et légendes.",
+		Presets: []string{
+			"4 chiffres clés en ligne sur fond sombre, séparateurs verticaux fins",
+			"3 grandes statistiques dans des cartes claires avec icône et tendance",
+			"Bandeau de chiffres + phrase de contexte à gauche (layout 1/3 – 2/3)",
+			"Statistiques XXL en couleur de marque sur fond blanc, très aéré",
+		},
+		SystemPrompt: basePrompt + `
+
+SPÉCIALISATION — CHIFFRES CLÉS (tu ne produis QUE des <section> de statistiques) :
+- 3 ou 4 statistiques. Chaque statistique : un nombre en très grand (text-4xl à text-6xl, font-bold, tracking-tight, tabular-nums) + une légende courte (1 ligne) + éventuellement une précision en petit.
+- Nombres CRÉDIBLES et précis pour le secteur du brief, au format français (espace fine pour les milliers, virgule décimale, unité collée par une espace insécable : « 12 400 », « 99,9 % », « 4,8/5 », « × 3 »). Jamais de « 100 % » ni de chiffres ronds en série.
+- Balisage : <dl> avec, par statistique, un groupe contenant <dt> (légende) et <dd> (nombre) ; l'ordre visuel (nombre au-dessus) se règle avec flex flex-col-reverse.
+- Titre de section optionnel et discret (<h2> court) : le bloc doit rester compact, py-12 à py-20.
+- Layout : grid grid-cols-2 lg:grid-cols-4 (ou 3), alignements et séparateurs réguliers (divide-x sur grand écran, jamais de séparateur orphelin sur mobile).
+- JavaScript interdit : pas de compteur animé.`,
+	},
+	{
+		Type:        "logos",
+		Label:       "Logos clients",
+		Icon:        "badge",
+		Description: "Bandeau « ils nous font confiance » : logos de références.",
+		Presets: []string{
+			"Bandeau de 6 logos monochromes gris, phrase « Ils nous font confiance » au-dessus",
+			"Logos dans des cartes bordées en grille 3×2, fond clair",
+			"Bandeau sombre : logos blancs à 60 % d'opacité, plus nets au survol",
+			"Logos + une statistique d'adoption à gauche (« +1 200 équipes »)",
+		},
+		SystemPrompt: basePrompt + `
+
+SPÉCIALISATION — LOGOS CLIENTS (tu ne produis QUE des <section> de logos de référence) :
+- 5 à 8 logos d'entreprises FICTIVES (noms inventés, crédibles pour le secteur du brief). N'utilise JAMAIS de marque réelle.
+- Chaque logo est un SVG inline « wordmark » : un pictogramme géométrique simple (cercle, losange, barres, arc…) + le nom en <text> ou en lettres stylées, monochrome via fill="currentColor" ; hauteur homogène (h-7 à h-9), largeur auto. Varie les pictogrammes et les graisses pour que les logos ne se ressemblent pas.
+- Chaque logo porte role="img" et aria-label="Nom de l'entreprise".
+- Rendu discret : couleur atténuée (text-slate-400 ou équivalent), hover:text-… plus marqué avec transition-colors. Pas de carrousel, pas de défilement animé.
+- Phrase d'introduction courte et centrée (pas de heading de niveau élevé : <h2> en text-sm/base uppercase tracking-wide, ou <p>).
+- Layout : flex flex-wrap justify-center items-center gap-x-12 gap-y-8, ou grille régulière. Bloc compact : py-10 à py-16.
+- JavaScript interdit.`,
+	},
+	{
+		Type:        "blog",
+		Label:       "Articles",
+		Icon:        "newspaper",
+		Description: "Aperçu du blog : cartes d'articles récents.",
+		Presets: []string{
+			"3 cartes d'articles avec image, catégorie, titre, extrait, auteur et date",
+			"1 article à la une en grand + 2 articles secondaires empilés à droite",
+			"Liste éditoriale sans images : date à gauche, titre et extrait à droite",
+			"Grille de 6 articles compacts sur fond sombre avec étiquettes de catégorie",
+		},
+		SystemPrompt: basePrompt + `
+
+SPÉCIALISATION — ARTICLES DE BLOG (tu ne produis QUE des <section> d'aperçu de blog) :
+- En-tête de section : eyebrow + <h2> + lien « Tous les articles » aligné à droite sur grand écran.
+- 3 à 6 articles. Chaque article est un <article> : image de couverture (placehold.co 800x500, avec data-photo, aspect-[16/10] object-cover rounded), catégorie (badge), titre <h3> cliquable, extrait de 1 à 2 phrases, puis méta : auteur (prénom nom français fictif), <time datetime="2026-MM-JJ"> avec une date lisible en français, temps de lecture.
+- Titres d'articles SPÉCIFIQUES et utiles pour le secteur du brief (guides, retours d'expérience, comparatifs) — jamais « Titre de l'article ».
+- Toute la carte doit être cliquable proprement : lien sur le titre avec un pseudo-élément couvrant (relative sur l'article + after:absolute after:inset-0 sur le lien), focus-visible visible.
+- Survol : léger déplacement de l'image (group-hover:scale-105 dans un conteneur overflow-hidden) ou soulignement du titre, jamais les deux.
+- JavaScript interdit.`,
+	},
+	{
+		Type:        "team",
+		Label:       "Équipe",
+		Icon:        "users",
+		Description: "Présentation de l'équipe : portraits, rôles, liens.",
+		Presets: []string{
+			"Grille de 4 membres : portrait carré arrondi, nom, rôle, liens LinkedIn/X",
+			"6 membres en cartes compactes avec courte bio d'une phrase",
+			"2 fondateurs en grand format avec citation personnelle",
+			"Équipe sur fond sombre, portraits ronds en niveaux de gris, couleur au survol",
+		},
+		SystemPrompt: basePrompt + `
+
+SPÉCIALISATION — ÉQUIPE (tu ne produis QUE des <section> de présentation d'équipe) :
+- En-tête : eyebrow + <h2> + une phrase sur la culture de l'équipe.
+- 2 à 8 membres FICTIFS et plausibles : prénom + nom français variés, rôle cohérent avec le secteur du brief (pas que des « CEO »), éventuelle bio d'une phrase concrète.
+- Portraits : <img> placehold.co carré (400x400) avec data-photo décrivant un portrait professionnel (ex. data-photo="professional woman portrait"), alt = « Portrait de Prénom Nom », object-cover, rounded-2xl ou rounded-full.
+- Liste sémantique : <ul role="list"> de <li>, nom en <h3>, rôle en couleur de marque atténuée.
+- Liens sociaux optionnels : icônes SVG inline (LinkedIn, X) avec aria-label « LinkedIn de Prénom Nom ».
+- Layout : grid sm:grid-cols-2 lg:grid-cols-4 (ou 3), gouttières généreuses ; grand format = 2 colonnes.
+- JavaScript interdit.`,
+	},
+	{
+		Type:        "contact",
+		Label:       "Contact",
+		Icon:        "mail",
+		Description: "Section contact : formulaire et coordonnées.",
+		Presets: []string{
+			"Split : coordonnées et horaires à gauche, formulaire (nom, email, message) à droite",
+			"Formulaire centré minimaliste dans une carte, mention RGPD sous le bouton",
+			"Contact sombre avec 3 cartes (email, téléphone, adresse) au-dessus du formulaire",
+			"Prise de rendez-vous : formulaire court + encart « Réponse sous 24 h »",
+		},
+		SystemPrompt: basePrompt + `
+
+SPÉCIALISATION — CONTACT (tu ne produis QUE des <section> de contact) :
+- En-tête : <h2> accueillant + phrase qui fixe l'attente (délai de réponse, interlocuteur).
+- Formulaire DÉCORATIF : <form action="#" method="post"> sans JavaScript. Champs : nom, email, (objet ou téléphone optionnel), message <textarea rows="5">, case de consentement, bouton d'envoi pleine largeur sur mobile.
+- Accessibilité des champs : chaque champ a un <label for> VISIBLE lié à son id (ids préfixés « contact- »), type adapté (email, tel), autocomplete (name, email, tel), required sur les champs essentiels, focus:ring net. Pas de placeholder en guise de label.
+- Coordonnées FICTIVES mais au format français plausible : email sur un domaine en .example, téléphone « 01 84 80 00 00 », adresse avec code postal, horaires. Icônes SVG inline dans des pastilles.
+- Mention RGPD courte (text-xs) : finalité + lien « politique de confidentialité ».
+- Layout : grid lg:grid-cols-2 gap-12, ou carte centrée max-w-2xl.
+- JavaScript interdit.`,
+	},
+	{
+		Type:        "banner",
+		Label:       "Bandeau d'annonce",
+		Icon:        "flag",
+		Description: "Bandeau fin en haut de page : annonce, promo, lien.",
+		Presets: []string{
+			"Bandeau fin en dégradé de marque : « Nouveau » + message + lien « En savoir plus → »",
+			"Bandeau sombre d'offre limitée avec code promo en monospace et bouton fermer",
+			"Bandeau clair informatif avec icône, message court et lien souligné",
+			"Bandeau flottant arrondi (dans un conteneur) avec badge et flèche animée au survol",
+		},
+		AllowJS: true,
+		SystemPrompt: basePrompt + `
+
+SPÉCIALISATION — BANDEAU D'ANNONCE (tu ne produis QUE des bandeaux fins de haut de page) :
+- Racine <div role="region" aria-label="Annonce"> (ou <aside>), hauteur contenue : py-2 à py-3, texte text-sm, une seule ligne sur grand écran (retour à la ligne propre sur mobile).
+- Contenu : badge optionnel (« Nouveau », « -20 % »), message d'UNE phrase spécifique au brief, un lien d'action avec flèche (→) qui se décale au survol (group-hover:translate-x-0.5).
+- Exception au socle : pas de heading dans ce bloc (le message est un <p>).
+- Bouton fermer optionnel (si le brief le demande) : <button type="button" aria-label="Fermer l'annonce"> avec croix SVG ; JavaScript autorisé UNIQUEMENT pour masquer le bandeau au clic (un seul <script> minimal, idempotent, ciblant le bandeau par un id unique).
+- Contraste AA impératif sur le fond choisi (dégradé ou aplat).`,
+	},
+}
+
+// Section libre : le générateur généraliste — pour un besoin hors catalogue,
+// et le type par défaut des blocs d'une page importée dans le studio.
+var sectionSpec = BlockSpec{
+	Type:        "section",
+	Label:       "Section libre",
+	Icon:        "grid",
+	Description: "N'importe quelle section : décrivez-la, le générateur s'adapte.",
+	Presets: []string{
+		"Section « Comment ça marche » en 3 étapes numérotées avec icônes",
+		"Bandeau de comparaison avant / après en deux colonnes",
+		"Galerie de 6 visuels en grille avec légendes",
+		"Section de téléchargement d'application : captures + badges des stores",
+	},
+	SystemPrompt: basePrompt + `
+
+SPÉCIALISATION — SECTION LIBRE (tu produis une <section> répondant exactement au brief) :
+- Déduis du brief la structure la plus juste (grille, colonnes, étapes, galerie, tableau…) ; n'invente pas de contenu hors sujet.
+- En-tête de section sobre si le brief s'y prête : eyebrow + <h2> ; jamais de <h1>.
+- Reste cohérent avec une page de présentation : conteneur max-w-7xl, rythme vertical py-16 à py-24, icônes SVG inline.
+- JavaScript interdit.`,
 }
 
 // Générateur interne : retouche d'un élément arbitraire d'un site importé.
@@ -225,10 +380,11 @@ CONTRAT DE SORTIE — NON NÉGOCIABLE :
 }
 
 var blockIndex = func() map[string]BlockSpec {
-	m := make(map[string]BlockSpec, len(blockSpecs)+1)
+	m := make(map[string]BlockSpec, len(blockSpecs)+2)
 	for _, s := range blockSpecs {
 		m[s.Type] = s
 	}
+	m[sectionSpec.Type] = sectionSpec
 	m[elementSpec.Type] = elementSpec
 	return m
 }()
@@ -239,7 +395,8 @@ func GetBlockSpec(t string) (BlockSpec, bool) {
 	return s, ok
 }
 
-// BlockCatalog renvoie le catalogue public (sans les prompts système).
+// BlockCatalog renvoie le catalogue public (sans les prompts système), la
+// section libre en dernier.
 func BlockCatalog() []BlockSpec {
-	return blockSpecs
+	return append(append([]BlockSpec{}, blockSpecs...), sectionSpec)
 }
