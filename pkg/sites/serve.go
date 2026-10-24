@@ -90,7 +90,7 @@ func (s *Store) serveSource(c *gin.Context, id, urlPath string) {
 
 var bodyCloseRe = regexp.MustCompile(`(?i)</body>`)
 
-const injectTag = `<link id="__wp_style" rel="stylesheet" href="/static/inject.css"><script id="__wp_inject" src="/static/inject.js" defer></script>`
+const injectTag = `<link id="__wp_style" rel="stylesheet" href="/static/inject.css"><script id="__wp_inject" src="/static/inject.js?v=inert" defer></script>`
 
 func (s *Store) serveEdit(c *gin.Context, id, urlPath string) {
 	target, err := resolve(s.srcDir(id), urlPath)
@@ -109,5 +109,7 @@ func (s *Store) serveEdit(c *gin.Context, id, urlPath string) {
 		c.String(http.StatusNotFound, "404 — page introuvable")
 		return
 	}
-	c.Data(http.StatusOK, "text/html; charset=utf-8", insertBefore(raw, bodyCloseRe, injectTag))
+	// Scripts inertes (inert.go) : le DOM sérialisé à l'enregistrement est
+	// celui de la source, pas celui qu'ils auraient modifié.
+	c.Data(http.StatusOK, "text/html; charset=utf-8", insertBefore(inertScripts(raw), bodyCloseRe, injectTag))
 }

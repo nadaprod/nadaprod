@@ -1,24 +1,25 @@
 # BACKEND.md — NADAPROD server technical documentation
 
-Go 1.27 · [gin](https://github.com/gin-gonic/gin) v1.12 · single binary. Imported sites have no database (the filesystem is the database); the block studio's projects live in one SQLite file (pure-Go driver, no CGO). Standard layout: `cmd/nadaprod/main.go` + `pkg/{auth,gemini,prompts,sites,projects,studio,export,publish,images}` (import path `nadaprod/pkg/<name>`):
+Go 1.27 · [gin](https://github.com/gin-gonic/gin) v1.12 · single binary. Imported sites have no database (the filesystem is the database); the block studio's projects live in one SQLite file (pure-Go driver, no CGO). Standard layout: `cmd/nadaprod/main.go` + `pkg/{auth,gemini,prompts,sites,projects,studio,export,publish,images,i18n}` (import path `nadaprod/pkg/<name>`):
 
 | File | Lines | Role |
 |---|---|---|
-| `cmd/nadaprod/main.go` | ~220 | Wiring only: config, stores, middleware chain, static routes, route registration |
+| `cmd/nadaprod/main.go` | ~175 | Wiring only: config, stores, middleware chain, static routes, route registration |
 | `pkg/auth/` — `store.go` `session.go` `waitlist.go` `routes.go` | ~495 | Accounts (root + users), HMAC sessions, waiting list |
-| `pkg/gemini/` — `client.go` `message.go` | ~680 | Gemini REST client (plain + SSE streaming), typed errors, `Generator` interface, request types (`Brand`, `Theme`, `Sibling`, `GenerateRequest/Response`), user-message assembly, inter-block summary, output sanitizing |
-| `pkg/prompts/` — `blocks.go` | ~400 | Block registry: one expert system prompt per block type (14 catalog types + the generic `section` + the hidden `element`) |
+| `pkg/gemini/` — `client.go` `message.go` `translate.go` | ~790 | Gemini REST client (plain + SSE streaming), typed errors, `Generator` interface, request types (`Brand`, `Theme`, `Sibling`, `GenerateRequest/Response`), user-message assembly (incl. source language), inter-block summary, output sanitizing; `Translator` — batched JSON-mode translation (§2.4) |
+| `pkg/prompts/` — `blocks.go` `translate.go` | ~420 | Block registry: one expert system prompt per block type (14 catalog types + the generic `section` + the hidden `element`); `TranslatorPrompt` |
 | `pkg/sites/` — `store.go` `validate.go` `extract.go` `serve.go` `routes.go` `pages.go` `assets.go` | ~1 100 | Imported sites: storage model, input validation, archive extraction, domain serving, HTTP API; pages (create site, read/save/copy page — the studio bridge, §12) and page assets (local CSS/JS, the code workshop) |
 | `pkg/sites/` — `build.go` `twconfig.go` `fonts.go` | ~1 285 | Publish pipeline: local Tailwind compile (inline config **parsed as a data literal, never executed**; CLI confined and unprivileged), Google Fonts localization, PWA, GDPR notice. Exports `CompileCSS`/`CanCompile`/`FontsDir` for the studio export |
-| `pkg/projects/` — `store.go` `routes.go` | ~940 | Studio projects in SQLite: projects, ordered blocks, bounded per-block version history (undo/redo pointer), optimistic revision counter, owner-scoped HTTP API (§7) |
-| `pkg/studio/` — `routes.go` `limiter.go` | ~580 | Studio API: generation (JSON + SSE), per-account rate limit, capability report, stock-photo search, production export, one-click publish (§8), save-into-site / open-page-as-project (§12) |
-| `pkg/export/` — `page.go` `components.go` `split.go` | ~2 150 | Production output: standalone compiled HTML, full static site (ZIP), SEO head, favicon, theme → Tailwind config, local fonts, asset download, HTML → React/Vue components (§9); `PageCDN`/`SplitPage` for the sites bridge (§12) |
+| `pkg/projects/` — `store.go` `routes.go` | ~1 025 | Studio projects in SQLite: projects, ordered blocks, bounded per-block version history (undo/redo pointer), optimistic revision counter, owner-scoped HTTP API (§7); translation memory (§13) |
+| `pkg/studio/` — `routes.go` `i18n.go` `limiter.go` | ~900 | Studio API: generation (JSON + SSE), per-account rate limit, capability report, stock-photo search, production export, one-click publish (§8), save-into-site / open-page-as-project (§12), translation routes (§13) |
+| `pkg/export/` — `page.go` `components.go` `split.go` `i18n.go` | ~2 380 | Production output: standalone compiled HTML, full static site (ZIP), SEO head, favicon, theme → Tailwind config, local fonts, asset download, HTML → React/Vue components (§9); `PageCDN`/`SplitPage` for the sites bridge (§12); per-language pages (§13) |
+| `pkg/i18n/` — `i18n.go` | ~510 | Translatable segments of an HTML fragment (`Extract`), re-application (`Apply`), marker check (`Valid`), `Key`, `LangRe` — pure, `x/net/html` only (§13) |
 | `pkg/publish/` — `publish.go` `netlify.go` `cloudflare.go` | ~900 | Deploy a file set to Netlify (ZIP deploy) or Cloudflare Pages (direct upload) with a user-supplied token (§10) |
 | `pkg/images/` — `images.go` `providers.go` `resolve.go` | ~975 | Stock photos: Pexels / Unsplash clients, cached search service, `data-photo` placeholder resolution (§11) |
 
-Renames with the package split: `sites.Store`/`sites.NewStore`/`sites.Meta` (ex-`SiteStore`/`NewSiteStore`/`SiteMeta`), `gemini.Client`/`gemini.NewClient` (ex-`GeminiClient`). Dependencies: `cmd/nadaprod` → all packages; `pkg/sites` → `pkg/auth` (route authorization); `pkg/gemini` → `pkg/prompts`; `pkg/studio` → `gemini`, `prompts`, `projects`, `export`, `publish`, `images` (it receives the Tailwind compiler as a plain `func`, so it does not import `pkg/sites`); `pkg/export`, `pkg/publish`, `pkg/images`, `pkg/projects` are leaves (no gin in the first three). The rest of this document uses the historical flat names in prose — same code, new homes.
+Renames with the package split: `sites.Store`/`sites.NewStore`/`sites.Meta` (ex-`SiteStore`/`NewSiteStore`/`SiteMeta`), `gemini.Client`/`gemini.NewClient` (ex-`GeminiClient`). Dependencies: `cmd/nadaprod` → all packages; `pkg/sites` → `pkg/auth` (route authorization); `pkg/gemini` → `pkg/prompts`; `pkg/studio` → `gemini`, `prompts`, `projects`, `export`, `publish`, `images`, `i18n`; `pkg/export` → `i18n` (it receives the Tailwind compiler as a plain `func`, so it does not import `pkg/sites`); `pkg/i18n`, `pkg/publish`, `pkg/images`, `pkg/projects` are leaves (no gin in `export`, `i18n`, `publish`, `images`). The rest of this document uses the historical flat names in prose — same code, new homes.
 
-Tests: `pkg/sites/{build,fonts,sites,twconfig,pages,assets}_test.go`, `pkg/auth/auth_test.go`, `pkg/gemini/gemini_test.go` (fake Gemini server: plain, SSE, retries, error classification), `pkg/projects/store_test.go`, `pkg/studio/routes_test.go` (fake `Generator`, mock Netlify), `pkg/export/{page,components}_test.go`, `pkg/publish/*_test.go` and `pkg/images/*_test.go` (httptest mocks only — see §10/§11 for what was never exercised against the live services) — run with `go test ./pkg/...` (bare `./...` works too now that the stray `books/` directory is gone — `tools/mywebfont` has its own module; same for `go vet`).
+Tests: `pkg/sites/{build,fonts,sites,twconfig,pages,assets}_test.go`, `pkg/auth/auth_test.go`, `pkg/gemini/gemini_test.go` (fake Gemini server: plain, SSE, retries, error classification), `pkg/projects/store_test.go` (incl. translations: upsert/delete/cap/cascade, migration from v1), `pkg/studio/routes_test.go` (fake `Generator`, mock Netlify), `pkg/studio/i18n_test.go` (fake `Translator`, end-to-end translation flow), `pkg/i18n/i18n_test.go`, `pkg/export/{page,components,i18n}_test.go`, `pkg/publish/*_test.go` and `pkg/images/*_test.go` (httptest mocks only — see §10/§11 for what was never exercised against the live services) — run with `go test ./pkg/...` (bare `./...` works too now that the stray `books/` directory is gone — `tools/mywebfont` has its own module; same for `go vet`).
 
 Direct dependencies: `gin-gonic/gin`, `joho/godotenv`, `golang.org/x/crypto` (bcrypt), `modernc.org/sqlite` (pure-Go SQLite — the binary stays CGO-free, at the cost of ~18 MB), `golang.org/x/net/html` (HTML → JSX/Vue), `lukechampine.com/blake3` (Cloudflare Pages asset hashes). Everything else in `go.sum` is transitive. One optional external tool: the Tailwind v3 **standalone binary** (`TAILWIND_BIN`, no Node runtime), fetched by `bin/build.sh`.
 
@@ -94,10 +95,10 @@ Auth column: **pub** = no session needed · **auth** = valid session (`RequireAu
 | `POST /waiting-list` | pub | append a candidacy to `waiting-list.json` (honeypot + dedupe, §0.3) |
 | `GET /api/health` | pub | `{ok, model}` |
 | `POST /api/login` | pub | open a session (sets the `np_session` cookie) |
-| `GET /editor` `/editor/:project` `/sites` `/drafts` | auth | app pages (`/editor*` → `web/studio.html`; the project id in the URL is resolved client-side) |
+| `GET /editor` `/editor/:project` `/sites` `/drafts` | auth | app pages (`/editor*` → `web/studio.html`; the project id in the URL is resolved client-side; `/drafts` → `web/drafts.html`, now a redirect stub to `/sites`) |
 | `POST /api/logout` · `GET /api/me` | auth | close session · `{email, root, sites}` |
 | `GET /api/blocks` | auth | public block catalog (§3) |
-| `GET /api/studio/config` | auth | what this server can do: `{model, images{enabled,provider}, compile, fonts[], publish[], rate, user, root, max_block}` |
+| `GET /api/studio/config` | auth | what this server can do: `{model, images{enabled,provider}, compile, fonts[], publish[], rate, user, root, max_block, langs[{code,name}], translate}` |
 | `POST /api/generate` | auth | block generation, JSON response (§2) — rate-limited per account |
 | `POST /api/generate/stream` | auth | same request, `text/event-stream` response: `delta` events then `done` (or `error`) (§8.1) |
 | `GET /api/images/search?q=&orientation=` | auth | stock-photo search (503 `disabled` without a provider key) |
@@ -107,9 +108,13 @@ Auth column: **pub** = no session needed · **auth** = valid session (`RequireAu
 | `GET /api/projects/:id/blocks/:bid/versions` | owner | version list, newest first |
 | `POST /api/projects/:id/blocks/:bid/checkout` | owner | `{step: -1\|1}` (undo/redo) or `{version_id}` (restore) |
 | `GET /api/projects/:id/export.json` | owner | portable project backup, re-importable through `POST /api/projects` |
-| `POST /api/projects/:id/export` | owner | `{format: html\|zip\|jsx\|vue}` → file download (§9) |
+| `POST /api/projects/:id/export` | owner | `{format: html\|zip\|jsx\|vue, lang?}` → file download (§9); `html` + `lang` = the page in that language, `zip`/site = every language (§13) |
+| `GET /api/projects/:id/i18n` | owner | `{source, langs, segments:[{hash,src,attr,blocks}], translations:{lang:{hash:{text,status}}}}` (§13) |
+| `PUT /api/projects/:id/i18n/:lang` | owner | `{items:[{hash,text}]}` → human translations (`text:""` deletes); 422 `invalid_markers` |
+| `POST /api/projects/:id/i18n/:lang/translate` | owner | `{hashes?, redo?}` → Gemini on missing segments (≤ 200 per call) — `{translations, failed, remaining}`; rate-limited like `/generate`; 503 `no_translator` |
+| `GET /api/projects/:id/i18n/:lang/preview` | owner | `{blocks:{id:html}, missing}` — translated block HTML for the studio preview |
 | `POST /api/projects/:id/publish` | owner | `{provider, token, site, account_id}` → deploy (§10) |
-| `POST /api/projects/:id/site` | owner + site | `{site, path, overwrite}` → writes the page (CDN source, SEO head) into `dev/` of an imported site the account can access, republishes it, remembers the target (`publish.provider = "site"`) (§12) |
+| `POST /api/projects/:id/site` | owner + site | `{site, path, overwrite}` → writes the page (CDN source, SEO head) into `dev/` of an imported site the account can access, plus `<lang>/<path>` per target language, republishes it, remembers the target (`publish.provider = "site"`); reply adds `langs` (written copies) and `warnings` (§12, §13) |
 | `POST /api/projects/from-page` | site | `{site, path}` → new project made of the page's `<body>` children (§12) |
 | `POST /api/sites/new` | root | `{name}` → empty site (slug id, suffixed if taken) for the studio to fill |
 | `POST /api/sites/:id/pages` | site | `{name, from?}` → blank page (`BlankPage`) or copy of `from`; 409 if it exists |
@@ -141,7 +146,8 @@ Auth column: **pub** = no session needed · **auth** = valid session (`RequireAu
   "siblings": [ { "type": "header", "html": "…" } ],  // the page's other generated blocks
   "mode": "",                       // "retheme" ⇒ restyle current_html to the theme, content untouched
   "variant": 0,                     // 1..3 ⇒ imposed art direction (A sober / B bold / C rich)
-  "images": true                    // resolve data-photo placeholders if a provider is configured
+  "images": true,                   // resolve data-photo placeholders if a provider is configured
+  "lang": "fr"                      // source language of the page; ≠ "" and ≠ "fr" ⇒ language section in the message
 }
 ```
 
@@ -176,16 +182,17 @@ Per-operation budgets in `pkg/studio`: 120 s generate, 90 s export, 3 min publis
   2. optional brand context (name / palette / tone; the free-form palette is **omitted when a design system is active**, so it cannot contradict it);
   3. **design-system section** when `theme.enabled`: brand colours only through `primary-50…950` / `accent-50…950` (no hard-coded saturated hues; neutrals stay free), `font-display` on headings / `font-sans` on text, `rounded-brand` on buttons/fields/cards, optional light/dark mood and free art direction. These tokens are *defined by the page's Tailwind config* (studio preview and export, §9.1) — which is what makes a theme change instant, with no regeneration;
   4. **inter-block coherence** (`SummarizeSiblings`, not in retheme mode): per sibling block — dark-background flag, first headings, labels of "filled" CTAs — plus the 5 dominant non-neutral colour classes, and a reminder to reuse CTA labels/product name and keep a single `<h1>`. Pure, deterministic, capped at 12 siblings / ~1 500 chars;
-  5. variant direction (`variant` 1..3) when asked;
-  6. optional current version fenced as ` ```html … ``` ` (wording differs for iterate / variant / retheme);
-  7. final reminder: *"Réponds UNIQUEMENT avec le fragment HTML final."*
+  5. **page language** when `lang` is set and not French (not in retheme mode): write every visible text in that language (overrides the system prompt's « copywriting français »), keep each sentence inside one element (helps segmentation, §13). For `""`/`fr` the message is byte-identical to before (tested);
+  6. variant direction (`variant` 1..3) when asked;
+  7. optional current version fenced as ` ```html … ``` ` (wording differs for iterate / variant / retheme);
+  8. final reminder: *"Réponds UNIQUEMENT avec le fragment HTML final."*
 - `generationConfig`: temperature from `Options` (variants +0.25 capped at 1.2, retheme capped at 0.4), `maxOutputTokens` from `Options`.
 
 ### 2.2 Transport, retry & typed errors
 
 `GenerateBlock` → `:generateContent`; `StreamBlock` → `:streamGenerateContent?alt=sse`, parsed line by line (`data: {json}` events, 4 MB line buffer), calling `onDelta(text)` per chunk and returning the **cleaned** final HTML — the raw stream may carry markdown fences, only the return value is authoritative.
 
-Two attempts total (1 retry) on *transient* failures — transport error, HTTP 429, HTTP ≥ 500 — with a linear `(attempt+1) s` pause that aborts on client cancellation. **A stream is never retried once a delta has been sent.** Every failure is a `*gemini.Error{Code, Status, Message, RetryAfter}` built by `classify` (HTTP status + Gemini's `error.status` / `details[].reason` / `RetryInfo.retryDelay`); `HTTPStatus()` gives the status to answer the browser with (§1.2). Safety blocks (`promptFeedback.blockReason`, or a `SAFETY`-like `finishReason` with no text) ⇒ `blocked`; nothing usable after cleaning ⇒ `empty`.
+Both modes (and `Translate`) share one loop, `do()`. Two attempts total (1 retry) on *transient* failures — transport error, HTTP 429, HTTP ≥ 500 — with a linear `(attempt+1) s` pause that aborts on client cancellation. **A stream is never retried once a delta has been sent.** Every failure is a `*gemini.Error{Code, Status, Message, RetryAfter}` built by `classify` (HTTP status + Gemini's `error.status` / `details[].reason` / `RetryInfo.retryDelay`); `HTTPStatus()` gives the status to answer the browser with (§1.2). Safety blocks (`promptFeedback.blockReason`, or a `SAFETY`-like `finishReason` with no text) ⇒ `blocked`; nothing usable after cleaning ⇒ `empty`.
 
 ### 2.3 Output sanitizing — `cleanHTML`
 
@@ -196,6 +203,10 @@ The model contract is "fragment only"; this is the safety net:
 4. Trim again.
 
 A fence opened but never closed (truncated answer) is stripped too. Then `Sanitize(html, spec.AllowJS)` enforces the verifiable part of the contract: a block whose specialization forbids JavaScript never comes out with a `<script>`. It still does **not** validate single-rootness or parse the HTML (see TODO).
+
+### 2.4 Translation — `Translator` (`translate.go`)
+
+`Client.Translate(ctx, TranslateRequest{From, To, Brand, Items})` implements the `Translator` interface (the studio depends on the interface; tests plug a fake). Items (id → source with `<n>…</n>` / `<n/>` markers) are sent in chunks of 40, sorted by id, one `generateContent` call each with `prompts.TranslatorPrompt` as system instruction, `responseMimeType: application/json` and temperature ≤ 0.3. The reply (a ```` ```json ```` fence is tolerated) keeps only requested ids with non-empty strings; missing ids are simply absent (the caller reports them as `failed`). Context cancellation is checked between chunks; results of chunks already done are returned alongside an error.
 
 ---
 
@@ -286,25 +297,26 @@ Known limit: compiled CSS is static — class names computed at runtime by JS (s
 
 ## 7. Studio projects (`pkg/projects`)
 
-One SQLite file (`DB_FILE`), opened with `journal_mode=WAL`, `foreign_keys=1`, `busy_timeout=5000` and `_txlock=immediate` (a write transaction takes its lock up front — no read→write upgrade deadlocks). Schema changes are numbered entries of the `migrations` slice, applied in a transaction each and tracked by `PRAGMA user_version`; a future table (e.g. the v1.0 favourite-blocks `library`) is "append migration 2".
+One SQLite file (`DB_FILE`), opened with `journal_mode=WAL`, `foreign_keys=1`, `busy_timeout=5000` and `_txlock=immediate` (a write transaction takes its lock up front — no read→write upgrade deadlocks). Schema changes are numbered entries of the `migrations` slice, applied in a transaction each and tracked by `PRAGMA user_version`; migration 2 added `translations` (§13), so a future table (e.g. the v1.0 favourite-blocks `library`) is "append migration 3".
 
 | Table | Columns | Notes |
 |---|---|---|
 | `projects` | `id` (16-char base32 of 10 random bytes; accepted shape `^[a-z0-9]{8,32}$`), `owner` (email), `name`, `brand`/`theme`/`seo`/`publish` (JSON objects, ≤ 16 KB each), `rev`, timestamps | `publish` = last deploy target (provider, site, url) — **never a token** |
 | `blocks` | PK `(project_id, id)`, `type`, `position`, `html` (≤ 512 KB), `prompt`, `version_id` | block ids are client-supplied and stable (regex-checked); `ON DELETE CASCADE` |
 | `block_versions` | autoincrement `id`, `(project_id, block_id)` FK, `html`, `prompt`, `source`, `created_at` | last `KeepVersions` = 30 per block |
+| `translations` | PK `(project_id, lang, hash)`, `src`, `text`, `status` (`machine`\|`human`), `updated_at` | translation memory (§13); `ON DELETE CASCADE`; ≤ 8 KB per text, ≤ 2 000 per write, ≤ 20 000 rows per project |
 
 Design choices (they also prepare v1.0 — real-time collaboration, server-side orchestrator):
 
 - **Per-block writes, not whole-document overwrites.** `PUT …/blocks/:bid` upserts one block; `PUT /projects/:id` carries only meta + `order` (which also deletes the blocks it no longer lists).
 - **Optimistic concurrency.** Every mutation bumps `projects.rev` and returns it; a request may carry the `rev` it knows — mismatch ⇒ `ErrConflict` ⇒ HTTP 409 `conflict`, nothing written. The studio serializes its writes in one queue and always sends `rev`, so two tabs cannot silently overwrite each other.
 - **History is a list + a pointer.** A changed `html` appends a version and moves `blocks.version_id` to it (`source` ∈ generate, variant, retouch, retheme, code, edit, import, image). Undo/redo (`Step`) and restore (`Checkout`) only move the pointer. If a new version arrives while the pointer is *not* at the tail (you undid, then regenerated), the current version is first re-appended as a `restore` point: "undo" then returns to what was on screen, and the abandoned versions stay listed — nothing is ever lost.
-- **Limits:** 200 projects per owner, 60 blocks per project (`MaxBlocksPerProject`, surfaced as `max_block` in `/api/studio/config`), names ≤ 120 chars, prompts silently truncated at 4 000, an unknown `source` coerced to `edit`, sizes above. Errors are sentinel values (`ErrNotFound`, `ErrConflict`, `ErrInvalid`, `ErrLimit`) mapped to 404/409/400/413 with a `code`.
+- **Limits:** 200 projects per owner, 60 blocks per project (`MaxBlocksPerProject`, surfaced as `max_block` in `/api/studio/config`), names ≤ 120 chars, prompts silently truncated at 4 000, an unknown `source` coerced to `edit`, sizes above. Errors are sentinel values (`ErrNotFound`, `ErrConflict`, `ErrInvalid`, `ErrLimit`) mapped to 404/409/400/413 with a `code` by `projects.Fail(c, err)` (exported — the studio's translation routes reuse it).
 - **Access:** `Store.Allowed(c, id)` — owner or root; others get 404. Exported because the export/publish routes of `pkg/studio` apply the same rule.
 
 ## 8. Studio API (`pkg/studio`)
 
-`studio.Register(api, Deps{Gen, Projects, Images, Compile, FontsDir, RatePerMin, …})` — `main.go` injects the real parts, tests a fake generator and mock provider URLs.
+`studio.Register(api, Deps{Gen, Translator, Projects, Images, Compile, FontsDir, RatePerMin, …})` — `main.go` injects the real parts (the Gemini client is both `Gen` and `Translator`), tests a fake generator / translator and mock provider URLs. The rate-limit check is one closure, `throttled(c)`, shared by generation and translation.
 
 ### 8.1 Streaming — `POST /api/generate/stream`
 
@@ -320,10 +332,10 @@ Token bucket per account: `GENERATE_RATE_PER_MIN` tokens, refilled continuously,
 
 ## 9. Production export (`pkg/export`)
 
-Input: `export.Page{Name, Brand, SEO, Theme, Blocks}` built from the stored project. Two outputs:
+Input: `export.Page{Name, Brand, SEO, Theme, Blocks, Translations}` built from the stored project (translations loaded with it). Two outputs:
 
 - `HTML(page, compiler)` — **one standalone file**: compiled + purged Tailwind CSS inline, SEO head, SVG favicon as a data URI. Theme fonts come from a Google Fonts `<link>` (the only option without side files; re-importing the file into NADAPROD localizes them through the publish pipeline).
-- `Site(ctx, page, opts)` — a **static site**: `index.html`, `styles.css`, `favicon.svg`, `assets/` (theme fonts copied from the local mirror as TTF + `@font-face` prepended to `styles.css`; images downloaded and `src`s rewritten), and optionally `components/` (`jsx` or `vue`). `Zip(files)` is deterministic. This is also what gets published (§10).
+- `Site(ctx, page, opts)` — a **static site**: `index.html`, `styles.css`, `favicon.svg`, `assets/` (theme fonts copied from the local mirror as TTF + `@font-face` prepended to `styles.css`; images downloaded and `src`s rewritten), and optionally `components/` (`jsx` or `vue`, source language only); with target languages, also `<lang>/index.html` per language (§13). `Zip(files)` is deterministic. This is also what gets published (§10).
 
 If compilation is unavailable or fails, both degrade to the Play CDN + inline theme config and report it (`Result.Warnings`, `X-Export-Warnings` / `X-Export-Compiled` response headers).
 
@@ -333,7 +345,7 @@ The design system becomes `tailwind.config = {theme:{extend:{colors:{primary,acc
 
 ### 9.2 SEO — `Page.normalize`
 
-Empty fields are derived, nothing is invented: title = `brand — <h1 text>` (≤ 70 chars), description = the first `<p>` after the `<h1>`, else the brand tone (≤ 160). `lang` must look like `fr` / `en-US` (default `fr`); `url` and `og_image` must be absolute http(s) URLs or are dropped. Emitted: `<title>`, description, canonical, `og:type/title/description/url/site_name/image`, `twitter:card`, `theme-color`, favicon (initial of the brand on the primary colour).
+Empty fields are derived, nothing is invented: title = `brand — <h1 text>` (≤ 70 chars), description = the first `<p>` after the `<h1>`, else the brand tone (≤ 160). `lang` must look like `fr` / `en-US` (default `fr`), `langs` (targets) are filtered by `i18n.LangRe`, deduplicated, source removed, ≤ 12; `url` and `og_image` must be absolute http(s) URLs or are dropped. Emitted: `<title>`, description, canonical, `og:type/title/description/url/site_name/image`, `twitter:card`, `theme-color`, favicon (initial of the brand on the primary colour).
 
 ### 9.3 Asset download — no SSRF
 
@@ -358,6 +370,16 @@ Parsed with `x/net/html` (fragment, body context), re-serialized by one shared l
 
 The two worlds meet through pages of `dev/`: `export.PageCDN` assembles the studio page exactly like an imported source (Tailwind CDN + inline theme config, Google Fonts link, SEO head) so the publish pipeline treats it like any other page; `export.SplitPage` does the reverse — each element child of `<body>` becomes a block (`header`/`nav` → `header`, `footer` → `footer`, anything else → the generic `section` generator), trailing scripts are re-attached to the block before them while other body-level `<script>`/`<style>`/`<link>` children are dropped; from `<head>` only `title`, the meta description and `html[lang]` are read — its styles never enter the studio (which only renders Tailwind). `Store.SavePage` (validated relative `.html` path, `safeJoin`, `ErrPageExists` unless `overwrite`, background `RebuildPage`), `ReadPage`, `CopyPage`, `CreateSite` (empty `dev/`, slug id) and `BlankPage` back the routes. Access: `Deps.SiteAccess` = `users.CanAccess` — the studio project must be the caller's, *and* the site assigned to them (root: all). The studio remembers the target in `projects.publish` (`provider: "site"`), so the next save proposes the same page (with an overwrite warning) — `/editor?site=X&path=Y` opens a fresh project aimed at that page, `/editor?from=X&path=Y` imports it.
 
+## 13. Studio i18n — one URL per language (`pkg/i18n`, `pkg/studio/i18n.go`, `pkg/export/i18n.go`)
+
+Spec and rationale: `doc/I18N.md`. Translations are keyed by the **source text**, never by markup: block HTML stays monolingual (source = `seo.lang`, targets = `seo.langs`), so regenerating a block cannot break anything — unchanged text finds its translation again, new or changed text shows up as missing.
+
+- **Segmentation (`pkg/i18n`).** `Extract(fragment)` walks the parsed fragment and returns `[]Segment{Hash, Src, Attr}` in document order, deduplicated. A segment is a run of sibling text + inline elements containing a letter; inline tags become numbered markers (`Lisez <1>nos conditions</1>.`, opaque elements such as `br`, `img`, `svg`, `code`, `input` → `<n/>`); text is escaped (`& < >`) and HTML whitespace collapsed (NBSP kept). Rules learned on real blocks: a run made of a single inline element is entered (`<a>Fermer</a>` ⇒ « Fermer »); a run with no text of its own between elements (`<span>Label</span> <span>Value</span>`, menu links) is split per element; inert edges (icons, empty status dots, `<br>`) stay outside the segment. Attributes `alt`, `title`, `placeholder`, `aria-label` (+ `value` of button inputs) are segments too. Skipped: `script`, `style`, `noscript`, `template`, `pre`, `textarea`, `iframe`, `object`, `canvas`, `translate="no"`, `.notranslate`. `Key(src)` = 16 hex of SHA-256 of the collapsed source. `Apply(fragment, lookup)` re-renders with each segment replaced by its translation when `Valid(src, dst)` (same multiset of markers, well nested) — the original elements (attributes, opaque subtrees) are cloned back around the translated text, text is always a text node (a translated `<script>` is just text), attributes are translated first; returns the sources left untranslated.
+- **Storage (`pkg/projects`).** `Translations(ctx, pid)` (lang → hash → `{hash, src, text, status, updated_at}`, never nil) and `SaveTranslations(ctx, pid, lang, ts)` (one transaction, upsert, `text:""` deletes, validation of lang/hash/status/sizes, project cap). Writing translations does **not** bump `rev` — they sit beside the blocks and must not cause conflicts with someone editing the page.
+- **Routes (`pkg/studio/i18n.go`, §1.1).** Segments are recomputed on every read from the current blocks plus the SEO title/description (`export.PlainSegment`, listed under block `"seo"`); only translations of segments still present are returned. The target language must be one of the project's (`Page.Languages()`), else 400 `invalid`. `PUT` validates hashes against the current segments and markers with `Valid`. `translate` picks missing segments (or the given `hashes`; `redo` also redoes `machine` ones — a `human` entry is never overwritten), at most `maxTranslateRun` = 200 per call (`remaining` tells the client how many are left), consumes one rate-limit token, calls the `Translator` (3 min budget), keeps only replies that pass `Valid` (others ⇒ `failed`) and stores them as `machine` — even when the call errored partway. `preview` returns `Page.Localized(lang)` block HTML.
+- **Export (`pkg/export/i18n.go`).** `Page.Localized(lang)` translates blocks and SEO texts and sets `SEO.Lang` (source ⇒ unchanged page). `Site` emits the source at the root and `<lang>/index.html` per target: one compiled `styles.css` (compiled once), `../` paths for CSS, favicon and the assets it downloaded, `<html lang>`, `hreflang` alternates for every language + `x-default` (absolute when `SEO.URL` is known, relative otherwise), canonical / `og:url` per language, and a small inline-styled language switcher (fixed bottom-right, `nav aria-label`, `aria-current`) when there are ≥ 2 languages. One warning per language with gaps (`en : 3 texte(s) non traduit(s) — source conservée`). Publish uses the same `Site`; the site bridge writes `PageCDN(Localized(lang))` to `<lang>/<path>` (overwrite only with `overwrite`, otherwise a warning).
+- **Limits.** Text written at runtime by a block's `<script>` is not extracted; identical source sentences share one translation; imported sites (`/sites`) keep their own home-made i18n (TODO).
+
 ## 11. Stock photos (`pkg/images`)
 
 `images.FromEnv` picks Pexels (`PEXELS_API_KEY`) or Unsplash (`UNSPLASH_ACCESS_KEY`); neither ⇒ a disabled service (every call is a no-op). `Service.Search` caches by (normalized query, orientation) for 24 h, 500 entries. `Service.Resolve(ctx, fragment)` rewrites, byte-for-byte outside the touched tags, the `src` of `<img data-photo="…">` **placeholders** (an image whose `src` is already real is never re-resolved — the model echoes existing `src`s when iterating): orientation inferred from the `placehold.co/WxH` size, deterministic-but-varied pick, no duplicate photo within a fragment, `data-photo-credit` + `loading="lazy"` added, ≤ 12 images per fragment (page resolution: 8 per page, 4 searches in parallel, 20 s budget; small placeholders ≤ 160 px are searched as `square` avatars), searches in parallel, never blocking (a failed search keeps the placeholder). `/api/images/search` returns 18 results with a 15 s timeout. ⚠ Tested against mocks only. Provider guidelines beyond the code (Unsplash download pings, visible credits) are not implemented.
@@ -379,4 +401,4 @@ The two worlds meet through pages of `dev/`: `export.PageCDN` assembles the stud
 
 ## 6. Build & deploy
 
-`bin/build.sh` — downloads the Tailwind v3.4.17 standalone binary to `bin/tailwindcss` if absent (gitignored; failure is non-fatal — local compile just stays off), then compiles the app pages' CSS (`web/static/tw.css` from `tools/appcss/`, skipped if the binary is missing), then `go build -ldflags "-s -w" -o nadaprod ./cmd/nadaprod` from the repo root (`full` argument adds `go get -u ./... && go mod tidy`), then the `chown -Rf www-data.www-data` of the tree, an optional `gigit "$2"` commit when a second argument is given, and `systemctl stop/start/status nadaprod`. The service reads config from real env vars or the `.env` next to the binary's working directory — **`ROOT_PASSWORD` must be in the production `.env` before deploying the auth build** (the server refuses to start without it, and `Restart=always` would loop). **Since the studio build (deployed 2026-09-19):** the server creates `DB_FILE` (`./nadaprod.db`) on first start — include it in backups; `/editor` serves `web/studio.html`; the unit runs as `User=www-data` and `bin/build.sh` chowns the tree to `www-data` before restarting the service (the SQLite file, `users.json`, `waiting-list.json` and `sites/` must stay writable by that account); the Tailwind CLI inherits that unprivileged identity (the `nobody` drop of §4.7 only kicks in when the service itself is root); if a reverse proxy sits in front, make sure it does not buffer `POST /api/generate/stream`. Tests: `go test ./pkg/...`; see TODO.md for the remaining intended targets. The webfonts mirror deploys separately (gitignored): unpack `web/webfonts.tgz` on the server (the « My Webfonts » page is regenerated by `tools/mywebfont`).
+`bin/build.sh` — downloads the Tailwind v3.4.17 standalone binary to `bin/tailwindcss` if absent (gitignored; failure is non-fatal — local compile just stays off), then compiles the app pages' CSS (`web/static/tw.css` from `tools/appcss/`, skipped if the binary is missing), then `go build -ldflags "-s -w" -o nadaprod ./cmd/nadaprod` from the repo root (`full` argument adds `go get -u ./... && go mod tidy`), then the `chown -Rf www-data.www-data` of the tree, an optional `gigit "$2"` commit when a second argument is given, and `systemctl stop/start/status nadaprod`. The service reads config from real env vars or the `.env` next to the binary's working directory — **`ROOT_PASSWORD` must be in the production `.env` before deploying the auth build** (the server refuses to start without it, and `Restart=always` would loop). **Since the studio build (deployed 2026-09-19):** the server creates `DB_FILE` (`./nadaprod.db`) on first start — include it in backups; `/editor` serves `web/studio.html`; the unit runs as `User=www-data` and `bin/build.sh` chowns the tree to `www-data` before restarting the service (the SQLite file, `users.json`, `waiting-list.json` and `sites/` must stay writable by that account); the Tailwind CLI inherits that unprivileged identity (the `nobody` drop of §4.7 only kicks in when the service itself is root); if a reverse proxy sits in front, make sure it does not buffer `POST /api/generate/stream`. Tests: `go test ./pkg/...`; see TODO.md for the remaining intended targets. Day-to-day delivery goes through `bin/next.sh` (front staged in `next/web/`, see CLAUDE.md); migration 2 (`translations`) is applied automatically at the first start of a new binary. The webfonts mirror deploys separately (gitignored): unpack `web/webfonts.tgz` on the server (the « My Webfonts » page is regenerated by `tools/mywebfont`).

@@ -22,6 +22,7 @@ function requestBody(b, extra = {}) {
     theme: themeForPrompt(),
     siblings: S.page.filter((x) => x.id !== b.id && x.html).map((x) => ({ type: x.type, html: x.html })),
     images: S.cfg.images.enabled && prefs.images,
+    lang: S.seo.lang || 'fr',
     ...extra,
   };
 }
@@ -30,6 +31,7 @@ function requestBody(b, extra = {}) {
 export function commit(b, html, source) {
   b.html = html;
   saveBlock(b, source);
+  emit('commit', b);
   emit('render');
 }
 
@@ -229,7 +231,7 @@ export async function retouchElement(brief) {
   try {
     const data = await api('/generate', {
       method: 'POST',
-      body: { block: 'element', prompt: brief.trim(), current_html: el.html, brand: S.brand, theme: themeForPrompt(), images: false },
+      body: { block: 'element', prompt: brief.trim(), current_html: el.html, brand: S.brand, theme: themeForPrompt(), images: false, lang: S.seo.lang || 'fr' },
     });
     replaceElement(data.html); // l'aperçu remplace l'élément puis renvoie le HTML du bloc (np:block-html)
     toast(t('studio.retouched'));

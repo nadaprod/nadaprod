@@ -15,9 +15,9 @@ import (
 // le contexte. Un projet appartient à son créateur ; root accède à tout par
 // identifiant, mais sa liste ne montre que les siens sauf ?all=1.
 
-// fail traduit une erreur du store en réponse HTTP. Le champ "code" permet à
+// Fail traduit une erreur du store en réponse HTTP. Le champ "code" permet à
 // l'UI de réagir (conflit ⇒ proposer de recharger) sans analyser le message.
-func fail(c *gin.Context, err error) {
+func Fail(c *gin.Context, err error) {
 	status, code := http.StatusInternalServerError, "internal"
 	switch {
 	case errors.Is(err, ErrNotFound):
@@ -35,7 +35,7 @@ func fail(c *gin.Context, err error) {
 // reply : v si l'opération a réussi, sinon l'erreur traduite par fail.
 func reply(c *gin.Context, status int, v any, err error) {
 	if err != nil {
-		fail(c, err)
+		Fail(c, err)
 		return
 	}
 	c.JSON(status, v)
@@ -60,12 +60,12 @@ func (s *Store) Allowed(c *gin.Context, id string) bool {
 	}
 	owner, err := s.Owner(c.Request.Context(), id)
 	if err != nil {
-		fail(c, err)
+		Fail(c, err)
 		return false
 	}
 	if owner != c.GetString("user") && !c.GetBool("isRoot") {
 		// 404 plutôt que 403 : ne pas confirmer l'existence d'un projet d'autrui.
-		fail(c, ErrNotFound)
+		Fail(c, ErrNotFound)
 		return false
 	}
 	return true
@@ -176,7 +176,7 @@ func (s *Store) RegisterRoutes(api *gin.RouterGroup) {
 	api.GET("/projects/:id/export.json", owned(func(c *gin.Context, ctx context.Context, id string) {
 		p, err := s.Get(ctx, id)
 		if err != nil {
-			fail(c, err)
+			Fail(c, err)
 			return
 		}
 		blocks := make([]BlockInput, 0, len(p.Blocks))

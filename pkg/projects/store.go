@@ -10,8 +10,8 @@
 //     de révision par projet (rev) : base d'une future synchronisation temps
 //     réel, et déjà utile contre deux onglets qui s'écrasent ;
 //   - identifiants de blocs stables, fournis par le client ou l'orchestrateur ;
-//   - migrations numérotées (PRAGMA user_version) : une table « library »
-//     (blocs favoris) s'ajoutera en migration 2 sans toucher à l'existant.
+//   - migrations numérotées (PRAGMA user_version) : la migration 2 a ajouté
+//     la mémoire de traduction (doc/I18N.md) sans toucher à l'existant.
 package projects
 
 import (
@@ -47,12 +47,18 @@ const (
 	MaxNameLen          = 120
 	MaxPromptLen        = 4000
 	KeepVersions        = 30 // versions conservées par bloc
+
+	MaxTranslationLen     = 8192  // octets, source comme traduction
+	MaxTranslationsPerOp  = 2000  // entrées par appel à SaveTranslations
+	MaxTranslationsPerPrj = 20000 // lignes de traduction par projet, toutes langues
 )
 
 var (
 	blockIDRe   = regexp.MustCompile(`^[A-Za-z0-9_-]{1,40}$`)
 	blockTypeRe = regexp.MustCompile(`^[a-z][a-z0-9-]{0,30}$`)
 	projectIDRe = regexp.MustCompile(`^[a-z0-9]{8,32}$`)
+	langRe      = regexp.MustCompile(`^[a-z]{2,3}(-[a-z0-9]{2,8})?$`)
+	hashRe      = regexp.MustCompile(`^[0-9a-f]{16}$`)
 )
 
 // ValidID : forme d'un identifiant de projet (défense en profondeur côté routes).
@@ -193,6 +199,17 @@ var migrations = []string{
 		FOREIGN KEY (project_id, block_id) REFERENCES blocks(project_id, id) ON DELETE CASCADE
 	);
 	CREATE INDEX block_versions_block ON block_versions(project_id, block_id, id);`,
+	// 2 — mémoire de traduction : un texte source (hash) → sa traduction par langue
+	`CREATE TABLE translations (
+		project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+		lang TEXT NOT NULL,
+		hash TEXT NOT NULL,
+		src TEXT NOT NULL,
+		text TEXT NOT NULL,
+		status TEXT NOT NULL CHECK(status IN ('machine','human')),
+		updated_at TEXT NOT NULL,
+		PRIMARY KEY (project_id, lang, hash)
+	);`,
 }
 
 // Open ouvre (ou crée) la base. WAL : lectures non bloquées par l'écriture ;
@@ -661,6 +678,103 @@ func (s *Store) Delete(ctx context.Context, pid string) error {
 		return ErrNotFound
 	}
 	return nil
+}
+
+// ---------- Traductions ----------
+
+// Translation : la traduction d'un segment source (doc/I18N.md), indexée par
+// le hash du texte source — pas par le balisage, que la génération réécrit.
+type Translation struct {
+	Hash      string `json:"hash"`
+	Src       string `json:"src"`
+	Text      string `json:"text"`
+	Status    string `json:"status"` // "machine" (à relire) | "human" (saisi ou validé)
+	UpdatedAt string `json:"updated_at"`
+}
+
+const (
+	StatusMachine = "machine"
+	StatusHuman   = "human"
+)
+
+// Translations : toute la mémoire du projet, langue → hash → entrée (jamais nil).
+func (s *Store) Translations(ctx context.Context, pid string) (map[string]map[string]Translation, error) {
+	rows, err := s.db.QueryContext(ctx, `SELECT lang, hash, src, text, status, updated_at
+		FROM translations WHERE project_id = ? ORDER BY lang, hash`, pid)
+	type row struct {
+		lang string
+		t    Translation
+	}
+	all, err := collect(rows, err, func(r scanner) (row, error) {
+		var x row
+		err := r.Scan(&x.lang, &x.t.Hash, &x.t.Src, &x.t.Text, &x.t.Status, &x.t.UpdatedAt)
+		return x, err
+	})
+	if err != nil {
+		return nil, err
+	}
+	out := map[string]map[string]Translation{}
+	for _, x := range all {
+		if out[x.lang] == nil {
+			out[x.lang] = map[string]Translation{}
+		}
+		out[x.lang][x.t.Hash] = x.t
+	}
+	return out, nil
+}
+
+// SaveTranslations enregistre un lot pour une langue, en une transaction :
+// upsert, ou suppression quand Text est vide. Ne touche pas à rev : les
+// traductions vivent à côté des blocs, une saisie ne doit pas mettre en
+// conflit un onglet qui édite la page.
+func (s *Store) SaveTranslations(ctx context.Context, pid, lang string, ts []Translation) error {
+	if !langRe.MatchString(lang) {
+		return invalid("langue « %s »", lang)
+	}
+	if len(ts) > MaxTranslationsPerOp {
+		return invalid("%d traductions maximum par envoi", MaxTranslationsPerOp)
+	}
+	for _, t := range ts {
+		switch {
+		case !hashRe.MatchString(t.Hash):
+			return invalid("hash de segment « %s »", t.Hash)
+		case t.Text != "" && t.Status != StatusMachine && t.Status != StatusHuman:
+			return invalid("statut de traduction « %s »", t.Status)
+		case len(t.Src) > MaxTranslationLen || len(t.Text) > MaxTranslationLen:
+			return invalid("segment %s : texte > %d octets", t.Hash, MaxTranslationLen)
+		}
+	}
+	now := s.stamp()
+	return s.tx(ctx, func(tx *sql.Tx) error {
+		if err := tx.QueryRowContext(ctx, `SELECT 1 FROM projects WHERE id = ?`, pid).Scan(new(int)); errors.Is(err, sql.ErrNoRows) {
+			return ErrNotFound
+		} else if err != nil {
+			return err
+		}
+		for _, t := range ts {
+			var err error
+			if t.Text == "" {
+				_, err = tx.ExecContext(ctx, `DELETE FROM translations WHERE project_id = ? AND lang = ? AND hash = ?`, pid, lang, t.Hash)
+			} else {
+				_, err = tx.ExecContext(ctx, `INSERT INTO translations (project_id, lang, hash, src, text, status, updated_at)
+					VALUES (?, ?, ?, ?, ?, ?, ?)
+					ON CONFLICT (project_id, lang, hash) DO UPDATE SET src = excluded.src, text = excluded.text,
+						status = excluded.status, updated_at = excluded.updated_at`,
+					pid, lang, t.Hash, t.Src, t.Text, t.Status, now)
+			}
+			if err != nil {
+				return err
+			}
+		}
+		var n int
+		if err := tx.QueryRowContext(ctx, `SELECT COUNT(*) FROM translations WHERE project_id = ?`, pid).Scan(&n); err != nil {
+			return err
+		}
+		if n > MaxTranslationsPerPrj {
+			return fmt.Errorf("%w : %d traductions maximum par projet", ErrLimit, MaxTranslationsPerPrj)
+		}
+		return nil
+	})
 }
 
 // ---------- Historique ----------

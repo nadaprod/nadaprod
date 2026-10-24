@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -29,6 +30,7 @@ import (
 // tests, avec un faux générateur et des fournisseurs simulés).
 type Deps struct {
 	Gen        gemini.Generator
+	Translator gemini.Translator // nil ⇒ traduction automatique indisponible
 	Projects   *projects.Store
 	Images     *images.Service
 	Compile    export.Compiler // nil ⇒ export non compilé (repli CDN)
@@ -107,8 +109,25 @@ func Register(api *gin.RouterGroup, d Deps) {
 			"user":      c.GetString("user"),
 			"root":      c.GetBool("isRoot"),
 			"max_block": projects.MaxBlocksPerProject,
+			"langs":     languages,
+			"translate": d.Translator != nil,
 		})
 	})
+
+	// throttled : quota de génération du compte dépassé ⇒ 429 déjà répondu.
+	throttled := func(c *gin.Context) bool {
+		wait := limiter.take(c.GetString("user"))
+		if wait <= 0 {
+			return false
+		}
+		secs := int(wait.Seconds()) + 1
+		c.Header("Retry-After", strconv.Itoa(secs))
+		c.JSON(http.StatusTooManyRequests, gin.H{
+			"error": "trop de générations à la suite — réessayez dans " + strconv.Itoa(secs) + " s",
+			"code":  "rate_limited", "retry_after": secs,
+		})
+		return true
+	}
 
 	// prepare : validation commune aux deux modes de génération.
 	prepare := func(c *gin.Context) (gemini.GenerateRequest, prompts.BlockSpec, bool) {
@@ -123,13 +142,7 @@ func Register(api *gin.RouterGroup, d Deps) {
 			fail(c, http.StatusBadRequest, "invalid", "type de bloc inconnu : "+req.Block)
 			return req, spec, false
 		}
-		if wait := limiter.take(c.GetString("user")); wait > 0 {
-			secs := int(wait.Seconds()) + 1
-			c.Header("Retry-After", strconv.Itoa(secs))
-			c.JSON(http.StatusTooManyRequests, gin.H{
-				"error": "trop de générations à la suite — réessayez dans " + strconv.Itoa(secs) + " s",
-				"code":  "rate_limited", "retry_after": secs,
-			})
+		if throttled(c) {
 			return req, spec, false
 		}
 		return req, spec, true
@@ -247,8 +260,13 @@ func Register(api *gin.RouterGroup, d Deps) {
 		for _, b := range pr.Blocks {
 			p.Blocks = append(p.Blocks, export.Block{ID: b.ID, Type: b.Type, HTML: b.HTML})
 		}
+		if err := loadTranslations(c, d, &p); err != nil {
+			fail(c, http.StatusInternalServerError, "internal", err.Error())
+			return p, pr, false
+		}
 		return p, pr, true
 	}
+	registerI18n(api, d, page, throttled)
 
 	// siteAllowed : la passerelle est active et le compte peut toucher ce site.
 	siteAllowed := func(c *gin.Context, site string) bool {
@@ -279,11 +297,19 @@ func Register(api *gin.RouterGroup, d Deps) {
 	api.POST("/projects/:id/export", func(c *gin.Context) {
 		var body struct {
 			Format string `json:"format"`
+			Lang   string `json:"lang"` // html : la page dans cette langue (zip/site : toutes)
 		}
 		_ = c.ShouldBindJSON(&body)
 		p, _, ok := page(c)
 		if !ok {
 			return
+		}
+		if source, langs := p.Languages(); body.Lang != "" && body.Lang != source {
+			if !slices.Contains(langs, body.Lang) {
+				fail(c, http.StatusBadRequest, "invalid", "langue absente du projet : "+body.Lang)
+				return
+			}
+			p, _ = p.Localized(body.Lang)
 		}
 		ctx, cancel := context.WithTimeout(c.Request.Context(), exportTimeout)
 		defer cancel()
@@ -361,9 +387,26 @@ func Register(api *gin.RouterGroup, d Deps) {
 			fail(c, status, "site", err.Error())
 			return
 		}
+		// Une copie par langue cible, <lang>/<chemin> : une URL par langue.
+		// Un fichier existant n'est remplacé qu'avec overwrite ; sinon il est signalé.
+		written, warnings := []string{}, []string{}
+		_, langs := p.Languages()
+		for _, l := range langs {
+			lp, missing := p.Localized(l)
+			path, err := d.Sites.SavePage(body.Site, l+"/"+out, export.PageCDN(lp), body.Overwrite)
+			switch {
+			case err != nil:
+				warnings = append(warnings, l+" : "+err.Error())
+			case len(missing) > 0:
+				warnings = append(warnings, l+" : "+strconv.Itoa(len(missing))+" texte(s) non traduit(s) — source conservée")
+				fallthrough
+			default:
+				written = append(written, path)
+			}
+		}
 		url := "/preview/" + body.Site + "/" + out
 		rev := remember(c, pr.ID, pr.Rev, gin.H{"provider": "site", "site": body.Site, "path": out, "url": url, "deployed_at": time.Now().UTC().Format(time.RFC3339)})
-		c.JSON(http.StatusOK, gin.H{"ok": true, "site": body.Site, "path": out, "url": url, "edit": "/sites#" + body.Site, "rev": rev})
+		c.JSON(http.StatusOK, gin.H{"ok": true, "site": body.Site, "path": out, "url": url, "edit": "/sites#" + body.Site, "rev": rev, "langs": written, "warnings": warnings})
 	})
 
 	// Ouvre une page existante d'un site dans le studio : chaque enfant du

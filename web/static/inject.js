@@ -69,6 +69,15 @@
       n.removeAttribute('data-wp-selected');
       n.removeAttribute('contenteditable');
     });
+    // Scripts rendus inertes par le serveur (pkg/sites/inert.go) : type d'origine rétabli.
+    clone.querySelectorAll('script[type="text/x-np-inert"]').forEach(function (n) {
+      if (n.hasAttribute('data-np-type')) {
+        n.setAttribute('type', n.getAttribute('data-np-type'));
+        n.removeAttribute('data-np-type');
+      } else {
+        n.removeAttribute('type');
+      }
+    });
     return '<!DOCTYPE html>\n' + clone.outerHTML;
   }
 

@@ -155,8 +155,9 @@ type gContent struct {
 	Parts []gPart `json:"parts"`
 }
 type gGenerationConfig struct {
-	Temperature     float64 `json:"temperature"`
-	MaxOutputTokens int     `json:"maxOutputTokens"`
+	Temperature      float64 `json:"temperature"`
+	MaxOutputTokens  int     `json:"maxOutputTokens"`
+	ResponseMimeType string  `json:"responseMimeType,omitempty"`
 }
 type gRequest struct {
 	SystemInstruction *gContent         `json:"systemInstruction,omitempty"`
@@ -248,18 +249,21 @@ func finish(spec prompts.BlockSpec, text, blocked string) (string, error) {
 // GenerateBlock appelle Gemini avec le prompt système ultra-spécialisé du bloc
 // et renvoie un fragment HTML Tailwind nettoyé.
 func (g *Client) GenerateBlock(ctx context.Context, spec prompts.BlockSpec, req GenerateRequest) (string, error) {
-	return g.generate(ctx, spec, req, g.http, "generateContent", func(r io.Reader) (string, string, error) {
-		data, err := io.ReadAll(r)
-		if err != nil {
-			return "", "", err
-		}
-		var out gResponse
-		if err := json.Unmarshal(data, &out); err != nil {
-			return "", "", &Error{Code: "upstream", Status: http.StatusOK, Message: "réponse Gemini illisible : " + err.Error()}
-		}
-		text, blocked := out.text()
-		return text, blocked, nil
-	})
+	return g.generate(ctx, spec, req, g.http, "generateContent", readPlain)
+}
+
+// readPlain lit une réponse generateContent complète (non streamée).
+func readPlain(r io.Reader) (text, blocked string, err error) {
+	data, err := io.ReadAll(r)
+	if err != nil {
+		return "", "", err
+	}
+	var out gResponse
+	if err := json.Unmarshal(data, &out); err != nil {
+		return "", "", &Error{Code: "upstream", Status: http.StatusOK, Message: "réponse Gemini illisible : " + err.Error()}
+	}
+	text, blocked = out.text()
+	return text, blocked, nil
 }
 
 // StreamBlock : même contrat, via streamGenerateContent (SSE). Le retry n'est
@@ -274,22 +278,33 @@ func (g *Client) StreamBlock(ctx context.Context, spec prompts.BlockSpec, req Ge
 	})
 }
 
-// generate : POST vers method, un retry sur erreur transitoire, puis le filet
-// de sécurité commun. read consomme une réponse 200 : une *Error qu'il renvoie
-// est définitive, toute autre erreur est réseau (donc retentée).
+// generate : un appel de génération de bloc, puis le filet de sécurité commun.
 func (g *Client) generate(ctx context.Context, spec prompts.BlockSpec, req GenerateRequest, hc *http.Client, method string,
 	read func(io.Reader) (text, blocked string, err error)) (string, error) {
 	raw, err := g.body(spec, req)
 	if err != nil {
 		return "", err
 	}
-	url := fmt.Sprintf("%s/%s:%s", g.opts.Endpoint, g.model, method)
+	var text, blocked string
+	if err := g.do(ctx, hc, method, raw, func(r io.Reader) (err error) {
+		text, blocked, err = read(r)
+		return err
+	}); err != nil {
+		return "", err
+	}
+	return finish(spec, text, blocked)
+}
 
+// do : POST raw vers method, un retry sur erreur transitoire. read consomme une
+// réponse 200 : une *Error qu'il renvoie est définitive, toute autre erreur est
+// réseau (donc retentée).
+func (g *Client) do(ctx context.Context, hc *http.Client, method string, raw []byte, read func(io.Reader) error) error {
+	url := fmt.Sprintf("%s/%s:%s", g.opts.Endpoint, g.model, method)
 	var lastErr *Error
 	for attempt := range maxAttempts {
 		if attempt > 0 {
 			if err := wait(ctx, time.Duration(attempt)*time.Second); err != nil {
-				return "", err
+				return err
 			}
 		}
 		resp, err := g.post(ctx, hc, url, raw)
@@ -300,24 +315,23 @@ func (g *Client) generate(ctx context.Context, spec prompts.BlockSpec, req Gener
 				if lastErr = classify(resp.StatusCode, data); lastErr.transient() {
 					continue
 				}
-				return "", lastErr
+				return lastErr
 			}
-			var text, blocked string
-			text, blocked, err = read(resp.Body)
+			err = read(resp.Body)
 			resp.Body.Close()
 			if err == nil {
-				return finish(spec, text, blocked)
+				return nil
 			}
 		}
 		if ctx.Err() != nil {
-			return "", ctx.Err()
+			return ctx.Err()
 		}
 		if ge, ok := errors.AsType[*Error](err); ok {
-			return "", ge
+			return ge
 		}
 		lastErr = netError(err)
 	}
-	return "", lastErr
+	return lastErr
 }
 
 // readSSE lit les événements « data: {json} » du flux Gemini.

@@ -271,7 +271,13 @@ func (s *Store) RegisterRoutes(pages, api *gin.RouterGroup, users *auth.UserStor
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		if err := os.WriteFile(target, []byte(body.HTML), 0o644); err != nil {
+		data := []byte(body.HTML)
+		if strings.HasSuffix(strings.ToLower(body.Path), ".html") {
+			// Filet de sécurité : un inject.js en cache (antérieur à inert.go)
+			// renverrait les scripts encore inertes.
+			data = restoreScripts(data)
+		}
+		if err := os.WriteFile(target, data, 0o644); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}

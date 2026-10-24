@@ -19,7 +19,7 @@ function commands() {
     { label: t(S.mode === 'element' ? 'studio.retouchOff' : 'studio.retouchOn'), run: () => setMode(S.mode === 'element' ? 'block' : 'element') },
     { label: t('studio.cmdQuality'), when: has, run: () => { switchTab('quality'); requestAudit(); } },
     { label: t('studio.rethemeBtn'), when: has && S.theme.enabled, run: rethemePage },
-    ...['generate', 'code', 'history', 'quality', 'brand'].map((n) => ({ label: t('studio.cmdTab', { tab: $(`.tab-btn[data-tab="${n}"]`).textContent.trim() }), run: () => switchTab(n) })),
+    ...['generate', 'code', 'history', 'quality', 'i18n', 'brand'].map((n) => ({ label: t('studio.cmdTab', { tab: $(`.tab-btn[data-tab="${n}"]`).textContent.trim() }), run: () => switchTab(n) })),
     ...['desktop', 'tablet', 'mobile'].map((vp) => ({ label: t('studio.cmdViewport', { vp: $(`.vp-btn[data-vp="${vp}"] span`).textContent }), run: () => { S.viewport = vp; renderViewport(); } })),
     { label: t('studio.exportHTML'), when: has, run: () => exportAs('html') },
     { label: t('studio.exportZIP'), when: has, run: () => exportAs('zip') },

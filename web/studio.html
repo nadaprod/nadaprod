@@ -7,6 +7,12 @@
 <link href="/static/tw.css" rel="stylesheet">
 <link href="/static/fonts.css" rel="stylesheet">
 <script src="/static/i18n.js"></script>
+<style>
+  /* HUD : équerres aux coins des cadres de l'onglet Traduction */
+  .hud::before, .hud::after { content: ""; position: absolute; width: 7px; height: 7px; pointer-events: none; border-color: rgba(34, 211, 238, .7); }
+  .hud::before { top: -1px; left: -1px; border-top: 1px solid; border-left: 1px solid; }
+  .hud::after { bottom: -1px; right: -1px; border-bottom: 1px solid; border-right: 1px solid; }
+</style>
 </head>
 <body class="h-full bg-black text-ink-100 font-sans antialiased overflow-hidden select-none">
 
@@ -80,6 +86,7 @@
           <button role="menuitem" data-export="publish" class="w-full text-left rounded-lg px-3 py-2 hover:bg-ink-800">
             <span class="block text-sm font-medium text-vio-400" data-i18n="studio.publishTitle">Publier en ligne…</span>
             <span class="block text-[11px] text-ink-400" data-i18n="studio.publishDesc">Netlify ou Cloudflare Pages, avec votre jeton.</span></button>
+          <p id="exportLangsHint" class="hidden px-3 py-2 text-[11px] font-mono text-cyan-300/90" data-i18n="tr.exportAllLangs">Multilingue : ZIP, site et publication contiennent une URL par langue (/en/…).</p>
           <p id="exportCompiledHint" class="hidden px-3 py-2 text-[11px] text-amber-400" data-i18n="studio.exportNoCompiler">Compilateur Tailwind absent sur ce serveur : les exports garderont le CDN.</p>
         </div>
       </div>
@@ -109,6 +116,7 @@
           <iframe id="preview" sandbox="allow-scripts" title="Aperçu de la page" data-i18n-title="editor.previewTitle" class="w-full h-full bg-white"></iframe>
         </div>
       </div>
+      <button id="trPreviewBadge" class="hidden absolute top-2 left-1/2 -translate-x-1/2 z-10 h-6 px-2.5 border border-cyan-400/60 bg-black/80 text-cyan-200 font-mono text-[10px] uppercase tracking-[0.2em] hover:bg-cyan-400/10" title="Revenir à la langue source" data-i18n-title="tr.previewExit"></button>
       <div id="emptyState" class="absolute inset-0 grid place-items-center pointer-events-none">
         <div class="text-center max-w-sm">
           <div class="mx-auto h-12 w-12 rounded-2xl border border-dashed border-ink-600 grid place-items-center mb-4">
@@ -127,6 +135,7 @@
         <button role="tab" data-tab="code" class="tab-btn flex-1 h-11 text-[11px] font-semibold border-b-2" data-i18n="editor.tabCode">Code</button>
         <button role="tab" data-tab="history" class="tab-btn flex-1 h-11 text-[11px] font-semibold border-b-2" data-i18n="studio.tabHistory">Historique</button>
         <button role="tab" data-tab="quality" class="tab-btn flex-1 h-11 text-[11px] font-semibold border-b-2" data-i18n="studio.tabQuality">Qualité</button>
+        <button role="tab" data-tab="i18n" class="tab-btn flex-1 h-11 text-[11px] font-semibold border-b-2" data-i18n="tr.tab">Traduction</button>
         <button role="tab" data-tab="brand" class="tab-btn flex-1 h-11 text-[11px] font-semibold border-b-2" data-i18n="editor.tabBrand">Marque</button>
       </div>
 
@@ -255,6 +264,65 @@
           <button id="btnAudit" class="w-full h-9 rounded-lg border border-ink-600 hover:bg-ink-800 text-xs font-medium" data-i18n="studio.qualityRun">Relancer l'analyse</button>
           <div id="qualityList" class="space-y-2"></div>
           <p class="text-[11px] text-ink-400 leading-relaxed" data-i18n="studio.qualityHint">Contrôles automatiques : contrastes (WCAG AA), hiérarchie des titres, textes alternatifs, libellés des champs et des boutons. Un contraste posé sur un dégradé ou une image n'est pas mesurable et n'est donc pas signalé.</p>
+        </section>
+
+        <!-- Onglet Traduction : une URL par langue (doc/I18N.md) — HUD dense, tout au clavier -->
+        <section id="tab-i18n" class="hidden p-3 space-y-3 font-mono text-[11px] tabular-nums">
+          <div class="hud relative border border-ink-700 bg-ink-950/60 p-2.5 space-y-2">
+            <div class="flex items-center justify-between text-[9px] uppercase tracking-[0.2em] text-ink-400">
+              <span data-i18n="tr.hudLangs">Langues</span><span class="text-cyan-400/70">i18n://url</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5">
+              <span class="inline-flex items-center h-6 px-1.5 rounded-sm border border-vio-500/60 bg-vio-500/10 text-vio-300 text-[10px]" title="Langue source — modifiable dans Marque › SEO" data-i18n-title="tr.sourceTitle">
+                <span class="uppercase tracking-wider" id="trSource">FR</span><span class="ml-1.5 text-ink-400 font-sans" id="trSourceName"></span></span>
+              <span class="text-ink-400/70" aria-hidden="true">→</span>
+              <span id="trTargets" class="contents"></span>
+              <div class="relative">
+                <button id="trAdd" class="h-6 w-6 rounded-sm border border-dashed border-ink-600 text-ink-300 hover:border-cyan-400/70 hover:text-cyan-200" title="Ajouter une langue" data-i18n-title="tr.addLang" aria-label="Ajouter une langue" data-i18n-aria-label="tr.addLang">+</button>
+                <div id="trPicker" class="hidden absolute left-0 top-7 z-20 w-48 max-h-64 overflow-y-auto scrollbar-thin border border-ink-600 bg-ink-900 shadow-2xl shadow-black/60 p-1"></div>
+              </div>
+            </div>
+          </div>
+
+          <p id="trEmpty" class="hidden text-[11px] font-sans text-ink-400 leading-relaxed border border-dashed border-ink-700 p-3" data-i18n="tr.empty">Ajoutez une langue cible : chaque texte de la page devient un segment à traduire, et l'export produit une URL par langue (/en/, /es/…). Régénérer un bloc ne casse rien — seuls les textes nouveaux ou modifiés repassent « à traduire ».</p>
+
+          <div id="trBody" class="hidden space-y-3">
+            <div class="hud relative border border-ink-700 bg-ink-950/60 py-1">
+              <div class="flex items-center justify-between px-2 pb-1 text-[9px] uppercase tracking-[0.2em] text-ink-400">
+                <span data-i18n="tr.hudProgress">Progression</span>
+                <span class="flex items-center gap-2 normal-case tracking-normal">
+                  <span class="flex items-center gap-1"><i class="h-1.5 w-1.5 rounded-full bg-emerald-400"></i><span data-i18n="tr.legendHuman">validé</span></span>
+                  <span class="flex items-center gap-1"><i class="h-1.5 w-1.5 rounded-full bg-amber-400"></i><span data-i18n="tr.legendMachine">machine</span></span>
+                  <span class="flex items-center gap-1"><i class="h-1.5 w-1.5 rounded-full bg-red-400/80"></i><span data-i18n="tr.legendMissing">manquant</span></span>
+                </span>
+              </div>
+              <div id="trStats"></div>
+            </div>
+
+            <div class="flex items-center gap-2 text-[10px]">
+              <div class="flex border border-ink-700" role="group" aria-label="Portée" data-i18n-aria-label="tr.scope">
+                <button data-tr-scope="block" aria-pressed="false" class="px-2 h-6 uppercase tracking-wider text-ink-400 hover:text-ink-100 aria-pressed:bg-cyan-400/10 aria-pressed:text-cyan-200" data-i18n="tr.scopeBlock">Bloc</button>
+                <button data-tr-scope="page" aria-pressed="true" class="px-2 h-6 uppercase tracking-wider text-ink-400 hover:text-ink-100 border-l border-ink-700 aria-pressed:bg-cyan-400/10 aria-pressed:text-cyan-200" data-i18n="tr.scopePage">Page</button>
+              </div>
+              <div class="flex border border-ink-700" role="group" aria-label="Filtre" data-i18n-aria-label="tr.filter">
+                <button data-tr-filter="all" aria-pressed="true" class="px-1.5 h-6 text-ink-400 hover:text-ink-100 aria-pressed:bg-ink-700 aria-pressed:text-ink-100" data-i18n="tr.fAll">tout</button>
+                <button data-tr-filter="missing" aria-pressed="false" class="px-1.5 h-6 border-l border-ink-700 text-ink-400 hover:text-ink-100 aria-pressed:bg-red-400/10 aria-pressed:text-red-300" data-i18n="tr.fMissing">manq.</button>
+                <button data-tr-filter="machine" aria-pressed="false" class="px-1.5 h-6 border-l border-ink-700 text-ink-400 hover:text-ink-100 aria-pressed:bg-amber-400/10 aria-pressed:text-amber-200" data-i18n="tr.fMachine">auto</button>
+                <button data-tr-filter="human" aria-pressed="false" class="px-1.5 h-6 border-l border-ink-700 text-ink-400 hover:text-ink-100 aria-pressed:bg-emerald-400/10 aria-pressed:text-emerald-200" data-i18n="tr.fHuman">ok</button>
+              </div>
+              <span id="trCount" class="ml-auto text-cyan-300/80">000</span>
+            </div>
+
+            <div id="trList" class="hud relative border border-ink-700 bg-ink-950/60 divide-y divide-ink-800"></div>
+
+            <p class="flex flex-wrap gap-x-3 gap-y-1 text-[9px] uppercase tracking-[0.15em] text-ink-400/70">
+              <span><kbd class="text-ink-300">↑↓</kbd> <span data-i18n="tr.kNav">segment</span></span>
+              <span><kbd class="text-ink-300">⏎</kbd> <span data-i18n="tr.kSave">enregistre</span></span>
+              <span><kbd class="text-ink-300">⇧⏎</kbd> <span data-i18n="tr.kNewline">ligne</span></span>
+              <span><kbd class="text-ink-300">⌘⏎</kbd> <span data-i18n="tr.kValidate">valide</span></span>
+              <span><kbd class="text-ink-300">esc</kbd> <span data-i18n="tr.kRevert">annule</span></span>
+            </p>
+          </div>
         </section>
 
         <!-- Onglet Marque : projet, marque, design system, SEO -->

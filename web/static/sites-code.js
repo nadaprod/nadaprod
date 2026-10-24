@@ -21,7 +21,8 @@
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const $ = (sel, root = document) => root.querySelector(sel);
 
-  let cfg = { loadMonaco: null, toast: () => {}, t: (k) => k, onDirty: () => {} };
+  // onFiles : onglet actif ou modifiés changés (explorateur) ; onPreview : aperçu affiché/masqué.
+  let cfg = { loadMonaco: null, toast: () => {}, t: (k) => k, onDirty: () => {}, onFiles: () => {}, onPreview: () => {} };
   const S = {
     site: null, page: null,
     editor: null, files: [],        // [{ path, model, dirty, saved, view }]
@@ -116,6 +117,7 @@
     $('#cmPreview').setAttribute('aria-pressed', String(on));
     $('#cmPreview').classList.toggle('text-vio-400', on);
     S.editor?.layout();
+    cfg.onPreview(on);
   }
 
   /* ───────── Onglets & modèles ───────── */
@@ -134,6 +136,7 @@
     $('#cmPaneLabel').textContent = S.page ? '/preview/' + S.site + '/' + S.page : '';
     updateLive();
     cfg.onDirty(isDirty());
+    cfg.onFiles();
   }
 
   async function fetchText(path) {
@@ -172,6 +175,8 @@
     renderTabs();
     S.editor.focus();
   }
+
+  const dirtyFiles = () => S.files.filter((f) => f.dirty).map((f) => f.path);
 
   function closeTab(path) {
     const i = S.files.findIndex((f) => f.path === path);
@@ -312,7 +317,9 @@
 
   window.CodeMode = {
     configure: (o) => Object.assign(cfg, o),
-    open, close, saveAll, isDirty, pageHTML, reload, layout,
-    dirtyFiles: () => S.files.filter((f) => f.dirty).map((f) => f.path),
+    open, close, saveAll, isDirty, pageHTML, reload, layout, setPreview, dirtyFiles,
+    openAsset: (path) => openFile(path),
+    active: () => S.active,
+    previewOn: () => S.previewOn,
   };
 })();

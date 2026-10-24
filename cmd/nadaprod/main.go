@@ -13,7 +13,6 @@ import (
 	"nadaprod/pkg/gemini"
 	"nadaprod/pkg/images"
 	"nadaprod/pkg/projects"
-	"nadaprod/pkg/sites"
 	"nadaprod/pkg/studio"
 )
 
@@ -48,6 +47,13 @@ func main() {
 		log.Printf("lecture du .env ignorée : %v", err)
 	}
 
+	// « nadaprod build-site <id>… » : republie des sites puis rend la main
+	// (bin/build.sh de chaque site). Avant tout le reste : ni clé Gemini ni
+	// compte root ne sont nécessaires pour ça.
+	if len(os.Args) > 1 && os.Args[1] == "build-site" {
+		os.Exit(buildSites(os.Args[2:]))
+	}
+
 	apiKey := os.Getenv("GEMINI_API_KEY")
 	if apiKey == "" {
 		log.Fatal("GEMINI_API_KEY manquante. Exportez votre clé : export GEMINI_API_KEY=...")
@@ -61,24 +67,7 @@ func main() {
 		MaxOutputTokens: envInt("GEMINI_MAX_TOKENS"),    // défaut 8192
 	})
 
-	// Binaire standalone Tailwind (compilation locale des sites publiés).
-	// Absent ⇒ dégradation douce : les pages publiées gardent le CDN.
-	twBin := envOr("TAILWIND_BIN", "./bin/tailwindcss")
-	if _, err := os.Stat(twBin); err != nil {
-		log.Printf("tailwindcss introuvable (%s) — compilation locale désactivée, CDN conservé", twBin)
-		twBin = ""
-	}
-
-	// Miroir local Google Fonts (servi sur /webfonts, réutilisé par le build).
-	// Absent ⇒ dégradation douce : les sites publiés gardent leurs liens Google.
-	fontsDir := envOr("WEBFONTS_DIR", "./web/webfonts")
-	if st, err := os.Stat(fontsDir); err != nil || !st.IsDir() {
-		log.Printf("webfonts introuvable (%s) — polices locales désactivées sur les sites publiés", fontsDir)
-		fontsDir = ""
-	}
-
-	// Les traductions du bandeau RGPD injecté viennent des mêmes JSON que l'UI.
-	store, err := sites.NewStore(envOr("SITES_DIR", "./sites"), twBin, fontsDir, "./web/static/i18n")
+	store, err := siteStore()
 	if err != nil {
 		log.Fatal("initialisation du stockage sites : ", err)
 	}
@@ -154,6 +143,7 @@ func main() {
 	}
 	studio.Register(apiAuthed, studio.Deps{
 		Gen:        client,
+		Translator: client,
 		Projects:   projectStore,
 		Images:     photos,
 		Compile:    compile,

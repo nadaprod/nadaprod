@@ -47,6 +47,7 @@ type GenerateRequest struct {
 	Mode        string    `json:"mode"`     // "" | "retheme"
 	Variant     int       `json:"variant"`  // 0 = aucune, 1..3 = direction artistique imposée
 	Images      bool      `json:"images"`   // remplacer les placeholders par de vraies photos
+	Lang        string    `json:"lang"`     // langue source de la page ("" ⇒ français)
 }
 
 type GenerateResponse struct {
@@ -99,6 +100,28 @@ func themeSection(t *Theme) string {
 	return sb.String()
 }
 
+// langNames : nom français des langues courantes (prompts de génération et de traduction).
+var langNames = map[string]string{
+	"fr": "français", "en": "anglais", "es": "espagnol", "it": "italien", "pt": "portugais",
+	"de": "allemand", "nl": "néerlandais", "pl": "polonais", "sv": "suédois", "da": "danois",
+	"no": "norvégien", "fi": "finnois", "cs": "tchèque", "ro": "roumain", "el": "grec",
+	"tr": "turc", "ru": "russe", "uk": "ukrainien", "ar": "arabe", "he": "hébreu",
+	"ja": "japonais", "ko": "coréen", "zh": "chinois", "hi": "hindi",
+}
+
+// langName : nom d'une langue (« pt-br » ⇒ « portugais (pt-br) ») ; code inconnu ⇒ le code.
+func langName(code string) string {
+	code = strings.ToLower(strings.TrimSpace(code))
+	if n, ok := langNames[code]; ok {
+		return n
+	}
+	base, region, _ := strings.Cut(code, "-")
+	if n, ok := langNames[base]; ok && region != "" {
+		return n + " (" + code + ")"
+	}
+	return code
+}
+
 func orDash(s string) string {
 	if s == "" {
 		return "—"
@@ -137,6 +160,12 @@ func buildUserMessage(spec prompts.BlockSpec, req GenerateRequest) string {
 		if req.Brand.Tone != "" {
 			sb.WriteString("- Ton : " + req.Brand.Tone + "\n")
 		}
+	}
+
+	// Langue de la page : le prompt système impose le français par défaut.
+	if lang := strings.ToLower(strings.TrimSpace(req.Lang)); lang != "" && lang != "fr" && !retheme {
+		name := langName(lang)
+		fmt.Fprintf(&sb, "\nLangue de la page : %s (%s). Rédige TOUS les textes visibles (titres, paragraphes, boutons, alt, aria-label, placeholders) en %s — cette consigne remplace celle du « copywriting français ». Garde chaque phrase entière dans un seul élément : ne la découpe pas entre plusieurs éléments frères.\n", name, lang, name)
 	}
 
 	if themed {

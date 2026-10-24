@@ -10,6 +10,8 @@ module.exports = {
     "./web/studio.html",
     "./web/static/studio/*.js",
     "./web/static/sites-code.js",
+    "./web/static/sites-app.js",
+    "./web/static/sites-explorer.js",
     "./web/sites.html",
     "./web/drafts.html",
     "./web/login.html",

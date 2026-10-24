@@ -6,6 +6,7 @@ const VP_WIDTH = { desktop: '100%', tablet: '768px', mobile: '390px' };
 let ready = false;
 let shellKey = '';      // empreinte de ce qui impose de recharger l'iframe (thème, polices)
 const handlers = {};    // type de message → fonction
+let overrides = null;   // aperçu dans une langue cible : id de bloc → HTML traduit (onglet Traduction)
 
 const frame = () => $('#preview');
 function send(msg) { if (ready) frame().contentWindow.postMessage(msg, '*'); }
@@ -39,8 +40,16 @@ function blocksPayload() {
     type: 'np:sync',
     hint: t('editor.skeletonHint'),
     selectedId: S.selectedId,
-    blocks: S.page.map((b) => ({ id: b.id, html: b.html || '', label: specOf(b.type).label })),
+    blocks: S.page.map((b) => ({ id: b.id, html: overrides?.[b.id] ?? b.html ?? '', label: specOf(b.type).label })),
   };
+}
+
+/* Aperçu traduit : null rend la main à la source. Le mode retouche est coupé
+ * (une retouche porterait sur le texte traduit, pas sur la source). */
+export function setPreviewOverrides(map) {
+  overrides = map;
+  if (map && S.mode === 'element') setMode('block');
+  send(blocksPayload());
 }
 
 /* Rend l'aperçu : recharge l'iframe seulement si l'enveloppe a changé (thème),

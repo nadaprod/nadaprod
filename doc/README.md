@@ -5,12 +5,12 @@ Visual block-based Tailwind page editor, powered by Gemini Flash (latest) and an
 Three surfaces share one server:
 
 1. **Public landing** (`/`) — the NADAPROD marketing site, fully static.
-2. **Block studio** (`/editor`) — build a page from AI-generated blocks: streamed generation, three-variant proposals, a design system (colour/font/radius tokens), targeted element retouch, per-block history with undo/redo, an automatic quality score, and production output (compiled standalone HTML, ZIP site, React/Vue components, one-click publish). Projects are stored server-side (SQLite), one set per account.
-3. **Imported sites** (`/sites`) — upload a static site (or create one from scratch, or add pages from the studio), edit any page visually (click-to-select, AI element retouch) or in a **code workshop** — the page and its local CSS/JS as tabs, live preview, CSS applied while you type — and point a domain at it. The filesystem is the database.
+2. **Block studio** (`/editor`) — build a page from AI-generated blocks: streamed generation, three-variant proposals, a design system (colour/font/radius tokens), targeted element retouch, per-block history with undo/redo, an automatic quality score, **multilingual pages** (translation memory keyed by source text — regenerating a block never breaks translations; one URL per language on export), and production output (compiled standalone HTML, ZIP site, React/Vue components, one-click publish). Projects are stored server-side (SQLite), one set per account.
+3. **Imported sites** (`/sites`) — all your sites in one A→Z list (live vs draft is just a status glyph; « Projet en cours » + ⌘K jumps to any site or page). Upload a static site (or create one from scratch, or add pages from the studio), edit any page visually (click-to-select, AI element retouch) or in a **code workshop** — the page and its local CSS/JS as tabs, live preview, CSS applied while you type, a VS Code-style file explorer on wide screens and a focus mode (⌘B / ⌘⇧B) — and point a domain at it. The filesystem is the database.
 
 Access is **invitation-only**: the app surfaces sit behind a login (`/login`). The root account (from `.env`) creates user accounts and assigns sites to them — users edit their own sites (including the ⚙ publication settings), while import, delete, domains and account management stay root-only. Candidates apply through the public `/waiting-list` page (stored in a JSON file). Sites served on a mapped domain remain fully public.
 
-Note: the generation prompts are in French. The UI is i18n-ready (`web/static/i18n/{fr,en}.json`, browser language first with per-key `en.json` fallback); French is the complete reference, English translation pending.
+Note: the generation prompts are in French. The UI is i18n'd (`web/static/i18n/{fr,en}.json`, browser language first with per-key `en.json` fallback); French is the reference, English is fully translated. (Not to be confused with the *content* i18n of studio pages — see `doc/I18N.md`.)
 
 ## Architecture
 
@@ -18,14 +18,17 @@ Note: the generation prompts are in French. The UI is i18n-ready (`web/static/i1
 nadaprod/
 ├── cmd/nadaprod/main.go   # gin-gonic server: wiring, static + API
 ├── pkg/auth/              # Accounts (root + users), HMAC sessions, waiting list
-├── pkg/gemini/            # Gemini REST client (generateContent) + HTML cleanup
-├── pkg/prompts/           # Registry of specialized generators (1 expert prompt / block)
+├── pkg/gemini/            # Gemini REST client (generateContent) + HTML cleanup + batch translator
+├── pkg/prompts/           # Registry of specialized generators (1 expert prompt / block) + translator prompt
+├── pkg/i18n/              # Translatable segments of an HTML fragment (studio i18n, doc/I18N.md)
 ├── pkg/sites/             # Imported sites: upload, edit, pages & assets, domain routing, publish pipeline (config parsed, never executed)
-├── pkg/projects/          # Studio projects (SQLite): blocks, version history, revisions
-├── pkg/studio/            # Studio API: generation (JSON + SSE), rate limit, export, publish
-├── pkg/export/            # Compiled HTML / ZIP site / SEO head / HTML → React & Vue components
+├── pkg/projects/          # Studio projects (SQLite): blocks, version history, revisions, translations
+├── pkg/studio/            # Studio API: generation (JSON + SSE), rate limit, export, publish, translation
+├── pkg/export/            # Compiled HTML / ZIP site / SEO head / per-language pages / HTML → React & Vue
 ├── pkg/publish/           # Netlify & Cloudflare Pages deploys (user-supplied token)
 ├── pkg/images/            # Optional stock photos (Pexels / Unsplash)
+├── bin/                   # build.sh (Tailwind CLI, app CSS, binary, restart) · next.sh (staging → production)
+├── tools/e2e/             # Headless-Chromium end-to-end scenarios (run.sh)
 ├── go.mod
 └── web/
     ├── home.html         # Public landing page
@@ -33,11 +36,13 @@ nadaprod/
     ├── 404.html          # Custom not-found page (served with a real 404 status)
     ├── login.html        # Login (invitation-only)
     ├── waiting-list.html # Public application form
-    ├── studio.html       # Studio markup: palette, sandboxed live preview, 5-tab panel
+    ├── studio.html       # Studio markup: palette, sandboxed live preview, 6-tab panel (incl. Traduction)
     ├── static/studio/    # Studio logic (native ES modules) + the in-preview frame script
-    ├── static/sites-code.js # Code workshop of the imported-sites editor (Monaco tabs + live preview)
-    ├── sites.html        # Imported-sites manager (+ root: accounts panel)
-    └── drafts.html       # Same manager, filtered to sites without a domain
+    ├── static/sites-app.js      # Imported-sites manager logic (list, palette, editor, accounts)
+    ├── static/sites-code.js     # Code workshop of the imported-sites editor (Monaco tabs + live preview)
+    ├── static/sites-explorer.js # File explorer of the sites editor (≥ 1280 px)
+    ├── sites.html        # Imported-sites manager, all sites A→Z (+ root: accounts panel)
+    └── drafts.html       # Redirect to /sites (old URL)
 ```
 
 ### API
@@ -51,12 +56,13 @@ All routes below require a session except `GET /api/health`, `POST /api/login` a
 | `GET /api/blocks` | Block catalog (labels, presets) — system prompts stay server-side |
 | `POST /api/generate` | `{ block, prompt, brand, current_html, theme?, siblings?, mode?, variant?, images? }` → `{ html, model, elapsed_ms, photos }` — errors carry a machine `code` |
 | `POST /api/generate/stream` | Same request, Server-Sent Events: `delta` … then `done` (or `error`) |
-| `GET /api/studio/config` | Server capabilities (model, compiler, fonts, stock photos, rate) |
+| `GET /api/studio/config` | Server capabilities (model, compiler, fonts, stock photos, rate, languages, translator) |
 | `GET/POST /api/projects` · `GET/PUT/DELETE /api/projects/:id` | Studio projects of the account (JSON import = `POST`) |
 | `PUT /api/projects/:id/blocks/:bid` · `GET …/versions` · `POST …/checkout` | Block write (versions on change) · history · undo / redo / restore |
-| `POST /api/projects/:id/export` | `{format: html\|zip\|jsx\|vue}` → compiled, CDN-free download · `GET …/export.json` = project backup |
+| `POST /api/projects/:id/export` | `{format: html\|zip\|jsx\|vue, lang?}` → compiled, CDN-free download (ZIP: one folder per language) · `GET …/export.json` = project backup |
+| `GET /api/projects/:id/i18n` · `PUT …/i18n/:lang` · `POST …/i18n/:lang/translate` · `GET …/i18n/:lang/preview` | Studio translation: segments + translations · human edits · Gemini on missing segments · translated preview (`doc/I18N.md`) |
 | `POST /api/projects/:id/publish` | `{provider: netlify\|cloudflare, token, site?, account_id?}` → live URL (the token is never stored) |
-| `POST /api/projects/:id/site` | Write the project's page into a site's `dev/` (« Enregistrer dans un site… ») |
+| `POST /api/projects/:id/site` | Write the project's page into a site's `dev/` (« Enregistrer dans un site… »), plus `<lang>/<path>` per target language |
 | `POST /api/projects/from-page` | Open a site page in the studio: split it into blocks, create a project |
 | `GET /api/images/search?q=` | Stock-photo search (needs `PEXELS_API_KEY` or `UNSPLASH_ACCESS_KEY`) |
 | `POST /api/sites` | Upload a `.zip` / `.tar.gz` static site *(root)* |
@@ -115,9 +121,10 @@ go run ./cmd/nadaprod
 6. **Historique** tab: every generation/retouch/edit is a version — compare before/after, restore, `⌘Z` / `⇧⌘Z`.
 7. **Qualité** tab: contrast (WCAG AA), heading hierarchy, missing `alt`, unlabeled fields, scored per block.
 8. **Code** tab: edit the Tailwind HTML by hand (Monaco, plain textarea fallback), then "Appliquer".
-9. `⌘K`: command palette. Top bar: Desktop / Tablet / Mobile, project switcher (new, import JSON, delete).
-10. **Exporter → Enregistrer dans un site…**: the page becomes a page of an imported site (new or existing; root can create an empty site on the spot) and goes through the publish pipeline. From `/sites` and `/drafts`: **+ Nouveau site (studio)** (root), **+ Page** on any site (compose in the studio, copy an existing page, or a blank page), and **Studio** on an open page to bring it into the studio as blocks.
-11. **Exporter**: standalone HTML (compiled + purged CSS, SEO, favicon — no CDN), ZIP site (with local fonts and images), React or Vue components, project backup (JSON), or **publish** to Netlify / Cloudflare Pages with your own token.
+9. **Traduction** tab: add target languages, « ⟳ » machine-translates the missing segments, review row by row at the keyboard (Enter saves, ⌘Enter validates a machine translation), preview the page in a target language. Export / publish produce one URL per language (`/en/`, `/es/`…).
+10. `⌘K`: command palette. Top bar: Desktop / Tablet / Mobile, project switcher (new, import JSON, delete).
+11. **Exporter → Enregistrer dans un site…**: the page becomes a page of an imported site (new or existing; root can create an empty site on the spot) and goes through the publish pipeline. From `/sites`: **+ Nouveau site (studio)** (root), **+ Page** on any site (compose in the studio, copy an existing page, or a blank page), and **Studio** on an open page to bring it into the studio as blocks.
+12. **Exporter**: standalone HTML (compiled + purged CSS, SEO, favicon — no CDN), ZIP site (with local fonts and images), React or Vue components, project backup (JSON), or **publish** to Netlify / Cloudflare Pages with your own token.
 
 Projects are saved automatically on the server, per account; the URL carries the project id. A project left in the old studio's `localStorage` is migrated on first visit.
 
@@ -141,4 +148,4 @@ Four primitives, zero database:
    Domain serving overlays `public/` on top of `dev/`, so untransformed files (images, videos…) are never duplicated.
 4. **Domain** — `PUT /api/sites/<id>/domain`. A gin middleware at the head of the chain matches `Host` against the domain→site table: on a match, the published site is served directly. Point an A record at the server and it's live.
 
-UI: `http://localhost:8080/sites` (sites with a domain) and `/drafts` (sites without one). For multi-domain HTTPS in production, put Caddy in front (`on_demand_tls`) or add `autocert`.
+UI: `http://localhost:8080/sites` (every site, A→Z; `/drafts` redirects there). For multi-domain HTTPS in production, put Caddy in front (`on_demand_tls`) or add `autocert`.

@@ -256,3 +256,138 @@ func TestDeleteCascadesAndReopen(t *testing.T) {
 		t.Fatalf("réouverture : %+v %v", got, err)
 	}
 }
+
+func TestTranslations(t *testing.T) {
+	s, ctx := newTestStore(t), context.Background()
+	p, _ := s.Create(ctx, "a@x.fr", ProjectInput{})
+	h1, h2 := "0123456789abcdef", "fedcba9876543210"
+
+	empty, err := s.Translations(ctx, p.ID)
+	if err != nil || empty == nil || len(empty) != 0 {
+		t.Fatalf("mémoire vide : %v %v", empty, err)
+	}
+	err = s.SaveTranslations(ctx, p.ID, "en", []Translation{
+		{Hash: h1, Src: "Bonjour", Text: "Hello", Status: StatusMachine},
+		{Hash: h2, Src: "Lisez <1>ceci</1>", Text: "Read <1>this</1>", Status: StatusHuman},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.SaveTranslations(ctx, p.ID, "es", []Translation{{Hash: h1, Src: "Bonjour", Text: "Hola", Status: StatusMachine}}); err != nil {
+		t.Fatal(err)
+	}
+	// Écrasement : la relecture humaine remplace la traduction machine.
+	if err := s.SaveTranslations(ctx, p.ID, "en", []Translation{{Hash: h1, Src: "Bonjour", Text: "Hi", Status: StatusHuman}}); err != nil {
+		t.Fatal(err)
+	}
+	m, _ := s.Translations(ctx, p.ID)
+	if got := m["en"][h1]; got.Text != "Hi" || got.Status != StatusHuman || got.Src != "Bonjour" || got.UpdatedAt == "" {
+		t.Fatalf("upsert : %+v", got)
+	}
+	if len(m["en"]) != 2 || m["es"][h1].Text != "Hola" {
+		t.Fatalf("mémoire : %+v", m)
+	}
+	// Texte vide ⇒ suppression.
+	if err := s.SaveTranslations(ctx, p.ID, "en", []Translation{{Hash: h2}}); err != nil {
+		t.Fatal(err)
+	}
+	if m, _ := s.Translations(ctx, p.ID); len(m["en"]) != 1 {
+		t.Fatalf("suppression : %+v", m["en"])
+	}
+	// Les traductions ne touchent pas à la révision du projet.
+	if got, _ := s.Get(ctx, p.ID); got.Rev != p.Rev {
+		t.Fatalf("rev modifiée : %d → %d", p.Rev, got.Rev)
+	}
+
+	// Validation.
+	long := strings.Repeat("x", MaxTranslationLen+1)
+	for name, c := range map[string]struct {
+		lang string
+		ts   []Translation
+	}{
+		"langue":      {"EN", []Translation{{Hash: h1, Text: "x", Status: StatusHuman}}},
+		"langue path": {"../x", nil},
+		"hash":        {"en", []Translation{{Hash: "XYZ", Text: "x", Status: StatusHuman}}},
+		"statut":      {"en", []Translation{{Hash: h1, Text: "x", Status: "draft"}}},
+		"longueur":    {"en", []Translation{{Hash: h1, Text: long, Status: StatusHuman}}},
+		"lot":         {"en", make([]Translation, MaxTranslationsPerOp+1)},
+	} {
+		if err := s.SaveTranslations(ctx, p.ID, c.lang, c.ts); !errors.Is(err, ErrInvalid) {
+			t.Errorf("%s : attendu ErrInvalid, obtenu %v", name, err)
+		}
+	}
+	if err := s.SaveTranslations(ctx, "inconnu00", "en", []Translation{{Hash: h1, Text: "x", Status: StatusHuman}}); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("projet inconnu : %v", err)
+	}
+
+	// Cascade.
+	if err := s.Delete(ctx, p.ID); err != nil {
+		t.Fatal(err)
+	}
+	var n int
+	s.db.QueryRow(`SELECT COUNT(*) FROM translations`).Scan(&n)
+	if n != 0 {
+		t.Fatalf("cascade : %d traductions orphelines", n)
+	}
+}
+
+func TestTranslationsCap(t *testing.T) {
+	s, ctx := newTestStore(t), context.Background()
+	p, _ := s.Create(ctx, "a@x.fr", ProjectInput{})
+	batch := func(from, n int) []Translation {
+		ts := make([]Translation, n)
+		for i := range ts {
+			ts[i] = Translation{Hash: fmt.Sprintf("%016x", from+i), Src: "s", Text: "t", Status: StatusMachine}
+		}
+		return ts
+	}
+	for i := 0; i < MaxTranslationsPerPrj; i += MaxTranslationsPerOp {
+		if err := s.SaveTranslations(ctx, p.ID, "en", batch(i, MaxTranslationsPerOp)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	// Au plafond : une ligne de plus est refusée et le lot entier annulé.
+	err := s.SaveTranslations(ctx, p.ID, "de", batch(0, 2))
+	if !errors.Is(err, ErrLimit) {
+		t.Fatalf("plafond : %v", err)
+	}
+	if m, _ := s.Translations(ctx, p.ID); len(m["de"]) != 0 || len(m["en"]) != MaxTranslationsPerPrj {
+		t.Fatalf("lot non annulé : de=%d en=%d", len(m["de"]), len(m["en"]))
+	}
+	// Une mise à jour d'une ligne existante reste possible au plafond.
+	if err := s.SaveTranslations(ctx, p.ID, "en", []Translation{{Hash: fmt.Sprintf("%016x", 0), Src: "s", Text: "u", Status: StatusHuman}}); err != nil {
+		t.Fatalf("mise à jour au plafond : %v", err)
+	}
+}
+
+// Une base créée avant la migration 2 (user_version = 1) monte de version
+// sans perdre ses projets.
+func TestMigrationFromV1(t *testing.T) {
+	ctx := context.Background()
+	path := filepath.Join(t.TempDir(), "v1.db")
+	s, err := Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p, _ := s.Create(ctx, "a@x.fr", ProjectInput{Name: "Ancien"})
+	s.db.Exec(`DROP TABLE translations`)
+	s.db.Exec(`PRAGMA user_version = 1`)
+	s.Close()
+
+	s, err = Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	var v int
+	s.db.QueryRow(`PRAGMA user_version`).Scan(&v)
+	if v != len(migrations) {
+		t.Fatalf("user_version = %d", v)
+	}
+	if got, err := s.Get(ctx, p.ID); err != nil || got.Name != "Ancien" {
+		t.Fatalf("projet perdu : %+v %v", got, err)
+	}
+	if err := s.SaveTranslations(ctx, p.ID, "en", []Translation{{Hash: "0123456789abcdef", Src: "a", Text: "b", Status: StatusHuman}}); err != nil {
+		t.Fatal(err)
+	}
+}

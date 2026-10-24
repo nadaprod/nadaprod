@@ -6,8 +6,9 @@ import { saveMeta, versions, checkout } from './store.js';
 import { reloadShell, setMode, selectParent, deleteElement, setImage, requestAudit, onFrame, thumb, fitThumbs } from './preview.js';
 import { normalizeTheme } from './theme.js';
 import { select } from './structure.js';
+import { openI18n, initI18n, translatedPreview, exitPreview } from './i18n.js';
 
-const TABS = ['generate', 'code', 'history', 'quality', 'brand'];
+const TABS = ['generate', 'code', 'history', 'quality', 'i18n', 'brand'];
 
 export function switchTab(name) {
   S.tab = name;
@@ -23,6 +24,7 @@ export function switchTab(name) {
   if (name === 'code') mountCodeEditor(); // Monaco monté au premier passage sur l'onglet
   if (name === 'history') renderHistory();
   if (name === 'quality') requestAudit();
+  if (name === 'i18n') openI18n();
 }
 
 /* ───────── Onglet Générer ───────── */
@@ -313,6 +315,7 @@ export function initPanels() {
   }
   $('#btnRetheme').addEventListener('click', rethemePage);
 
+  initI18n();
   on('project', fillBrand);
   on('select', () => { hideError(); if (S.tab === 'history') renderHistory(); });
   on('history', () => { renderInspector(); if (S.tab === 'history') renderHistory(); });
@@ -363,6 +366,7 @@ function pickImage() {
 
 onFrame('np:block-click', (d) => { if (S.selectedId !== d.id) select(d.id, { scroll: false }); });
 onFrame('np:el-selected', (d) => {
+  if (translatedPreview()) return exitPreview(true); // on ne retouche que la source
   S.element = d;
   if (S.selectedId !== d.id) { S.selectedId = d.id; emit('select'); }
   if (S.tab !== 'generate') switchTab('generate');
@@ -370,6 +374,7 @@ onFrame('np:el-selected', (d) => {
 });
 onFrame('np:el-deselected', () => { S.element = null; emit('render'); });
 onFrame('np:block-html', (d) => {
+  if (translatedPreview()) return exitPreview(true); // HTML traduit : jamais réécrit dans le bloc source
   const b = S.page.find((x) => x.id === d.id);
   if (b && d.html && d.html !== b.html) commit(b, d.html, d.reason === 'retouch' ? 'retouch' : d.reason === 'image' ? 'image' : 'edit');
 });

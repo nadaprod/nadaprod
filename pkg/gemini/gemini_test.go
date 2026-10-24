@@ -2,6 +2,7 @@ package gemini
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -264,5 +265,96 @@ func TestStreamBlock(t *testing.T) {
 	var ge *Error
 	if !errors.As(err, &ge) || ge.Code != "quota" || ge.RetryAfter != 7 || ge.HTTPStatus() != 429 {
 		t.Fatalf("quota : %v", err)
+	}
+}
+
+func TestBuildUserMessageLang(t *testing.T) {
+	spec, _ := prompts.GetBlockSpec("hero")
+	base := GenerateRequest{Block: "hero", Prompt: "Hero", Brand: Brand{Name: "N"}, CurrentHTML: "<section>x</section>"}
+	ref := buildUserMessage(spec, base)
+	for _, lang := range []string{"", "fr", " FR "} {
+		r := base
+		r.Lang = lang
+		if got := buildUserMessage(spec, r); got != ref {
+			t.Errorf("lang %q : le message doit rester identique", lang)
+		}
+	}
+	r := base
+	r.Lang = "en"
+	msg := buildUserMessage(spec, r)
+	for _, want := range []string{"Langue de la page : anglais (en)", "remplace celle du « copywriting français »", "un seul élément"} {
+		if !strings.Contains(msg, want) {
+			t.Errorf("section de langue sans %q :\n%s", want, msg)
+		}
+	}
+	r.Mode, r.Lang = ModeRetheme, "es"
+	if strings.Contains(buildUserMessage(spec, r), "Langue de la page") {
+		t.Error("un re-thème conserve les textes : pas de consigne de langue")
+	}
+	if langName("pt-br") != "portugais (pt-br)" || langName("xx") != "xx" {
+		t.Errorf("langName : %q %q", langName("pt-br"), langName("xx"))
+	}
+}
+
+func TestTranslate(t *testing.T) {
+	items := map[string]string{}
+	for i := range 85 {
+		items[fmt.Sprintf("s%03d", i)] = fmt.Sprintf("Bonjour <1>n°%d</1>", i)
+	}
+	var sizes []int
+	echo := func(w http.ResponseWriter, r *http.Request) {
+		var req gRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			t.Fatal(err)
+		}
+		if req.GenerationConfig.ResponseMimeType != "application/json" || req.GenerationConfig.Temperature > 0.3 {
+			t.Errorf("config : %+v", req.GenerationConfig)
+		}
+		if req.SystemInstruction.Parts[0].Text != prompts.TranslatorPrompt {
+			t.Error("prompt système de traduction absent")
+		}
+		msg := req.Contents[0].Parts[0].Text
+		if !strings.Contains(msg, "Langue cible : anglais (en)") || !strings.Contains(msg, "Marque (ne pas traduire) : Nébula") {
+			t.Errorf("message : %s", msg)
+		}
+		var in map[string]string
+		json.Unmarshal([]byte(msg[strings.Index(msg, "{"):]), &in)
+		sizes = append(sizes, len(in))
+		out := map[string]string{"inconnu": "x"}
+		for id, s := range in {
+			out[id] = strings.Replace(s, "Bonjour", "Hello", 1)
+		}
+		data, _ := json.Marshal(out)
+		io.WriteString(w, jsonCandidate("```json\n"+string(data)+"\n```"))
+	}
+	c, calls := fakeGemini(t, echo)
+	got, err := c.Translate(context.Background(), TranslateRequest{From: "fr", To: "en", Brand: Brand{Name: "Nébula"}, Items: items})
+	if err != nil || *calls != 3 || fmt.Sprint(sizes) != "[40 40 5]" {
+		t.Fatalf("err=%v calls=%d lots=%v", err, *calls, sizes)
+	}
+	if len(got) != 85 || got["s007"] != "Hello <1>n°7</1>" || got["inconnu"] != "" {
+		t.Fatalf("traductions : %d, s007=%q", len(got), got["s007"])
+	}
+
+	// Ids manquants et chaînes vides : absents du résultat ; JSON illisible : erreur typée.
+	c, _ = fakeGemini(t,
+		func(w http.ResponseWriter, r *http.Request) { io.WriteString(w, jsonCandidate(`{"a":"A","b":"  "}`)) },
+		func(w http.ResponseWriter, r *http.Request) { io.WriteString(w, jsonCandidate(`pas du json`)) })
+	got, err = c.Translate(context.Background(), TranslateRequest{From: "fr", To: "en", Items: map[string]string{"a": "a", "b": "b", "c": "c"}})
+	if err != nil || len(got) != 1 || got["a"] != "A" {
+		t.Fatalf("partiel : %v %v", got, err)
+	}
+	_, err = c.Translate(context.Background(), TranslateRequest{From: "fr", To: "en", Items: map[string]string{"a": "a"}})
+	var ge *Error
+	if !errors.As(err, &ge) || ge.Code != "upstream" {
+		t.Fatalf("illisible : %v", err)
+	}
+
+	// Contexte annulé : aucun appel.
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	c, calls = fakeGemini(t, echo)
+	if _, err := c.Translate(ctx, TranslateRequest{Items: items}); !errors.Is(err, context.Canceled) || *calls != 0 {
+		t.Fatalf("annulation : %v calls=%d", err, *calls)
 	}
 }

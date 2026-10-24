@@ -69,12 +69,16 @@ export async function projectsDialog() {
 
 /* ───────── Export ───────── */
 
-export async function exportAs(format) {
+export async function exportAs(format, lang) {
   if (!S.page.some((b) => b.html)) return toast(t('studio.exportEmpty'), false);
+  // Page HTML seule d'un projet multilingue : une langue à choisir (le ZIP et
+  // la publication, eux, contiennent toutes les langues, une URL chacune).
+  const langs = (S.seo.langs || []).filter((l) => l && l !== (S.seo.lang || 'fr'));
+  if (format === 'html' && lang === undefined && langs.length) return pickExportLang(langs);
   toast(t('studio.exporting'));
   try {
     await flush(); // le serveur exporte ce qu'il a en base
-    const res = await api(`/projects/${S.project.id}/export`, { method: 'POST', body: { format }, raw: true });
+    const res = await api(`/projects/${S.project.id}/export`, { method: 'POST', body: lang ? { format, lang } : { format }, raw: true });
     const name = (res.headers.get('Content-Disposition') || '').match(/filename="?([^"]+)"?/)?.[1] || 'page';
     download(await res.blob(), name);
     let warnings = [];
@@ -82,6 +86,22 @@ export async function exportAs(format) {
     if (warnings.length) toast(warnings[0], false);
     else toast(t(res.headers.get('X-Export-Compiled') === 'true' ? 'studio.exportedCompiled' : 'studio.exportedCdn'));
   } catch (e) { toast(e.message, false); }
+}
+
+function pickExportLang(langs) {
+  const src = S.seo.lang || 'fr';
+  const m = openModal({
+    title: t('tr.exportLangTitle'), size: 'sm',
+    body: `<p class="text-xs text-ink-400 mb-3">${esc(t('tr.exportLangHint'))}</p>
+      <div class="grid grid-cols-3 gap-1.5 font-mono text-[11px]">
+        ${[src, ...langs].map((l, i) => `<button data-lang="${esc(l)}" ${i === 0 ? 'autofocus' : ''} class="h-9 border ${i === 0 ? 'border-vio-500/60 text-vio-300' : 'border-ink-600 text-ink-200'} hover:border-cyan-400/70 hover:text-cyan-200 uppercase tracking-wider">${esc(l)}${i === 0 ? ' · src' : ''}</button>`).join('')}
+      </div>`,
+  });
+  m.el.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-lang]'); if (!b) return;
+    m.close();
+    exportAs('html', b.dataset.lang === src ? '' : b.dataset.lang);
+  });
 }
 
 export async function copyPage() {
@@ -247,7 +267,11 @@ export async function siteDialog() {
 
 export function initExport() {
   const menu = $('#exportMenu'), btn = $('#btnExport');
-  const toggle = (open) => { menu.classList.toggle('hidden', !open); btn.setAttribute('aria-expanded', String(open)); };
+  const toggle = (open) => {
+    menu.classList.toggle('hidden', !open);
+    btn.setAttribute('aria-expanded', String(open));
+    if (open) $('#exportLangsHint').classList.toggle('hidden', !(S.seo.langs || []).some((l) => l && l !== (S.seo.lang || 'fr')));
+  };
   btn.addEventListener('click', (e) => { e.stopPropagation(); toggle(menu.classList.contains('hidden')); });
   document.addEventListener('click', () => toggle(false));
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') toggle(false); });

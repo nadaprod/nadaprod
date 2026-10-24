@@ -38,11 +38,12 @@ type Block struct {
 // SEO : métadonnées de la page exportée. Les champs vides sont dérivés de la
 // marque (voir Page.normalize).
 type SEO struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	OGImage     string `json:"og_image"` // URL absolue d'une image de partage
-	URL         string `json:"url"`      // URL canonique du site, si connue
-	Lang        string `json:"lang"`
+	Title       string   `json:"title"`
+	Description string   `json:"description"`
+	OGImage     string   `json:"og_image"` // URL absolue d'une image de partage
+	URL         string   `json:"url"`      // URL canonique du site, si connue
+	Lang        string   `json:"lang"`
+	Langs       []string `json:"langs"` // langues cibles (une URL par langue, voir Site)
 }
 
 // Theme : la partie du design system nécessaire à l'assemblage. Les échelles
@@ -70,6 +71,8 @@ type Page struct {
 	SEO    SEO
 	Theme  Theme
 	Blocks []Block
+	// Translations : langue → i18n.Key(source) → texte traduit (voir Localized).
+	Translations map[string]map[string]string
 }
 
 // Compiler : CSS Tailwind purgé pour (document, config). Fourni par pkg/sites.
@@ -144,6 +147,7 @@ func (p *Page) normalize() {
 	if !langRe.MatchString(p.SEO.Lang) {
 		p.SEO.Lang = "fr"
 	}
+	p.SEO.Langs = targetLangs(p.SEO.Lang, p.SEO.Langs)
 	p.SEO.URL = httpURL(p.SEO.URL)
 	p.SEO.OGImage = httpURL(p.SEO.OGImage)
 }
@@ -248,6 +252,7 @@ type docOptions struct {
 	faviconRef string // href du favicon (fichier) ; "" ⇒ data URI
 	fontLinks  bool   // <link> Google Fonts (document autonome sans fichiers de police)
 	bodies     []string
+	head, foot string // ajouts avant </head> (hreflang) et avant </body> (sélecteur de langue)
 }
 
 const weights = "400;500;600;700"
@@ -318,13 +323,14 @@ func (p Page) document(o docOptions) []byte {
 	default:
 		b.WriteString("<style>" + o.css + "</style>\n")
 	}
+	b.WriteString(o.head)
 	bodyClass := "antialiased"
 	if p.Theme.Enabled {
 		bodyClass += " font-sans"
 	}
 	b.WriteString("</head>\n<body class=\"" + bodyClass + "\">\n")
 	b.WriteString(strings.Join(o.bodies, "\n\n"))
-	b.WriteString("\n</body>\n</html>\n")
+	b.WriteString("\n" + o.foot + "</body>\n</html>\n")
 	return []byte(b.String())
 }
 
@@ -502,6 +508,7 @@ func download(ctx context.Context, hc *http.Client, raw string) ([]byte, string,
 // styles.css, favicon.svg, assets/ (images rapatriées, polices locales) et,
 // sur demande, components/ (React ou Vue).
 func Site(ctx context.Context, p Page, o SiteOptions) (Result, error) {
+	raw := p // avant normalisation : chaque langue dérive son propre titre
 	p.normalize()
 	bodies := p.bodies()
 	if len(bodies) == 0 {
@@ -536,21 +543,46 @@ func Site(ctx context.Context, p Page, o SiteOptions) (Result, error) {
 		}
 	}
 
-	doc := docOptions{bodies: bodies, faviconRef: "favicon.svg", fontLinks: fontLinks}
 	if res.Compiled {
-		doc.cssHref = "styles.css"
 		res.Files = append(res.Files, File{"styles.css", append([]byte(fontCSS), css...)})
-	} else {
-		doc.cdn = true
-		if fontCSS != "" {
-			res.Files = append(res.Files, File{"styles.css", []byte(fontCSS)})
+	} else if fontCSS != "" {
+		res.Files = append(res.Files, File{"styles.css", []byte(fontCSS)})
+	}
+	// Une page par langue : la source à la racine, chaque langue cible dans
+	// <lang>/ — mêmes styles, favicon et assets, référencés depuis la racine.
+	page := func(lp Page, root string, bodies []string, lang string) []byte {
+		doc := docOptions{bodies: bodies, faviconRef: root + "favicon.svg", fontLinks: fontLinks, cdn: !res.Compiled}
+		if res.Compiled {
+			doc.cssHref = root + "styles.css"
 		}
+		doc.head, doc.foot = p.alternates(lang), p.switcher(lang)
+		out := lp.document(doc)
+		if !res.Compiled && fontCSS != "" {
+			out = bytes.Replace(out, []byte("</head>"), []byte("<link rel=\"stylesheet\" href=\""+root+"styles.css\">\n</head>"), 1)
+		}
+		return out
 	}
-	index := p.document(doc)
-	if !res.Compiled && fontCSS != "" {
-		index = bytes.Replace(index, []byte("</head>"), []byte("<link rel=\"stylesheet\" href=\"styles.css\">\n</head>"), 1)
+	res.Files = append(res.Files, File{"index.html", page(p, "", bodies, p.SEO.Lang)})
+	local := map[string]bool{}
+	for _, a := range assets {
+		local[a.Path] = true
 	}
-	res.Files = append(append(res.Files, File{"index.html", index}, File{"favicon.svg", []byte(p.faviconSVG())}), assets...)
+	for _, lang := range p.SEO.Langs {
+		lp, missing := raw.Localized(lang) // les manquants : blocs + SEO
+		lp.normalize()
+		lp.SEO.URL = p.langURL(lang)
+		// Les corps traduits partent des corps aux images déjà rapatriées.
+		lb := make([]string, len(bodies))
+		for i, body := range bodies {
+			t, _ := raw.apply(lang, body)
+			lb[i] = subdirAssets(t, local)
+		}
+		if n := len(missing); n > 0 {
+			res.Warnings = append(res.Warnings, fmt.Sprintf("%s : %d texte(s) non traduit(s) — source conservée", lang, n))
+		}
+		res.Files = append(res.Files, File{lang + "/index.html", page(lp, "../", lb, lang)})
+	}
+	res.Files = append(append(res.Files, File{"favicon.svg", []byte(p.faviconSVG())}), assets...)
 
 	if o.Components != "" {
 		comp, warns := components(p, bodies, o.Components)
