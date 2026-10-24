@@ -13,16 +13,18 @@ export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 export async function harness({ width = 1440, height = 900 } = {}) {
   fs.mkdirSync(OUT, { recursive: true });
-  const port = 9333 + Math.floor(Math.random() * 500);
+  // Port 0 : chromium choisit un port libre et l'écrit dans DevToolsActivePort
+  // (pas de collision avec le chromium d'un scénario précédent encore en fin de vie).
   const profile = fs.mkdtempSync(`${OUT}/profile-`);
-  const chrome = spawn('chromium', ['--headless=new', '--no-sandbox', '--disable-gpu', `--remote-debugging-port=${port}`,
+  const chrome = spawn('chromium', ['--headless=new', '--no-sandbox', '--disable-gpu', '--remote-debugging-port=0',
     `--window-size=${width},${height}`, `--user-data-dir=${profile}`, 'about:blank'], { stdio: 'ignore' });
 
   let ws, id = 0, fails = 0;
   const pending = new Map();
   const events = [];
-  for (let i = 0; !ws && i < 50; i++) {
+  for (let i = 0; !ws && i < 100; i++) {
     try {
+      const port = fs.readFileSync(`${profile}/DevToolsActivePort`, 'utf8').split('\n')[0];
       const page = (await (await fetch(`http://127.0.0.1:${port}/json`)).json()).find((t) => t.type === 'page');
       const sock = new WebSocket(page.webSocketDebuggerUrl);
       await new Promise((res, rej) => { sock.onopen = res; sock.onerror = rej; });
@@ -67,9 +69,12 @@ export async function harness({ width = 1440, height = 900 } = {}) {
       h.check('aucune exception JS', errs.length === 0, errs.join(' | '));
     },
     fail(e) { console.log('FAIL harness — ' + e.message); fails++; },
-    done() {
+    async done() {
+      // Attendre la fin de chromium avant d'effacer son profil (il y écrit jusqu'au bout).
+      const exited = new Promise((res) => chrome.once('exit', res));
       chrome.kill();
-      fs.rmSync(profile, { recursive: true, force: true });
+      await Promise.race([exited, sleep(3000)]);
+      try { fs.rmSync(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); } catch (_) {}
       console.log(fails ? `${fails} échec(s)` : 'tout est vert');
       process.exit(fails ? 1 : 0);
     },

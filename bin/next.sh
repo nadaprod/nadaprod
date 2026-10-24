@@ -14,6 +14,7 @@ if [[ "${1:-}" == "--fresh" ]]; then
 	mkdir -p next/web next/tools
 	rsync -a --delete --exclude webfonts --exclude webfonts.tgz web/ next/web/
 	rsync -a --delete tools/appcss next/tools/
+	ln -sfn "$PWD/web/webfonts" next/web/webfonts # miroir de polices (1,8 Go) : partagé, jamais copié
 	echo "next/ = production. Éditez next/web, testez : tools/e2e/run.sh"
 	exit 0
 fi
