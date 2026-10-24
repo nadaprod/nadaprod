@@ -30,7 +30,7 @@ try {
   await shot('h-03-services-dark');
 
   await ev(`toggleLanguage()`); await sleep(1200);
-  check('anglais', (await ev(`document.querySelector('#tab-services .display-text').textContent.trim()`)).toLowerCase().includes('self-contained'));
+  check('anglais', (await ev(`document.querySelector('#tab-services .display-text').textContent.trim()`)).toLowerCase().includes('static'));
   await nav('/#app'); await sleep(1500);
   await shot('h-04-app-dark-en');
 
