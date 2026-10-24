@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="debate.docTitle">NADAPROD — un débat, des faits</title>
+    <meta name="theme-color" content="#0a0a09">
+    <meta name="description" content="Ce que l'IA consomme dans NADAPROD, ce que le statique économise à la publication : nos chiffres réels, mis à jour en continu, et les hypothèses pour les lire." data-i18n-content="debate.metaDesc">
+
+    <link href="/static/fonts.css" rel="stylesheet">
+    <link href="/static/brand.css" rel="stylesheet">
+    <script src="/static/i18n.js"></script>
+    <script src="/static/brand.js"></script>
+
+    <style>
+        .page { max-width: 1240px; margin: 0 auto; padding: 9vh 1.5rem 8rem; animation: fadeUp .7s var(--ease) both; }
+        .block { margin-top: 6rem; }
+        .block > h2 { font-size: clamp(2.6rem, 6vw, 4.6rem); margin-bottom: 1.25rem; }
+        .block > h2 .accent { font-size: .8em; }
+        .block > .lead { max-width: 44rem; margin-bottom: 2.25rem; }
+
+        /* État de la mesure */
+        .status { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; align-items: center; font: 500 .74rem/1.4 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--text-secondary); }
+        .status .live { display: inline-flex; align-items: center; gap: .5rem; color: var(--text-main); }
+        .status .live::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 1.5px var(--text-main); animation: pulse 2s ease-in-out infinite; }
+        .status.off .live::before { background: #ff5a36; animation: none; }
+        @keyframes pulse { 50% { opacity: .35; } }
+        .early { margin-top: 1.5rem; border: 2px dashed var(--text-main); padding: 1rem 1.25rem; max-width: 46rem; font-size: .98rem; color: var(--text-main); }
+
+        /* Face à face */
+        .versus { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: stretch; gap: 0; border: 2px solid var(--text-main); background: var(--surface); }
+        .side { padding: 2.25rem; display: flex; flex-direction: column; gap: 1.5rem; min-width: 0; }
+        .side h3 { font-size: clamp(2rem, 3.4vw, 2.8rem); }
+        .side h3 .accent { font-size: .8em; }
+        .side .grid-tag { margin-bottom: -.5rem; }
+        .vs { display: grid; place-items: center; border-inline: 2px solid var(--text-main); background: var(--accent); color: #000; font: 900 2rem/1 var(--font-display); padding: 0 .9rem; writing-mode: vertical-rl; text-orientation: upright; letter-spacing: -.05em; }
+        .figs { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem 1.25rem; }
+        .fig { border-top: 2px solid var(--text-main); padding-top: .8rem; min-width: 0; }
+        .fig b { display: block; font: 900 clamp(2.4rem, 4.4vw, 3.6rem)/.9 var(--font-display); font-variant-numeric: tabular-nums; color: var(--text-main); overflow-wrap: anywhere; }
+        .fig b small { font: 600 .9rem var(--font-mono); letter-spacing: .02em; margin-left: .3rem; color: var(--text-secondary); }
+        .fig span { display: block; margin-top: .5rem; font: .72rem/1.45 var(--font-mono); letter-spacing: .07em; text-transform: uppercase; color: var(--text-secondary); }
+        .fig.est b { font-style: normal; }
+        .fig.est span::after { content: " *"; color: var(--text-dim); }
+        .note { font: .72rem/1.5 var(--font-mono); color: var(--text-dim); }
+
+        /* L'outil en chiffres */
+        .facts { display: grid; grid-template-columns: repeat(5, 1fr); border-top: 2px solid var(--text-main); }
+        .facts div { padding: 1.1rem 1rem 1.2rem 0; border-bottom: 1px solid var(--border); }
+        .facts b { display: block; font: 800 2.2rem/.95 var(--font-display); font-variant-numeric: tabular-nums; color: var(--text-main); }
+        .facts span { display: block; margin-top: .45rem; font: .7rem/1.4 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--text-secondary); }
+
+        /* Graphiques 30 jours */
+        .charts { display: grid; gap: 1.25rem; }
+        .chart { border: 2px solid var(--text-main); background: var(--bg); padding: 1.25rem 1.25rem .75rem; }
+        .chart-head { margin: 0 0 .75rem; display: flex; justify-content: space-between; align-items: baseline; font: 600 .72rem/1 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--text-secondary); }
+        .chart-head b { color: var(--text-main); font-weight: 600; }
+        .chart svg { display: block; width: 100%; height: 120px; }
+        .chart .bar-ai { fill: var(--accent); stroke: var(--text-main); stroke-width: 1; }
+        .chart .bar-st { fill: var(--text-main); }
+        .chart .axis { fill: var(--text-dim); font: 10px var(--font-mono); }
+        .chart .base { stroke: var(--text-main); stroke-width: 1.5; }
+        details.table { margin-top: .75rem; font: .78rem/1.5 var(--font-mono); color: var(--text-secondary); }
+        details.table summary { cursor: pointer; color: var(--text-main); }
+        details.table table { margin-top: .75rem; border-collapse: collapse; width: 100%; max-width: 32rem; }
+        details.table th, details.table td { text-align: right; padding: .25rem .6rem; border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums; }
+        details.table th:first-child, details.table td:first-child { text-align: left; }
+
+        /* Bilan */
+        .balance { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); border: 2px solid var(--text-main); box-shadow: var(--shadow-hard); }
+        .hyps { padding: 2rem; background: var(--surface); display: flex; flex-direction: column; gap: 1.4rem; border-right: 2px solid var(--text-main); }
+        .hyp label > span { min-width: 0; }
+        .hyp label { display: flex; justify-content: space-between; gap: 1rem; font: 600 .74rem/1.3 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--text-main); }
+        .hyp output { font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .hyp small { display: block; margin-top: .35rem; font: .7rem/1.45 var(--font-mono); color: var(--text-dim); text-transform: none; letter-spacing: 0; }
+        .hyp input[type=range] { width: 100%; margin-top: .55rem; accent-color: var(--text-main); }
+        .hyp.measured { border: 1.5px dashed var(--border); padding: .7rem .8rem; }
+        .result { padding: 2rem; display: flex; flex-direction: column; gap: 1.2rem; background: var(--bg); }
+        .result .row { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; border-bottom: 1px solid var(--border); padding-bottom: .7rem; }
+        .result .row span { font: .74rem/1.4 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--text-secondary); }
+        .result .row b { font: 900 2rem/1 var(--font-display); font-variant-numeric: tabular-nums; color: var(--text-main); text-align: right; }
+        .breakeven { background: var(--accent); color: #000; border: 2px solid #000; padding: 1.1rem 1.2rem; }
+        .breakeven b { display: block; font: 900 clamp(2rem, 4vw, 3.2rem)/.92 var(--font-display); text-transform: uppercase; }
+        .breakeven span { display: block; margin-top: .4rem; font: .74rem/1.4 var(--font-mono); letter-spacing: .04em; }
+        .verdict { font-size: 1.05rem; line-height: 1.5; color: var(--text-main); }
+        .formula { font: .74rem/1.75 var(--font-mono); background: #0b0b0a; color: #e9e9e2; padding: .9rem 1rem; overflow-x: auto; white-space: pre; border: 2px solid #0b0b0a; }
+        .formula .k { color: #ccff00; }
+
+        /* Méthode */
+        .method { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+        .method .grid-item { min-height: 0; grid-column: auto; }
+        .method ul { list-style: none; display: grid; gap: .55rem; font: .82rem/1.5 var(--font-mono); color: var(--text-main); }
+        .method li::before { content: "→ "; color: var(--text-dim); }
+        .method a { color: var(--text-main); text-decoration-color: var(--accent); text-decoration-thickness: 3px; }
+
+        .back { margin-top: 6rem; display: flex; gap: 1.25rem; flex-wrap: wrap; align-items: center; }
+
+        @media (max-width: 900px) {
+            .page { padding: 5vh 1.1rem 6rem; }
+            .block { margin-top: 4rem; }
+            .versus { grid-template-columns: minmax(0, 1fr); }
+            .vs { writing-mode: horizontal-tb; border-inline: 0; border-block: 2px solid var(--text-main); padding: .6rem; }
+            .side { padding: 1.5rem; }
+            .facts { grid-template-columns: 1fr 1fr; }
+            .balance { grid-template-columns: minmax(0, 1fr); }
+            .hyps { border-right: 0; border-bottom: 2px solid var(--text-main); padding: 1.5rem; }
+            .result { padding: 1.5rem; }
+            .method { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 420px) { .figs { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="texture-overlay" aria-hidden="true"></div>
+
+    <header>
+        <a href="/" class="header-logo" aria-label="NADAPROD — accueil" data-i18n-aria-label="debate.homeLink">
+            <img src="/gfx/logo.png" alt="NADAPROD" class="logo-img">
+        </a>
+        <div class="header-controls">
+            <a href="/login" id="auth-btn" class="icon-btn" aria-label="Connexion" data-i18n-aria-label="home.nav_login">
+                <svg class="auth-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                <span class="auth-label" data-i18n="home.nav_login">Connexion</span>
+            </a>
+            <button class="icon-btn" onclick="toggleLanguage()" id="lang-btn" aria-label="Langue / Language">FR</button>
+            <button class="icon-btn" onclick="toggleTheme()" aria-label="Thème clair / sombre" data-i18n-aria-label="home.themeToggle">◐</button>
+        </div>
+    </header>
+
+    <main>
+      <div class="page">
+
+        <!-- Le débat -->
+        <p class="kicker" data-i18n="debate.kicker">Un débat, des faits</p>
+        <h1 class="display-text" data-i18n="debate.title">Un débat, <span class="accent">des faits</span></h1>
+        <p class="section-intro" data-i18n="debate.intro">On utilise l'IA pour créer, et le statique pour publier. L'une consomme, l'autre économise. Voici nos chiffres réels, mis à jour en continu, et les hypothèses pour les lire. À vous de juger.</p>
+        <p class="status" id="status" role="status">
+            <span class="live" id="statusLive" data-i18n="debate.loading">Chargement des mesures…</span>
+            <span id="statusSince"></span>
+            <span id="statusUpdated"></span>
+        </p>
+        <p class="early" id="early" hidden></p>
+
+        <!-- Face à face -->
+        <section class="block" aria-labelledby="vsTitle">
+            <h2 id="vsTitle" data-i18n="debate.vsTitle">Face <span class="accent">à face</span></h2>
+            <div class="versus">
+                <div class="side">
+                    <p class="grid-tag"><b data-i18n="debate.aiTag">Côté IA</b><span data-i18n="debate.aiMeta">création</span></p>
+                    <h3 data-i18n="debate.aiTitle">Ce que l'IA <span class="accent">consomme</span></h3>
+                    <div class="figs">
+                        <div class="fig"><b data-v="ai.requests">—</b><span data-i18n="debate.aiRequests">requêtes à l'IA</span></div>
+                        <div class="fig"><b data-v="ai.output_tokens">—</b><span data-i18n="debate.aiTokens">tokens produits</span></div>
+                        <div class="fig est"><b data-v="aiWh">—</b><span data-i18n="debate.aiWh">énergie estimée</span></div>
+                        <div class="fig est"><b data-v="aiCO2">—</b><span data-i18n="debate.aiCO2">CO₂e estimé</span></div>
+                    </div>
+                    <p class="note" data-i18n="debate.estNote">* estimation : mesure × hypothèse, réglable dans le bilan.</p>
+                </div>
+                <div class="vs" aria-hidden="true">VS</div>
+                <div class="side">
+                    <p class="grid-tag"><b data-i18n="debate.stTag">Côté statique</b><span data-i18n="debate.stMeta">publication</span></p>
+                    <h3 data-i18n="debate.stTitle">Ce que le statique <span class="accent">économise</span></h3>
+                    <div class="figs">
+                        <div class="fig"><b data-v="static.pages">—</b><span data-i18n="debate.stPages">pages servies</span></div>
+                        <div class="fig"><b data-v="pageMs">—</b><span data-i18n="debate.stPageMs">temps moyen par page (mesuré)</span></div>
+                        <div class="fig est"><b data-v="savedWh">—</b><span data-i18n="debate.stSavedWh">énergie économisée</span></div>
+                        <div class="fig"><b data-v="static.bytes">—</b><span data-i18n="debate.stBytes">données servies</span></div>
+                    </div>
+                    <p class="note"><span data-v="static.requests">—</span> <span data-i18n="debate.stRequests">requêtes au total (pages, images, CSS…)</span> · <span data-v="botShare">—</span> <span data-i18n="debate.stBots">de robots</span></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 30 jours -->
+        <section class="block" aria-labelledby="daysTitle">
+            <h2 id="daysTitle" data-i18n="debate.daysTitle">30 <span class="accent">derniers jours</span></h2>
+            <p class="lead" data-i18n="debate.daysLead">Deux échelles différentes : on compte les requêtes à l'IA en dizaines, les pages servies en milliers. Chaque barre est un jour.</p>
+            <div class="charts">
+                <figure class="chart">
+                    <div class="chart-head"><b data-i18n="debate.chartAi">Requêtes à l'IA, par jour</b><span id="maxAi"></span></div>
+                    <svg id="chartAi" role="img" aria-labelledby="chartAiTitle" preserveAspectRatio="none"><title id="chartAiTitle" data-i18n="debate.chartAi">Requêtes à l'IA, par jour</title></svg>
+                </figure>
+                <figure class="chart">
+                    <div class="chart-head"><b data-i18n="debate.chartSt">Pages servies en statique, par jour</b><span id="maxSt"></span></div>
+                    <svg id="chartSt" role="img" aria-labelledby="chartStTitle" preserveAspectRatio="none"><title id="chartStTitle" data-i18n="debate.chartSt">Pages servies en statique, par jour</title></svg>
+                </figure>
+            </div>
+            <details class="table">
+                <summary data-i18n="debate.tableToggle">Voir les chiffres jour par jour</summary>
+                <table>
+                    <thead><tr><th data-i18n="debate.colDay">Jour</th><th data-i18n="debate.colAi">Requêtes IA</th><th data-i18n="debate.colPages">Pages servies</th></tr></thead>
+                    <tbody id="dailyRows"></tbody>
+                </table>
+            </details>
+        </section>
+
+        <!-- Le bilan -->
+        <section class="block" aria-labelledby="balTitle">
+            <h2 id="balTitle" data-i18n="debate.balTitle">Le <span class="accent">bilan</span></h2>
+            <p class="lead" data-i18n="debate.balLead">Ce qu'on ne peut pas mesurer chez nous est une hypothèse. Les voici, avec leur source. Bougez-les : le bilan se recalcule.</p>
+            <div class="balance">
+                <div class="hyps">
+                    <div class="hyp">
+                        <label for="hWh"><span data-i18n="debate.hWh">Énergie d'une requête IA</span><output id="oWh"></output></label>
+                        <input id="hWh" type="range" min="0.24" max="4.8" step="0.01">
+                        <small data-i18n="debate.hWhSrc">Google (août 2025) : 0,24 Wh pour une requête Gemini médiane. Nos générations sont plus longues : c'est un plancher.</small>
+                    </div>
+                    <div class="hyp">
+                        <label for="hCms"><span data-i18n="debate.hCms">Temps CPU d'une page WordPress sans cache</span><output id="oCms"></output></label>
+                        <input id="hCms" type="range" min="30" max="1000" step="10">
+                        <small data-i18n="debate.hCmsSrc">Ordre de grandeur d'un rendu PHP avec ses requêtes SQL.</small>
+                    </div>
+                    <div class="hyp">
+                        <label for="hW"><span data-i18n="debate.hW">Puissance d'un cœur de serveur occupé</span><output id="oW"></output></label>
+                        <input id="hW" type="range" min="3" max="30" step="1">
+                        <small data-i18n="debate.hWSrc">Ordre de grandeur pour un serveur courant.</small>
+                    </div>
+                    <div class="hyp">
+                        <label for="hG"><span data-i18n="debate.hG">Intensité carbone de l'électricité</span><output id="oG"></output></label>
+                        <input id="hG" type="range" min="10" max="500" step="5">
+                        <small data-i18n="debate.hGSrc">Environ 50 g CO₂e/kWh pour le mix français ; bien plus ailleurs.</small>
+                    </div>
+                    <div class="hyp measured">
+                        <label><span data-i18n="debate.hStatic">Temps de service d'une page statique</span><output id="oStatic">—</output></label>
+                        <small data-i18n="debate.hStaticSrc">Mesuré sur notre serveur, pas une hypothèse.</small>
+                    </div>
+                </div>
+                <div class="result" aria-live="polite">
+                    <div class="row"><span data-i18n="debate.rAi">Consommé par l'IA</span><b id="rAi">—</b></div>
+                    <div class="row"><span data-i18n="debate.rSaved">Économisé par le statique</span><b id="rSaved">—</b></div>
+                    <div class="row"><span data-i18n="debate.rPerPage">Économie par page</span><b id="rPerPage">—</b></div>
+                    <div class="breakeven"><b id="rBreak">—</b><span data-i18n="debate.rBreakSub">pour compenser l'énergie d'une seule requête à l'IA</span></div>
+                    <p class="verdict" id="rVerdict"></p>
+<pre class="formula" aria-label="Formules" data-i18n-aria-label="debate.formulas" data-i18n="debate.formula"><span class="k">IA</span>        = requêtes IA × Wh par requête
+<span class="k">par page</span>  = (t_CMS − t_statique) × P_cœur ÷ 3600
+<span class="k">statique</span>  = pages servies × par page
+<span class="k">équilibre</span> = Wh par requête ÷ par page</pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Méthode -->
+        <section class="block" aria-labelledby="mTitle">
+            <h2 id="mTitle" data-i18n="debate.mTitle">La <span class="accent">méthode</span></h2>
+            <div class="method">
+                <article class="grid-item" style="--i:0">
+                    <p class="grid-tag"><b data-i18n="debate.mMeasured">Mesuré</b></p>
+                    <ul>
+                        <li data-i18n="debate.m1">Chaque requête à l'IA : nature, tokens, durée, échec</li>
+                        <li data-i18n="debate.m2">Chaque requête servie à un site publié : page ou fichier, taille, temps de service</li>
+                        <li data-i18n="debate.m3">L'état de l'outil : projets, blocs, traductions, sites</li>
+                    </ul>
+                </article>
+                <article class="grid-item" style="--i:1">
+                    <p class="grid-tag"><b data-i18n="debate.mAssumed">Supposé</b></p>
+                    <ul>
+                        <li><span data-i18n="debate.m4">L'énergie d'une requête IA</span> — <a href="https://cloud.google.com/blog/products/infrastructure/measuring-the-environmental-impact-of-ai-inference" target="_blank" rel="noopener" data-i18n="debate.m4src">source Google, août 2025</a></li>
+                        <li data-i18n="debate.m5">Le temps de calcul d'une page WordPress sans cache</li>
+                        <li data-i18n="debate.m6">La puissance d'un cœur de serveur, l'intensité carbone</li>
+                    </ul>
+                </article>
+                <article class="grid-item" style="--i:2">
+                    <p class="grid-tag"><b data-i18n="debate.mPrivacy">Vie privée</b></p>
+                    <ul>
+                        <li data-i18n="debate.m7">Des totaux par jour, rien de plus</li>
+                        <li data-i18n="debate.m8">Aucune IP, aucun cookie, aucun user-agent conservé</li>
+                        <li data-i18n="debate.m9">Les robots sont reconnus à la volée et comptés à part</li>
+                    </ul>
+                </article>
+            </div>
+        </section>
+
+        <!-- Les chiffres de l'outil -->
+        <section class="block" aria-labelledby="fTitle">
+            <h2 id="fTitle" data-i18n="debate.fTitle">L'outil, <span class="accent">en chiffres</span></h2>
+            <div class="facts">
+                <div><b data-v="app.projects">—</b><span data-i18n="debate.fProjects">projets</span></div>
+                <div><b data-v="app.blocks">—</b><span data-i18n="debate.fBlocks">blocs</span></div>
+                <div><b data-v="app.versions.generate">—</b><span data-i18n="debate.fGenerate">blocs générés</span></div>
+                <div><b data-v="app.versions.variant">—</b><span data-i18n="debate.fVariant">variantes</span></div>
+                <div><b data-v="app.versions.retheme">—</b><span data-i18n="debate.fRetheme">re-thèmes</span></div>
+                <div><b data-v="app.translations.machine">—</b><span data-i18n="debate.fMachine">traductions par l'IA</span></div>
+                <div><b data-v="app.translations.human">—</b><span data-i18n="debate.fHuman">traductions relues</span></div>
+                <div><b data-v="app.sites">—</b><span data-i18n="debate.fSites">sites</span></div>
+                <div><b data-v="app.live_sites">—</b><span data-i18n="debate.fLive">sites en ligne</span></div>
+                <div><b data-v="app.pages">—</b><span data-i18n="debate.fPages">pages</span></div>
+            </div>
+        </section>
+
+        <div class="back">
+            <a href="/" class="icon-btn primary" data-i18n="debate.backHome">← Retour à l'accueil</a>
+            <a href="/waiting-list" class="icon-btn" data-i18n="home.cta_waitlist">Rejoindre la liste d'attente</a>
+        </div>
+      </div>
+    </main>
+
+    <script>
+    'use strict';
+    /* Hypothèses : défauts et bornes de doc/STATS.md ; le choix du lecteur est mémorisé. */
+    const HYP = {
+        wh:  { el: 'hWh',  out: 'oWh',  def: 0.24, fmt: (v) => num(v, 2) + ' Wh' },
+        cms: { el: 'hCms', out: 'oCms', def: 150,  fmt: (v) => num(v) + ' ms' },
+        w:   { el: 'hW',   out: 'oW',   def: 10,   fmt: (v) => num(v) + ' W' },
+        g:   { el: 'hG',   out: 'oG',   def: 50,   fmt: (v) => num(v) + ' g/kWh' },
+    };
+    const STORE = 'nadaprod-debate-hyp';
+    const $ = (id) => document.getElementById(id);
+    let DATA = null;
+
+    const fmtN = (opts) => new Intl.NumberFormat(I18N.lang === 'en' ? 'en-GB' : 'fr-FR', opts);
+    function num(v, d = 0) { return fmtN({ maximumFractionDigits: d, minimumFractionDigits: 0 }).format(v); }
+    function big(v) { return v >= 1e6 ? num(v / 1e6, 1) + ' M' : v >= 1e4 ? num(v / 1e3, 1) + ' k' : num(v); }
+    function bytes(v) {
+        const u = ['o', 'Ko', 'Mo', 'Go', 'To'], ue = ['B', 'KB', 'MB', 'GB', 'TB'];
+        let i = 0; while (v >= 1024 && i < u.length - 1) { v /= 1024; i++; }
+        return num(v, i ? 1 : 0) + ' ' + (I18N.lang === 'en' ? ue : u)[i];
+    }
+    function energy(wh) {
+        if (wh >= 1000) return num(wh / 1000, 2) + ' kWh';
+        if (wh >= 1 || wh === 0) return num(wh, 1) + ' Wh';
+        return num(wh * 1000, 1) + ' mWh';
+    }
+    function co2(g) { return g >= 1000 ? num(g / 1000, 2) + ' kg' : num(g, g < 10 ? 2 : 0) + ' g'; }
+    const date = (iso) => iso ? new Date(iso + (iso.length === 10 ? 'T12:00:00' : '')).toLocaleDateString(I18N.lang === 'en' ? 'en-GB' : 'fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
+    const get = (o, path) => path.split('.').reduce((x, k) => (x == null ? x : x[k]), o);
+
+    function hyps() {
+        const out = {};
+        for (const [k, h] of Object.entries(HYP)) out[k] = parseFloat($(h.el).value);
+        return out;
+    }
+    function loadHyps() {
+        let saved = {};
+        try { saved = JSON.parse(localStorage.getItem(STORE)) || {}; } catch (_) {}
+        for (const [k, h] of Object.entries(HYP)) $(h.el).value = saved[k] ?? h.def;
+    }
+    function saveHyps() { try { localStorage.setItem(STORE, JSON.stringify(hyps())); } catch (_) {} }
+
+    // Le calcul : exactement les formules affichées.
+    function compute(d, h) {
+        const pageMs = d.static.pages ? d.static.page_us / 1000 : null;
+        const perPage = pageMs == null ? null : Math.max(0, h.cms - pageMs) / 1000 * h.w / 3600; // Wh
+        const aiWh = d.ai.requests * h.wh;
+        const savedWh = perPage == null ? 0 : d.static.pages * perPage;
+        const breakEven = perPage ? h.wh / perPage : null;
+        return { pageMs, perPage, aiWh, savedWh, breakEven, aiCO2: aiWh / 1000 * h.g };
+    }
+
+    function render() {
+        const h = hyps();
+        for (const hh of Object.values(HYP)) $(hh.out).textContent = hh.fmt(parseFloat($(hh.el).value));
+        if (!DATA) return;
+        const d = DATA, c = compute(d, h);
+        const derived = {
+            aiWh: energy(c.aiWh), aiCO2: co2(c.aiCO2), savedWh: energy(c.savedWh),
+            pageMs: c.pageMs == null ? '—' : num(c.pageMs, c.pageMs < 10 ? 2 : 0) + '<small>ms</small>',
+            'static.bytes': bytes(d.static.bytes),
+            botShare: d.static.requests ? num(d.static.bots / d.static.requests * 100, 0) + ' %' : '—',
+        };
+        document.querySelectorAll('[data-v]').forEach((el) => {
+            const k = el.dataset.v;
+            if (k in derived) el.innerHTML = derived[k];
+            else { const v = get(d, k); el.textContent = typeof v === 'number' ? big(v) : '—'; }
+        });
+        $('oStatic').textContent = c.pageMs == null ? t('debate.noPages') : num(c.pageMs, 2) + ' ms';
+        $('rAi').textContent = energy(c.aiWh);
+        $('rSaved').textContent = energy(c.savedWh);
+        $('rPerPage').textContent = c.perPage == null ? '—' : energy(c.perPage);
+        $('rBreak').textContent = c.breakEven == null ? '—' : t('debate.breakEven', { n: big(Math.ceil(c.breakEven)) });
+
+        // Verdict : honnête dans les deux sens, et prudent tant que la mesure est jeune.
+        let v;
+        if (!d.ai.requests && !d.static.pages) v = t('debate.vNone');
+        else if (c.savedWh >= c.aiWh) v = t('debate.vStatic', { ratio: c.aiWh ? num(c.savedWh / c.aiWh, 1) : '∞' });
+        else {
+            const missing = c.perPage ? Math.ceil((c.aiWh - c.savedWh) / c.perPage) : null;
+            v = missing == null ? t('debate.vAiNoPages') : t('debate.vAi', { n: big(missing) });
+        }
+        $('rVerdict').textContent = v;
+    }
+
+    function chart(svgId, series, cls, maxId) {
+        const svg = $(svgId), W = 600, H = 120, pad = 14, n = series.length || 1;
+        const max = Math.max(1, ...series.map((s) => s.v));
+        const bw = (W - 2) / n;
+        let g = `<title>${svg.querySelector('title').textContent}</title>`;
+        series.forEach((s, i) => {
+            const h = s.v ? Math.max(2, (s.v / max) * (H - pad - 4)) : 0;
+            g += `<rect class="${cls}" x="${(i * bw + 1).toFixed(1)}" y="${(H - pad - h).toFixed(1)}" width="${Math.max(1, bw - 3).toFixed(1)}" height="${h.toFixed(1)}"><title>${date(s.day)} : ${num(s.v)}</title></rect>`;
+        });
+        g += `<line class="base" x1="0" x2="${W}" y1="${H - pad}" y2="${H - pad}"/>`;
+        if (series.length) {
+            g += `<text class="axis" x="0" y="${H - 2}">${date(series[0].day)}</text>`;
+            g += `<text class="axis" x="${W}" y="${H - 2}" text-anchor="end">${date(series[series.length - 1].day)}</text>`;
+        }
+        svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+        svg.innerHTML = g;
+        $(maxId).textContent = 'max ' + num(max);
+    }
+
+    function renderDaily() {
+        const ai = new Map((DATA.ai.daily || []).map((x) => [x.day, x.requests]));
+        const st = new Map((DATA.static.daily || []).map((x) => [x.day, x.pages]));
+        const days = [...new Set([...ai.keys(), ...st.keys()])].sort();
+        chart('chartAi', days.map((day) => ({ day, v: ai.get(day) || 0 })), 'bar-ai', 'maxAi');
+        chart('chartSt', days.map((day) => ({ day, v: st.get(day) || 0 })), 'bar-st', 'maxSt');
+        $('dailyRows').innerHTML = days.slice().reverse().map((day) =>
+            `<tr><td>${date(day)}</td><td>${num(ai.get(day) || 0)}</td><td>${num(st.get(day) || 0)}</td></tr>`).join('');
+    }
+
+    function renderStatus(ok) {
+        $('status').classList.toggle('off', !ok);
+        $('statusLive').textContent = ok ? t('debate.live') : t('debate.offline');
+        if (!ok || !DATA) return;
+        $('statusSince').textContent = t('debate.since', { date: date(DATA.since) });
+        const upd = DATA.updated_at ? new Date(DATA.updated_at) : new Date();
+        $('statusUpdated').textContent = t('debate.updated', { time: upd.toLocaleTimeString(I18N.lang === 'en' ? 'en-GB' : 'fr-FR', { hour: '2-digit', minute: '2-digit' }) });
+        // Mesure jeune : on le dit, plutôt que de montrer des ratios trompeurs.
+        const days = DATA.since ? (Date.now() - new Date(DATA.since + 'T00:00:00')) / 864e5 : 0;
+        const young = days < 7 || (DATA.ai.requests < 20 && DATA.static.pages < 1000);
+        $('early').hidden = !young;
+        $('early').textContent = young ? t('debate.early', { date: date(DATA.since) }) : '';
+    }
+
+    async function load() {
+        try {
+            const r = await fetch('/api/stats', { cache: 'no-store' });
+            if (!r.ok) throw new Error(r.status);
+            DATA = await r.json();
+            renderStatus(true);
+            renderDaily();
+        } catch (_) {
+            renderStatus(false);
+        }
+        render();
+    }
+
+    loadHyps();
+    Object.values(HYP).forEach((h) => $(h.el).addEventListener('input', () => { saveHyps(); render(); }));
+    I18N.onChange(() => { if (DATA) { renderStatus(true); renderDaily(); } else renderStatus(false); render(); });
+    I18N.ready.then(load);
+    setInterval(() => { if (!document.hidden) load(); }, 60000); // le serveur met en cache 60 s
+    </script>
+</body>
+</html>

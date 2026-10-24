@@ -2,688 +2,355 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NADAPROD | ŒUVRES WEB AUTONOMES</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NADAPROD — au revoir WordPress, retour au statique</title>
 
-    <meta name="theme-color" content="#000000">
+    <meta name="theme-color" content="#0a0a0a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="description" content="L'outil open source qui fait de chaque publication web une œuvre d'art autonome. Composez avec l'IA, importez l'existant, publiez sans dépendance.">
+    <meta name="description" content="NADAPROD, l'outil de publication statique : créez avec l'IA, traduisez, publiez des pages sans base de données, sans plugin, sans traceur. Logiciel libre.">
 
     <link href="/static/fonts.css" rel="stylesheet">
+    <link href="/static/brand.css" rel="stylesheet">
     <script src="/static/i18n.js"></script>
+    <script src="/static/brand.js"></script>
 
     <style>
-        :root {
-            /* Core Theme - Defaulting to Light Mode */
-            --bg: #ffffff;
-            --surface: #f7f7f7;
-            --text-main: #0a0a0a;
-            --text-secondary: #555555;
-            --border: #d0d0d0;
-            --accent: #ccff00; /* Signature Acid Green */
-            --selection-bg: #0a0a0a;
-            --selection-text: #ffffff;
-            --logo-filter: invert(1);
-            --scanline-opacity: 0.03;
-            --shadow-hard: 6px 6px 0px rgba(0,0,0,0.15);
-
-            /* Typography & Animation */
-            --font-display: 'Bebas Neue', sans-serif;
-            --font-body: 'Inter', system-ui, -apple-system, sans-serif;
-            --ease: cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        /* OS Dark Mode Media Query */
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg: #050505;
-                --surface: #121212;
-                --text-main: #f5f5f5;
-                --text-secondary: #999999;
-                --border: #333333;
-                --selection-bg: #ccff00;
-                --selection-text: #000000;
-                --logo-filter: none;
-                --scanline-opacity: 0.06;
-                --shadow-hard: 6px 6px 0px rgba(0,0,0,1);
-            }
-        }
-
-        /* Forced Theme Overrides */
-        html[data-theme="light"] {
-            --bg: #ffffff;
-            --surface: #f7f7f7;
-            --text-main: #0a0a0a;
-            --text-secondary: #555555;
-            --border: #d0d0d0;
-            --selection-bg: #0a0a0a;
-            --selection-text: #ffffff;
-            --logo-filter: invert(1);
-            --shadow-hard: 6px 6px 0px rgba(0,0,0,0.15);
-        }
-
-        html[data-theme="dark"] {
-            --bg: #050505;
-            --surface: #121212;
-            --text-main: #f5f5f5;
-            --text-secondary: #999999;
-            --border: #333333;
-            --selection-bg: #ccff00;
-            --selection-text: #000000;
-            --logo-filter: none;
-            --shadow-hard: 6px 6px 0px rgba(0,0,0,1);
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
-
-        ::selection {
-            background: var(--selection-bg);
-            color: var(--selection-text);
-        }
-
-        body {
-            background-color: var(--bg);
-            color: var(--text-main);
-            font-family: var(--font-body);
-            overflow: hidden;
-            height: 100vh;
-            width: 100vw;
-            display: flex;
-            flex-direction: column;
-            transition: background-color 0.5s var(--ease), color 0.5s var(--ease);
-            font-size: 16px;
-        }
-
-        /* Subtle CRT / Paper Texture Overlay */
-        .texture-overlay {
-            position: fixed;
-            z-index: 9999;
-            pointer-events: none;
-
-            /*
-            * Débordement volontaire :
-            * évite de voir les bords pendant les animations
-            * de la barre d'adresse mobile.
-            */
-            top: -5lvh;
-            left: 0;
-            width: 100%;
-            height: 110lvh;
-
-            background-image: url("https://l3dlp.com/assets/pwa/01.webp");
-            background-repeat: no-repeat;
-            background-position: center;
-            background-size: cover;
-
-            mix-blend-mode: color-dodge;
-            opacity: 0.72;
-
-            /*
-            * Force son propre calque de composition.
-            */
-            transform: translate3d(0, 0, 0);
-            backface-visibility: hidden;
-            will-change: transform;
-            contain: paint;
-        }
-        .texture-overlay {
-            top: -5vh;
-            height: 110vh;
-        }
-
-        @supports (height: 100lvh) {
-            .texture-overlay {
-                top: -5lvh;
-                height: 110lvh;
-            }
-        }
-        html[data-theme="light"] .texture-overlay {
-            background: url(https://l3dlp.com/assets/pwa/03.webp) no-repeat center center !important;
-            background-size: cover !important;
-            mix-blend-mode: lighten;
-        }
-
-        /* Main Layout */
-        main {
-            flex: 1;
-            position: relative;
-            overflow-y: auto;
-            overflow-x: hidden;
-            scroll-behavior: smooth;
-            padding-top: 100px; /* Space for header */
-        }
+        /* ── Cadre (onglets) ─────────────────────────────── */
 
         section {
             display: none;
             min-height: 100%;
-            padding: 2rem 1.5rem 10rem 1.5rem;
-            max-width: 1200px;
+            padding: 9vh 1.5rem 10rem;
+            max-width: 1240px;
             margin: 0 auto;
-            animation: fadeUp 0.7s var(--ease) forwards;
+            animation: fadeUp .7s var(--ease) both;
         }
-
         section.active { display: block; }
 
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        #hero-title { min-height: 1.8em; transition: opacity .5s var(--ease), transform .5s var(--ease); }
+        .cta-row { display: flex; gap: 1.25rem; flex-wrap: wrap; align-items: center; }
+        .cta-row .link { font: .85rem var(--font-mono); color: var(--text-main); opacity: .75; }
+        .cta-row .link:hover { opacity: 1; }
 
-        header {
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            padding: 1.5rem 1.55rem;
-            max-width: 1213px;
-            margin-inline: auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 100;
-            background: var(--bg);
-            border-bottom: 2px solid var(--border);
-            transition: background 0.5s var(--ease), border-color 0.5s var(--ease);
-        }
+        /* Preuves chiffrées */
+        .proof { margin-top: 5.5rem; display: grid; grid-template-columns: repeat(4, 1fr); border-top: 2px solid var(--text-main); }
+        .proof div { padding: 1.4rem 1.25rem 0 0; border-right: 1px solid var(--border); margin-right: 1.25rem; }
+        .proof div:last-child { border-right: 0; }
+        .proof b { display: block; font: 900 clamp(3rem, 6vw, 5rem)/.9 var(--font-display); color: var(--text-main); font-variant-numeric: tabular-nums; }
+        .proof span { display: block; margin-top: .6rem; font: .72rem/1.45 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--text-secondary); }
 
-        .header-logo {
-            font-family: var(--font-display);
-            font-size: 2rem;
-            letter-spacing: 0.05em;
-            color: var(--text-main);
-            text-decoration: none;
-            line-height: 1;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        /* Visuels : du vrai produit, pas de photo d'illustration */
+        .chips { display: flex; flex-wrap: wrap; gap: .4rem; }
+        .chips span { font: 500 .74rem/1 var(--font-mono); padding: .45rem .6rem; border: 1.5px solid var(--border); background: var(--bg); color: var(--text-main); }
+        .chips span:last-child { border-style: dashed; }
+        .chips.out span { font-size: .85rem; padding: .6rem .8rem; border-color: var(--text-main); }
+        .chips.out span:last-child { background: var(--accent); color: #000; border-style: solid; border-color: #000; }
 
-        .header-controls {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
+        .term { font: .8rem/1.75 var(--font-mono); background: #0b0b0a; color: #e9e9e2; border: 2px solid #0b0b0a; padding: 1rem 1.1rem; overflow-x: auto; white-space: pre; }
+        .term .dim { color: #75756d; } .term .ok { color: #ccff00; } .term .warn { color: #f7b733; }
 
-        .icon-btn {
-            background: transparent;
-            border: 2px solid var(--text-main);
-            color: var(--text-main);
-            height: 40px;
-            padding: 0 16px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.95rem;
-            font-weight: 700;
-            font-family: var(--font-body);
-            transition: all 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
+        .tokens { display: flex; align-items: stretch; gap: .5rem; flex-wrap: wrap; }
+        .swatches { display: flex; border: 2px solid var(--text-main); }
+        .swatches i { width: 30px; height: 46px; }
+        .tok { border: 2px solid var(--border); background: var(--bg); padding: .35rem .7rem; display: grid; place-items: center; font: 900 1.6rem/1 var(--font-display); color: var(--text-main); }
+        .tok.serif { font: italic 300 1.6rem/1 var(--font-accent); }
+        .tok.radius { width: 46px; border-radius: 14px 2px; border-color: var(--text-main); }
 
-        #auth-btn .auth-icon { display: none; }
+        .ide { border: 2px solid var(--text-main); background: #0b0b0a; color: #cfcfc6; font: .76rem/1.7 var(--font-mono); display: grid; grid-template-columns: 9.5rem 1fr; min-height: 9.5rem; }
+        .ide .tree { border-right: 1px solid #2c2c29; padding: .6rem .7rem; color: #a3a39b; white-space: pre; }
+        .ide .tree .on { color: #fff; background: rgba(204,255,0,.12); box-shadow: inset 2px 0 #ccff00; }
+        .ide .code { padding: .6rem .9rem; white-space: pre; overflow: hidden; }
+        .ide .code .k { color: #ccff00; } .ide .code .s { color: #f7b733; } .ide .code .c { color: #75756d; }
 
-        .icon-btn:hover {
-            background: var(--text-main);
-            color: var(--bg);
-            transform: translate(-2px, -2px);
-            box-shadow: 4px 4px 0px var(--accent);
-        }
+        .pipe { display: grid; grid-template-columns: repeat(6, 1fr); border: 2px solid var(--text-main); margin-bottom: 1.25rem; animation: fadeUp .7s var(--ease) both; }
+        .pipe div { padding: 1.1rem 1rem; border-right: 1px solid var(--border); background: var(--bg); position: relative; }
+        .pipe div:last-child { border-right: 0; background: var(--accent); color: #000; }
+        .pipe b { display: block; font: 600 .68rem/1 var(--font-mono); letter-spacing: .12em; color: var(--text-dim); margin-bottom: .55rem; }
+        .pipe div:last-child b { color: #000; opacity: .6; }
+        .pipe span { font: 800 1.25rem/1 var(--font-display); text-transform: uppercase; }
 
-        h1, h2, h3 {
-            font-family: var(--font-display);
-            font-weight: 400;
-            text-transform: uppercase;
-            line-height: 0.85;
-            letter-spacing: 0.02em;
-        }
+        .marquee-wrapper { width: 100vw; margin: 0 0 3.5rem calc(-50vw + 50%); border-block: 2px solid var(--text-main); background: var(--accent); overflow: hidden; transform: rotate(-1deg) scale(1.02); }
+        .marquee-track { display: flex; width: max-content; animation: scroll 30s linear infinite; }
+        .marquee-content { white-space: nowrap; padding: .9rem 2rem .9rem 0; font: 900 2rem/1 var(--font-display); color: #000; text-transform: uppercase; }
+        @keyframes scroll { to { transform: translateX(-50%); } }
 
-        p {
-            line-height: 1.6;
-            font-weight: 400;
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-        }
+        .debate-link { text-decoration: none; color: inherit; border-color: var(--text-main); }
+        .debate-link:hover { background: var(--accent); color: #000; }
+        .debate-link:hover h3, .debate-link:hover p, .debate-link:hover .grid-tag, .debate-link:hover .grid-tag b, .debate-link:hover .accent { color: #000; }
+        .debate-cta { font: 800 1.4rem/1 var(--font-display); text-transform: uppercase; letter-spacing: .02em; }
 
-        strong {
-            color: var(--text-main);
-            font-weight: 600;
-        }
-
-        .display-text {
-            font-size: clamp(4rem, 8vw, 8rem);
-            margin: 0 0 2rem 0;
-            color: var(--text-main);
-            word-wrap: break-word;
-        }
-
-        .display-text span.outline {
-            color: transparent;
-            -webkit-text-stroke: 2px var(--text-main);
-        }
-
-        .section-intro {
-            font-size: clamp(1.2rem, 3vw, 1.8rem);
-            max-width: 800px;
-            margin-bottom: 4rem;
-            color: var(--text-main);
-            line-height: 1.4;
-        }
-
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-
-        .grid-item {
-            background: var(--surface);
-            border: 2px solid var(--border);
-            padding: 2.5rem;
-            grid-column: span 4;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            min-height: 380px;
-            transition: all 0.3s var(--ease);
-            position: relative;
-        }
-
-        .grid-item:hover {
-            border-color: var(--text-main);
-            background: var(--bg);
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-hard);
-            z-index: 2;
-        }
-
-        .grid-item.double { grid-column: span 8; }
-        .grid-item.full { grid-column: span 12; }
-
-        .grid-item h3 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            color: var(--text-main);
-        }
-
-        .service-details {
-            font-size: 0.95rem;
-            margin-top: 2rem;
-            color: var(--text-main);
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.8rem;
-            border-top: 2px solid var(--border);
-            padding-top: 1.5rem;
-            font-weight: 500;
-        }
-
-        .service-details span::before {
-            content: "→ ";
-            color: var(--accent);
-            font-weight: bold;
-            font-family: monospace;
-        }
-
-        .grid-tag {
-            font-family: var(--font-display);
-            font-size: 1.2rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--bg);
-            background: var(--text-main);
-            padding: 4px 12px;
-            align-self: flex-start;
-            margin-bottom: 2rem;
-            display: inline-block;
-        }
-
-        .marquee-wrapper {
-            width: 100vw;
-            margin-left: calc(-50vw + 50%);
-            border-top: 2px solid var(--text-main);
-            border-bottom: 2px solid var(--text-main);
-            margin-bottom: 4rem;
-            background: var(--accent);
-            overflow: hidden;
-            position: relative;
-            transform: rotate(-1deg) scale(1.02);
-            z-index: 10;
-        }
-
-        .marquee-track {
-            display: flex;
-            width: max-content;
-            animation: scroll 30s linear infinite;
-        }
-
-        .marquee-content {
-            white-space: nowrap;
-            padding: 1rem 0;
-            font-family: var(--font-display);
-            font-size: 2rem;
-            color: #000; /* Always black on acid green */
-            padding-right: 2rem;
-        }
-
-        @keyframes scroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-
-        /* Bottom Floating Navigation */
+        /* Navigation flottante */
         nav {
-            position: fixed;
-            bottom: 2rem;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--bg);
-            padding: 8px;
-            display: flex;
-            gap: 8px;
-            z-index: 1000;
-            border: 2px solid var(--text-main);
-            box-shadow: var(--shadow-hard);
-            transition: all 0.3s;
+            position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); z-index: 1000;
+            background: var(--bg); padding: 6px; display: flex; gap: 6px;
+            border: 2px solid var(--text-main); box-shadow: var(--shadow-hard);
         }
-
         .nav-item {
-            background: transparent;
-            border: none;
-            color: var(--text-secondary);
-            padding: 1rem 1.5rem;
-            cursor: pointer;
-            font-family: var(--font-display);
-            font-size: 1.2rem;
-            letter-spacing: 0.05em;
-            transition: all 0.2s;
+            background: transparent; border: none; cursor: pointer;
+            color: var(--text-secondary); padding: .9rem 1.4rem;
+            font: 800 1.15rem/1 var(--font-display); letter-spacing: .04em; text-transform: uppercase;
+            transition: background .2s, color .2s;
         }
+        .nav-item.active { background: var(--text-main); color: var(--bg); }
+        .nav-item:hover:not(.active), .nav-item:focus-visible { color: var(--text-main); background: var(--surface); outline: none; }
 
-        .nav-item.active {
-            background: var(--text-main);
-            color: var(--bg);
-        }
+        .link-list { list-style: none; margin-top: 2.5rem; border-top: 2px solid var(--text-main); }
+        .link-list li { border-bottom: 1px solid var(--border); }
+        .link-list a { display: flex; justify-content: space-between; align-items: baseline; padding: 1.5rem .75rem; text-decoration: none; color: var(--text-main); font: 800 clamp(1.8rem, 3.4vw, 2.6rem)/1 var(--font-display); text-transform: uppercase; transition: background .3s var(--ease), color .3s, padding .3s var(--ease); }
+        .link-list a:hover { background: var(--text-main); color: var(--bg); padding-inline: 1.75rem; }
+        .link-list a .hidden { font: 600 .74rem var(--font-mono); letter-spacing: .1em; color: var(--text-dim); transition: color .3s; }
+        .link-list a:hover .hidden { color: var(--accent); }
 
-        .nav-item:hover:not(.active) {
-            color: var(--text-main);
-            background: var(--surface);
-        }
+        .signal-form { margin-top: auto; display: flex; border-bottom: 2px solid var(--text-main); }
+        .signal-form input { flex: 1; border: 0; background: transparent; padding: 1rem 0; font: 1.15rem var(--font-body); color: var(--text-main); outline: none; }
+        .signal-form button { background: transparent; border: 0; color: var(--text-main); font: 900 2rem var(--font-display); cursor: pointer; padding: 0 1rem; }
+        .mail { font: 900 clamp(2rem, 3.4vw, 2.8rem)/.9 var(--font-display); color: var(--text-main); text-decoration: none; margin-top: auto; }
+        .mail:hover { color: var(--text-main); text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 6px; }
 
-        /* Network Link List */
-        .link-list {
-            list-style: none;
-            margin-top: 0;
-        }
-
-        .link-list li {
-            border-bottom: 2px solid var(--border);
-        }
-
-        .link-list li a {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 2rem 1rem;
-            text-decoration: none;
-            color: var(--text-main);
-            font-size: 2rem;
-            font-family: var(--font-display);
-            transition: all 0.3s;
-        }
-
-        .link-list li a:hover {
-            background: var(--text-main);
-            color: var(--bg);
-            padding-left: 2rem;
-            padding-right: 2rem;
-        }
-
-        .link-list li a .hidden {
-            font-family: var(--font-body);
-            font-size: 0.9rem;
-            font-weight: 600;
-            opacity: 0;
-            transform: translateX(-20px);
-            transition: all 0.3s;
-            color: var(--accent);
-        }
-
-        .link-list li a:hover .hidden {
-            opacity: 1;
-            transform: translateX(0);
-        }
 
         @media (max-width: 900px) {
-            .grid-container { grid-template-columns: 1fr; gap: 1rem; }
-            .grid-item { grid-column: span 1 !important; min-height: auto; padding: 1.5rem; }
-            .display-text { font-size: clamp(3rem, 12vw, 5rem); }
-            .section-intro { font-size: 1.1rem; }
-            nav { width: 92%; justify-content: space-between; bottom: 1.5rem; padding: 6px; }
-            .nav-item { padding: 0.8rem 0.5rem; font-size: 1rem; flex: 1; }
-            section { padding-top: 0; padding-bottom: 8rem; }
-            header { padding: 1rem; }
-            .service-details { grid-template-columns: 1fr; }
-            #auth-btn { padding: 0 10px; }
-            #auth-btn .auth-icon { display: block; }
-            #auth-btn .auth-label { display: none; }
+            section { padding: 5vh 1.1rem 8rem; }
+            .proof { grid-template-columns: 1fr 1fr; row-gap: 1.5rem; margin-top: 3.5rem; }
+            .proof div:nth-child(2) { border-right: 0; }
+            .pipe { grid-template-columns: 1fr 1fr; }
+            .pipe div { border-bottom: 1px solid var(--border); }
+            .ide { grid-template-columns: 1fr; } .ide .tree { display: none; }
+            nav { width: calc(100% - 1.5rem); justify-content: space-between; bottom: 1rem; padding: 5px; }
+            .nav-item { padding: .8rem .35rem; font-size: 1rem; flex: 1; }
         }
-	#tab-home, #tab-app, #tab-services, #tab-network { padding-top: 10vh; }
-        .logo-img { height: 48px; width: auto; filter: var(--logo-filter); display: block; }
     </style>
 </head>
 <body>
 
-    <div class="texture-overlay"></div>
+    <div class="texture-overlay" aria-hidden="true"></div>
 
     <header>
-        <a href="#" class="header-logo" onclick="switchTab('home')">
+        <a href="#" class="header-logo" onclick="switchTab('home'); return false;">
             <img src="/gfx/logo.png" alt="NADAPROD" class="logo-img">
         </a>
-
         <div class="header-controls">
-            <a href="/login" id="auth-btn" class="icon-btn" style="text-decoration: none;" aria-label="Connexion" data-i18n-aria-label="home.nav_login">
+            <a href="/login" id="auth-btn" class="icon-btn" aria-label="Connexion" data-i18n-aria-label="home.nav_login">
                 <svg class="auth-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
                 <span class="auth-label" data-i18n="home.nav_login">Connexion</span>
             </a>
-            <button class="icon-btn" onclick="toggleLanguage()" id="lang-btn">FR</button>
-            <button class="icon-btn" onclick="toggleTheme()" aria-label="Toggle Theme">◐</button>
+            <button class="icon-btn" onclick="toggleLanguage()" id="lang-btn" aria-label="Langue / Language">FR</button>
+            <button class="icon-btn" onclick="toggleTheme()" aria-label="Thème clair / sombre" data-i18n-aria-label="home.themeToggle">◐</button>
         </div>
     </header>
 
     <main id="app">
-        <!-- TAB 1: ACCUEIL -->
+
+        <!-- 1. MANIFESTE -->
         <section id="tab-home" class="active">
-            <h1 class="display-text" id="hero-title">
-                <span class="outline">CHAQUE PAGE,</span><br>UNE ŒUVRE AUTONOME.
-            </h1>
-
-            <p class="section-intro" data-i18n="home.home_intro">
-                Le web moderne enchaîne chaque page à dix serveurs qui ne vous appartiennent pas. NADAPROD est l'outil open source qui fait de chaque publication web une œuvre d'art autonome : complète, auto-portée, sans une seule dépendance.
-            </p>
-
-            <p style="margin-top: 2.5rem; display: flex; gap: 1.25rem; flex-wrap: wrap; align-items: center;">
-                <a href="/waiting-list" class="icon-btn" style="text-decoration: none;" data-i18n="home.cta_waitlist">Rejoindre la liste d'attente</a>
-                <a href="/login" style="font-family: var(--font-body); font-size: 0.9rem; color: var(--text-main); opacity: 0.7;" data-i18n="home.cta_login">Déjà un compte ? Se connecter</a>
-            </p>
+            <p class="kicker" data-i18n="home.kicker">Publication statique · logiciel libre</p>
+            <h1 class="display-text" id="hero-title"><span class="accent">Chaque page,</span><br>UNE ŒUVRE AUTONOME.</h1>
+            <p class="section-intro" data-i18n="home.home_intro">Un site WordPress, c'est un serveur, une base de données, des plugins à mettre à jour et des failles à surveiller. NADAPROD publie des pages statiques : <em>rien à pirater, rien à maintenir</em>. Vous créez avec l'IA, vous traduisez, vous publiez.</p>
+            <div class="cta-row">
+                <a href="/waiting-list" class="icon-btn primary" data-i18n="home.cta_waitlist">Rejoindre la liste d'attente</a>
+                <a href="/login" class="link" data-i18n="home.cta_login">Déjà un compte ? Se connecter</a>
+            </div>
+            <div class="proof">
+                <div><b>15</b><span data-i18n="home.proof1">IA spécialisées, une par type de bloc</span></div>
+                <div><b>1</b><span data-i18n="home.proof2">adresse par langue (/en/, /es/…)</span></div>
+                <div><b>0</b><span data-i18n="home.proof3">base de données à pirater</span></div>
+                <div><b>0</b><span data-i18n="home.proof4">plugin à mettre à jour</span></div>
+            </div>
         </section>
 
-        <!-- TAB 2: L'APP (Manifesto) -->
+        <!-- 2. L'OUTIL -->
         <section id="tab-app">
-            <h2 class="display-text" data-i18n="home.app_main_title">L'OUTIL<br><span class="outline">RÉVOLUTIONNAIRE</span></h2>
-            <p class="section-intro" data-i18n="home.app_intro">
-                Deux ateliers, un seul but : des pages qui n'ont besoin de personne. Composez de zéro avec l'IA, ou importez l'existant — dans les deux cas, l'outil rend le résultat autonome.
-            </p>
+            <p class="kicker" data-i18n="home.app_kicker">De l'idée à la mise en ligne</p>
+            <h2 class="display-text" data-i18n="home.app_main_title">Tout pour <span class="accent">publier</span></h2>
+            <p class="section-intro" data-i18n="home.app_intro">Créez une page avec l'IA ou importez un site existant. Modifiez-la à la souris ou dans le code, traduisez-la, publiez-la. Un seul outil, du premier mot à l'adresse en ligne.</p>
 
             <div class="grid-container">
-                <!-- FEATURE 1: SITE -->
-                <div class="grid-item double">
-                    <span class="grid-tag" data-i18n="home.f1_tag">01. Le Studio</span>
-                    <h3 data-i18n="home.f1_title">Un expert IA par bloc</h3>
-                    <p data-i18n="home.f1_desc">Header, hero, tarifs, FAQ… chaque type de bloc a son générateur spécialisé, dressé pour produire du Tailwind de niveau agence. Décrivez, générez, puis itérez par retouches — « passe le fond en clair » suffit.</p>
-                    <div class="service-details">
-                        <span data-i18n="home.f1_d1">8 générateurs spécialisés</span>
-                        <span data-i18n="home.f1_d2">Itération par retouche</span>
-                        <span data-i18n="home.f1_d3">Contexte de marque partagé</span>
-                        <span data-i18n="home.f1_d4">Export HTML en un clic</span>
+                <article class="grid-item" style="--span:7; --i:0">
+                    <p class="grid-tag"><b data-i18n="home.feat1_tag">01 · Le studio</b><span data-i18n="home.feat1_meta">la page s'écrit en direct</span></p>
+                    <h3 data-i18n="home.feat1_title">Une IA <span class="accent">par bloc</span></h3>
+                    <p data-i18n="home.feat1_desc">Chaque type de bloc (en-tête, tarifs, FAQ…) a sa propre IA. Vous décrivez ce que vous voulez, la page s'écrit sous vos yeux, vous comparez trois versions et gardez la meilleure.</p>
+                    <div class="chips" aria-hidden="true">
+                        <span>header</span><span>hero</span><span>features</span><span>pricing</span><span>testimonials</span><span>faq</span><span>cta</span><span>footer</span><span>stats</span><span>logos</span><span>blog</span><span>team</span><span>contact</span><span>banner</span><span>section libre</span>
                     </div>
-                </div>
-
-                <!-- FEATURE 2: AUDIENCE -->
-                <div class="grid-item">
-                    <span class="grid-tag" data-i18n="home.f2_tag">02. L'Import</span>
-                    <h3 data-i18n="home.f2_title">Apportez l'existant</h3>
-                    <p data-i18n="home.f2_desc">Déposez un .zip ou .tar.gz de n'importe quel site statique — quelle que soit la stack, du moment que c'est du HTML. Il devient éditable immédiatement.</p>
-                </div>
-
-                <!-- FEATURE 3: MONETIZATION -->
-                <div class="grid-item">
-                    <span class="grid-tag" data-i18n="home.f3_tag">03. L'Édition</span>
-                    <h3 data-i18n="home.f3_title">Cliquez, retouchez</h3>
-                    <p data-i18n="home.f3_desc">Édition visuelle directement dans la page : un clic sélectionne, un double-clic édite, l'IA retouche l'élément sans casser son style. Les puristes ont Monaco plein écran.</p>
-                </div>
-
-                <!-- FEATURE 4: ADMIN -->
-                <div class="grid-item double">
-                    <span class="grid-tag" data-i18n="home.f4_tag">04. La Mise en ligne</span>
-                    <h3 data-i18n="home.f4_title">Un domaine, et c'est vivant</h3>
-                    <p data-i18n="home.f4_desc">Branchez un domaine, pointez un enregistrement A : chaque « Enregistrer » est en ligne dans la seconde. Pas de déploiement, pas de base de données — le filesystem fait foi.</p>
                     <div class="service-details">
-                        <span data-i18n="home.f4_d1">Publication instantanée</span>
-                        <span data-i18n="home.f4_d2">Un champ, un domaine</span>
-                        <span data-i18n="home.f4_d3">Le filesystem est la base</span>
-                        <span data-i18n="home.f4_d4">Rien à administrer</span>
+                        <span data-i18n="home.feat1_d1">Trois versions au choix</span>
+                        <span data-i18n="home.feat1_d2">Annuler / rétablir, bloc par bloc</span>
+                        <span data-i18n="home.feat1_d3">Note de qualité (accessibilité, SEO)</span>
+                        <span data-i18n="home.feat1_d4">Photos libres de droits</span>
                     </div>
-                </div>
+                </article>
+
+                <article class="grid-item" style="--span:5; --i:1">
+                    <p class="grid-tag"><b data-i18n="home.feat2_tag">02 · Votre style</b><span data-i18n="home.feat2_meta">couleurs, polices, arrondis</span></p>
+                    <h3 data-i18n="home.feat2_title">Le même style, <span class="accent">partout</span></h3>
+                    <p data-i18n="home.feat2_desc">Choisissez vos couleurs, vos polices et vos arrondis : tous les blocs les suivent. Changez-les, et toute la page se met à jour sans toucher aux textes.</p>
+                    <div class="tokens" aria-hidden="true">
+                        <span class="swatches"><i style="background:#ecfccb"></i><i style="background:#bef264"></i><i style="background:#84cc16"></i><i style="background:#4d7c0f"></i><i style="background:#1a2e05"></i></span>
+                        <span class="tok">Aa</span><span class="tok serif">Aa</span><span class="tok radius"></span>
+                    </div>
+                </article>
+
+                <article class="grid-item" style="--span:5; --i:2">
+                    <p class="grid-tag"><b data-i18n="home.feat3_tag">03 · Les langues</b><span class="badge-new" data-i18n="home.badge_new">Nouveau</span></p>
+                    <h3 data-i18n="home.feat3_title">Une adresse <span class="accent">par langue</span></h3>
+                    <p data-i18n="home.feat3_desc">L'IA traduit la page, vous relisez. Si vous régénérez un bloc, les traductions restent : seuls les textes modifiés sont à retraduire.</p>
+<pre class="term" aria-hidden="true"><span class="dim">votre-site.fr/</span>      fr  <span class="ok">● source</span>
+<span class="dim">votre-site.fr/</span>en/   en  <span class="ok">● 42/42</span>
+<span class="dim">votre-site.fr/</span>es/   es  <span class="warn">◐ 3 à relire</span></pre>
+                </article>
+
+                <article class="grid-item" style="--span:7; --i:3">
+                    <p class="grid-tag"><b data-i18n="home.feat4_tag">04 · L'éditeur</b><span data-i18n="home.feat4_meta">à la souris ou en code</span></p>
+                    <h3 data-i18n="home.feat4_title">Importez, <span class="accent">modifiez</span></h3>
+                    <p data-i18n="home.feat4_desc">Envoyez le .zip d'un site existant — l'export statique de votre WordPress, par exemple. Cliquez sur un élément pour le choisir, double-cliquez pour changer son texte, ou demandez à l'IA de le modifier. Vous préférez le code ? Il y a un vrai éditeur, avec la liste des fichiers et l'aperçu en direct.</p>
+                    <div class="ide" aria-hidden="true">
+<div class="tree">▾ css
+  <span class="on">  site.css</span>
+▸ fr
+  index.html
+  contact.html</div>
+<div class="code"><span class="c">/* appliqué à la frappe */</span>
+<span class="k">.hero</span> {
+  color: <span class="s">#ccff00</span>;
+}</div>
+                    </div>
+                </article>
+
+                <article class="grid-item" style="--span:12; --i:4; min-height:0">
+                    <p class="grid-tag"><b data-i18n="home.feat5_tag">05 · La publication</b><span data-i18n="home.feat5_meta">sept façons de sortir</span></p>
+                    <h3 data-i18n="home.feat5_title">Publiez <span class="accent">où vous voulez</span></h3>
+                    <p data-i18n="home.feat5_desc">Téléchargez un fichier HTML, un site en .zip ou des composants React et Vue. Ou publiez sur Netlify, Cloudflare ou votre propre serveur : chaque enregistrement est en ligne tout de suite.</p>
+                    <div class="chips out" aria-hidden="true"><span>HTML</span><span>ZIP</span><span>React · JSX</span><span>Vue</span><span>Netlify</span><span>Cloudflare Pages</span><span data-i18n="home.feat5_domain">Votre domaine</span></div>
+                </article>
             </div>
         </section>
 
-        <!-- TAB 3: SERVICES IRL -->
+        <!-- 3. L'ŒUVRE -->
         <section id="tab-services">
-            <h2 class="display-text" data-i18n="home.services_title">L'ŒUVRE <span class="outline">AUTONOME</span></h2>
-            <p class="section-intro" data-i18n="home.services_subtitle">Publier ne suffit pas. À chaque sauvegarde, le pipeline reconstruit la version publiée en artefact complet : tout ce qu'il faut pour vivre est à l'intérieur.</p>
+            <p class="kicker" data-i18n="home.services_kicker">Pourquoi le statique</p>
+            <h2 class="display-text" data-i18n="home.services_title">Retour <span class="accent">au statique</span></h2>
+            <p class="section-intro" data-i18n="home.services_subtitle">Un CMS recalcule chaque page à chaque visite, avec une base de données, des plugins et leurs failles. Un site statique, ce sont des fichiers prêts à servir. C'est la meilleure défense, et la façon la plus sobre de publier.</p>
 
-            <div class="marquee-wrapper">
+            <div class="marquee-wrapper" aria-hidden="true">
                 <div class="marquee-track">
-                    <span class="marquee-content" data-i18n="home.marquee">TOUT EST LOCAL. / ZÉRO REQUÊTE EXTERNE. / AUCUNE CONCESSION. / </span>
-                    <span class="marquee-content" data-i18n="home.marquee">TOUT EST LOCAL. / ZÉRO REQUÊTE EXTERNE. / AUCUNE CONCESSION. / </span>
-                    <span class="marquee-content" data-i18n="home.marquee">TOUT EST LOCAL. / ZÉRO REQUÊTE EXTERNE. / AUCUNE CONCESSION. / </span>
+                    <span class="marquee-content" data-i18n="home.marquee">AU REVOIR WORDPRESS. / RETOUR AU STATIQUE. / RIEN À PIRATER. / RIEN À MAINTENIR. / </span>
+                    <span class="marquee-content" data-i18n="home.marquee">AU REVOIR WORDPRESS. / RETOUR AU STATIQUE. / RIEN À PIRATER. / RIEN À MAINTENIR. / </span>
+                    <span class="marquee-content" data-i18n="home.marquee">AU REVOIR WORDPRESS. / RETOUR AU STATIQUE. / RIEN À PIRATER. / RIEN À MAINTENIR. / </span>
                 </div>
             </div>
 
-            <div class="grid-container">
-                <div class="grid-item double">
-                    <span class="grid-tag" data-i18n="home.svc_irl_tag">Le Pipeline</span>
-                    <h3 data-i18n="home.svc_prod_title">Autonomie automatique</h3>
-                    <p data-i18n="home.svc_prod_desc">Le CDN Tailwind devient du CSS compilé sur place. Les Google Fonts deviennent des polices servies par votre propre site. Un service worker rend l'œuvre installable et consultable hors-ligne. Vous n'avez rien demandé : c'est le défaut.</p>
-                    <div class="service-details">
-                        <span data-i18n="home.svc_prod_d1">Tailwind compilé — zéro CDN</span>
-                        <span data-i18n="home.svc_prod_d2">Polices auto-hébergées — zéro Google</span>
-                        <span data-i18n="home.svc_prod_d3">PWA installable, hors-ligne</span>
-                    </div>
-                </div>
+            <div class="pipe" role="list" aria-label="Ce qui se passe à chaque enregistrement" data-i18n-aria-label="home.pipe_label">
+                <div role="listitem"><b>00</b><span data-i18n="home.pipe0">Votre page</span></div>
+                <div role="listitem"><b>01</b><span data-i18n="home.pipe1">CSS compilé</span></div>
+                <div role="listitem"><b>02</b><span data-i18n="home.pipe2">Polices copiées</span></div>
+                <div role="listitem"><b>03</b><span data-i18n="home.pipe3">Marche hors ligne</span></div>
+                <div role="listitem"><b>04</b><span data-i18n="home.pipe4">Aucun traceur</span></div>
+                <div role="listitem"><b>→</b><span data-i18n="home.pipe5">En ligne</span></div>
+            </div>
 
-                <div class="grid-item">
-                    <span class="grid-tag" data-i18n="home.svc_log_tag">Le Respect</span>
-                    <h3 data-i18n="home.svc_log_title">RGPD par construction</h3>
-                    <p data-i18n="home.svc_log_desc">Aucun cookie de suivi, aucune donnée collectée, aucune requête qui fuit vers un tiers. Le bandeau ne demande pas pardon : il annonce « tout est local », dans la langue du visiteur.</p>
-                </div>
+            <div class="grid-container">
+                <article class="grid-item" style="--span:7; --i:0">
+                    <p class="grid-tag"><b data-i18n="home.svc_irl_tag">Sécurité</b></p>
+                    <h3 data-i18n="home.svc_prod_title">Rien <span class="accent">à pirater</span></h3>
+                    <p data-i18n="home.svc_prod_desc">Pas de base de données, pas de code exécuté sur le serveur, pas de plugin oublié. Il n'y a tout simplement rien à attaquer — et aucune mise à jour de sécurité à courir.</p>
+                    <div class="service-details">
+                        <span data-i18n="home.svc_prod_d1">Pas de base de données</span>
+                        <span data-i18n="home.svc_prod_d2">Pas de PHP, pas de plugin</span>
+                        <span data-i18n="home.svc_prod_d3">Réglages importés jamais exécutés</span>
+                        <span data-i18n="home.svc_prod_d4">Comptes et droits site par site</span>
+                    </div>
+                </article>
+                <article class="grid-item" style="--span:5; --i:1">
+                    <p class="grid-tag"><b data-i18n="home.svc_log_tag">Écologie</b></p>
+                    <h3 data-i18n="home.svc_log_title">Sobre <span class="accent">pour de vrai</span></h3>
+                    <p data-i18n="home.svc_log_desc">Une visite, c'est un fichier lu et envoyé. Pas de page recalculée, pas de base interrogée, pas de scripts tiers. CSS réduit au strict nécessaire, polices servies par votre site : moins de calcul, moins de données transférées, un petit serveur suffit.</p>
+                </article>
+                <article class="grid-item" style="--span:12; --i:2; min-height:0">
+                    <p class="grid-tag"><b data-i18n="home.svc_safe_tag">Durabilité</b></p>
+                    <h3 data-i18n="home.svc_safe_title">Fait <span class="accent">pour durer</span></h3>
+                    <div class="service-details" style="grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); border-top: 0; padding-top: 0;">
+                        <span data-i18n="home.svc_safe_d1">Du HTML, lisible dans vingt ans</span>
+                        <span data-i18n="home.svc_safe_d2">Installable, marche hors ligne</span>
+                        <span data-i18n="home.svc_safe_d3">Aucun traceur, rien ne fuit</span>
+                        <span data-i18n="home.svc_safe_d4">Vos fichiers, sur votre serveur</span>
+                    </div>
+                </article>
+                <a href="/debate" class="grid-item debate-link" style="--span:12; --i:3; min-height:0">
+                    <p class="grid-tag"><b data-i18n="home.debate_tag">Le débat</b><span data-i18n="home.debate_meta">chiffres réels, mis à jour en continu</span></p>
+                    <h3 data-i18n="home.debate_title">Nos chiffres, <span class="accent">en direct</span></h3>
+                    <p data-i18n="home.debate_desc">Ce que l'IA consomme, ce que le statique économise : nos mesures réelles et les hypothèses pour les lire. À vous de juger.</p>
+                    <span class="debate-cta" data-i18n="home.debate_cta">Voir le débat →</span>
+                </a>
             </div>
         </section>
 
-        <!-- TAB 4: NETWORK -->
+        <!-- 4. OPEN SOURCE -->
         <section id="tab-network">
-            <h2 class="display-text" data-i18n="home.os_title">OPEN<br><span class="outline">SOURCE</span></h2>
-            <p class="section-intro" data-i18n="home.network_intro">Le code est à vous. Licence DWTFYW — « Do What The Fuck You Want » — compatible MIT : utilisez, modifiez, revendez, republiez. En dessous, des œuvres déjà publiées avec l'outil.</p>
-
+            <p class="kicker" data-i18n="home.os_kicker">Logiciel libre · licence DWTFYW</p>
+            <h2 class="display-text" data-i18n="home.os_title">On partage <span class="accent">l'outil</span></h2>
+            <p class="section-intro" data-i18n="home.network_intro">On agit par nos choix, et on partage la méthode et l'outil. Le code est libre (licence DWTFYW, compatible MIT) : utilisez-le, modifiez-le, hébergez-le chez vous. Plus bas, des sites déjà publiés avec NADAPROD.</p>
 
             <div class="grid-container">
-                <div class="grid-item double">
-                    <span class="grid-tag" data-i18n="home.newsletter_tag">Le Signal</span>
-                    <h3 data-i18n="home.newsletter_title">Accès sur invitation.</h3>
-                    <p data-i18n="home.newsletter_sub" style="margin-bottom: 0rem;">L'instance publique ouvre par vagues. Laissez votre email pour la prochaine — ou clonez le dépôt et hébergez la vôtre ce soir.</p>
-                    <form onsubmit="joinWaitlist(event)" style="margin-top: auto; display: flex; border-bottom: 2px solid var(--text-main);">
-                        <input type="email" required placeholder="email@artist.com" style="flex: 1; border: none; background: transparent; padding: 1rem 0; font-family: var(--font-body); font-size: 1.2rem; color: var(--text-main); outline: none;">
-                        <button type="submit" style="background: transparent; color: var(--text-main); border: none; font-family: var(--font-display); font-size: 2rem; cursor: pointer; padding: 0 1rem;">→</button>
+                <article class="grid-item" style="--span:8; --i:0">
+                    <p class="grid-tag"><b data-i18n="home.newsletter_tag">Liste d'attente</b></p>
+                    <h3 data-i18n="home.newsletter_title">Accès <span class="accent">sur invitation</span></h3>
+                    <p data-i18n="home.newsletter_sub">L'instance publique ouvre par vagues. Laissez votre e-mail, ou installez NADAPROD chez vous dès ce soir : le code est libre.</p>
+                    <form class="signal-form" onsubmit="joinWaitlist(event)">
+                        <input type="email" required placeholder="email@artist.com" aria-label="Email">
+                        <button type="submit" aria-label="Envoyer" data-i18n-aria-label="home.send">→</button>
                     </form>
-                    <a href="/waiting-list" style="font-family: var(--font-body); font-size: 0.8rem; color: var(--text-main); opacity: 0.6; text-decoration: underline; margin-top: 0.75rem; display: inline-block" data-i18n="home.newsletter_more">Candidature détaillée — rejoindre la liste d'attente</a>
-                </div>
-
-                <div class="grid-item">
-                    <span class="grid-tag" data-i18n="home.who_tag">Contact</span>
-                    <a href="mailto:contact@nadaprod.com" style="font-family: var(--font-display); font-size: 2.5rem; color: var(--text-main); text-decoration: none; margin-top: auto; display: block">
-                        CONTACT@<br>NADAPROD.COM
-                    </a>
-                </div>
+                    <a href="/waiting-list" style="font: .78rem var(--font-mono); color: var(--text-main); opacity: .65;" data-i18n="home.newsletter_more">Ou remplir le formulaire complet</a>
+                </article>
+                <article class="grid-item" style="--span:4; --i:1">
+                    <p class="grid-tag"><b data-i18n="home.who_tag">Contact</b></p>
+                    <a href="mailto:contact@nadaprod.com" class="mail">CONTACT@<br>NADAPROD.COM</a>
+                </article>
             </div>
             <ul class="link-list">
-                <li><a href="https://clh.do" target="_blank">CLH <span class="hidden">DESIGN & DÉVELOPPEMENT</span></a></li>
-                <li><a href="https://ideeschauves.com" target="_blank">Idées Chauves<span class="hidden">CRÉATION</span></a></li>
-                <li><a href="https://modular-station.com/" target="_blank">Modular Station<span class="hidden">WEBRADIO</span></a></li>
-                <li><a href="https://modulisme.com/" target="_blank">Modulisme<span class="hidden">LABEL</span></a></li>
-                <li><a href="https://oliver-night.com" target="_blank">Oliver Night<span class="hidden">ARTISTE</span></a></li>
-                <li><a href="https://philippepetit.nadaprod.com" target="_blank">Philippe Petit<span class="hidden">ARTISTE</span></a></li>
+                <li><a href="https://clh.do" target="_blank" rel="noopener">CLH <span class="hidden">DESIGN & DÉVELOPPEMENT</span></a></li>
+                <li><a href="https://ideeschauves.com" target="_blank" rel="noopener">Idées Chauves <span class="hidden">CRÉATION</span></a></li>
+                <li><a href="https://modular-station.com/" target="_blank" rel="noopener">Modular Station <span class="hidden">WEBRADIO</span></a></li>
+                <li><a href="https://modulisme.com/" target="_blank" rel="noopener">Modulisme <span class="hidden">LABEL</span></a></li>
+                <li><a href="https://oliver-night.com" target="_blank" rel="noopener">Oliver Night <span class="hidden">ARTISTE</span></a></li>
+                <li><a href="https://philippepetit.nadaprod.com" target="_blank" rel="noopener">Philippe Petit <span class="hidden">ARTISTE</span></a></li>
             </ul>
         </section>
     </main>
 
-    <nav>
-        <button class="nav-item active" onclick="switchTab('home')" data-i18n="home.nav_home">Manifeste</button>
-        <button class="nav-item" onclick="switchTab('app')" data-i18n="home.nav_app">L'Outil</button>
-        <button class="nav-item" onclick="switchTab('services')" data-i18n="home.nav_services">L'Œuvre</button>
-        <button class="nav-item" onclick="switchTab('network')" data-i18n="home.nav_network">Open Source</button>
+    <nav aria-label="Sections">
+        <button class="nav-item active" onclick="switchTab('home')" data-i18n="home.nav_home">Accueil</button>
+        <button class="nav-item" onclick="switchTab('app')" data-i18n="home.nav_app">L'outil</button>
+        <button class="nav-item" onclick="switchTab('services')" data-i18n="home.nav_services">Le statique</button>
+        <button class="nav-item" onclick="switchTab('network')" data-i18n="home.nav_network">Open source</button>
     </nav>
 
     <script>
-        
+        const TABS = ['home', 'app', 'services', 'network'];
+        const calm = matchMedia('(prefers-reduced-motion: reduce)');
         let msgIndex = 0;
 
-        
-        // Session déjà ouverte ⇒ le bouton « Connexion » devient « Mon compte ».
-        // (data-i18n mis à jour : le libellé suit aussi les bascules de langue.)
-        Promise.all([I18N.ready, fetch('/api/me')]).then(([, r]) => {
-            if (!r.ok) return;
-            const btn = document.getElementById('auth-btn');
-            btn.href = '/sites';
-            btn.setAttribute('data-i18n-aria-label', 'home.nav_account');
-            btn.setAttribute('aria-label', t('home.nav_account'));
-            const label = btn.querySelector('.auth-label');
-            label.setAttribute('data-i18n', 'home.nav_account');
-            label.textContent = t('home.nav_account');
-        }).catch(() => {});
-
-        // Langue : gérée par /static/i18n.js (choix persisté, repli en.json).
+        // Héro : la première ligne en accent italique, la seconde en condensé.
         const HERO_COUNT = 3;
-        const heroHTML = () => `<span class="outline">${t('home.hero' + (msgIndex + 1) + 'Top')}</span><br>${t('home.hero' + (msgIndex + 1) + 'Bot')}`;
+        const heroHTML = () => `<span class="accent">${t('home.hero' + (msgIndex + 1) + 'Top')}</span><br>${t('home.hero' + (msgIndex + 1) + 'Bot')}`;
+        const heroTitle = document.getElementById('hero-title');
 
-        function toggleLanguage() {
-            I18N.setLang(I18N.lang === 'fr' ? 'en' : 'fr');
-        }
-
-        // Ce que data-i18n ne couvre pas : bouton de langue, héro animé, marquee.
+        // Ce que data-i18n ne couvre pas : héro animé, marquee (thème, langue et
+        // bouton de compte : /static/brand.js).
         function applyDynamicTexts() {
-            document.getElementById('lang-btn').textContent = I18N.lang.toUpperCase();
-            const heroTitle = document.getElementById('hero-title');
-            if (heroTitle) heroTitle.innerHTML = heroHTML();
-            document.querySelectorAll('.marquee-content').forEach(el => {
-                el.textContent = t('home.marquee');
-            });
+            heroTitle.innerHTML = heroHTML();
+            document.querySelectorAll('.marquee-content').forEach(el => { el.textContent = t('home.marquee'); });
         }
         I18N.onChange(applyDynamicTexts);
 
-        // Interval Loop for the Hero Title
-        const heroTitle = document.getElementById('hero-title');
         setInterval(() => {
+            if (calm.matches || document.hidden || !document.getElementById('tab-home').classList.contains('active')) return;
             msgIndex = (msgIndex + 1) % HERO_COUNT;
-
             heroTitle.style.opacity = '0';
-            heroTitle.style.transform = 'translateY(15px)';
-            heroTitle.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-
+            heroTitle.style.transform = 'translateY(12px)';
             setTimeout(() => {
                 heroTitle.innerHTML = heroHTML();
                 heroTitle.style.opacity = '1';
-                heroTitle.style.transform = 'translateY(0)';
+                heroTitle.style.transform = 'none';
             }, 500);
         }, 5000);
 
@@ -698,43 +365,24 @@
                 body: JSON.stringify({ email: email, message: 'Le Signal — inscription depuis la page d\'accueil', website: '' })
             }).then(r => {
                 if (!r.ok) throw new Error();
-                form.innerHTML = '<p style="padding: 1rem 0; font-family: var(--font-display); font-size: 1.5rem;">✓ OK</p>';
+                form.innerHTML = '<p style="padding: 1rem 0; font: 900 1.6rem var(--font-display); color: var(--text-main);">✓ OK</p>';
             }).catch(() => alert(t('home.sendError')));
         }
 
-        // Navigation Tab Logic
+        // Onglets — l'ancre (#app, #services…) permet de partager une section.
         function switchTab(tabId) {
-            document.querySelectorAll('section').forEach(sec => sec.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-
-            document.getElementById('tab-' + tabId).classList.add('active');
-
-            const indexMap = { 'home': 0, 'app': 1, 'services': 2, 'network': 3 };
-            const buttons = document.querySelectorAll('.nav-item');
-            if(buttons[indexMap[tabId]]) buttons[indexMap[tabId]].classList.add('active');
-
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (!TABS.includes(tabId)) tabId = 'home';
+            document.querySelectorAll('section').forEach(sec => sec.classList.toggle('active', sec.id === 'tab-' + tabId));
+            document.querySelectorAll('.nav-item').forEach((btn, i) => {
+                btn.classList.toggle('active', TABS[i] === tabId);
+                btn.setAttribute('aria-current', TABS[i] === tabId ? 'page' : 'false');
+            });
+            history.replaceState(null, '', tabId === 'home' ? location.pathname : '#' + tabId);
+            document.getElementById('app').scrollTo({ top: 0, behavior: calm.matches ? 'auto' : 'smooth' });
         }
 
-        // Theme Setup & Toggle Logic
-        function initTheme() {
-            const storedTheme = localStorage.getItem('nadaprod-theme');
-            if (storedTheme) {
-                document.documentElement.setAttribute('data-theme', storedTheme);
-            }
-        }
-
-        function toggleTheme() {
-            const html = document.documentElement;
-            const isDark = window.getComputedStyle(document.body).backgroundColor === 'rgb(5, 5, 5)' || html.getAttribute('data-theme') === 'dark';
-
-            const nextTheme = isDark ? 'light' : 'dark';
-            html.setAttribute('data-theme', nextTheme);
-            localStorage.setItem('nadaprod-theme', nextTheme);
-        }
-
-        // Initialize App
-        initTheme();
+        switchTab(location.hash.slice(1));
+        addEventListener('hashchange', () => switchTab(location.hash.slice(1))); // liens #app… et retour arrière
         I18N.ready.then(applyDynamicTexts);
     </script>
 </body>
