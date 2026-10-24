@@ -37,6 +37,19 @@ type Options struct {
 	Temperature     float64
 	MaxOutputTokens int
 	Endpoint        string // surchargé en test
+	// OnUsage est appelé après chaque appel logique (génération, flux, lot de
+	// traduction), réussi ou non : la mesure de /debate (pkg/stats).
+	OnUsage func(UsageEvent)
+}
+
+// UsageEvent : un appel à Gemini, tel que mesuré (aucun contenu, aucune donnée personnelle).
+type UsageEvent struct {
+	Kind         string // type de bloc, ou "translate"
+	Model        string
+	OK           bool
+	PromptTokens int
+	OutputTokens int // candidats + réflexion
+	Duration     time.Duration
 }
 
 type Client struct {
@@ -172,6 +185,41 @@ type gResponse struct {
 	PromptFeedback *struct {
 		BlockReason string `json:"blockReason"`
 	} `json:"promptFeedback"`
+	UsageMetadata *gUsage `json:"usageMetadata"`
+}
+
+// gUsage : comptage de tokens renvoyé par Gemini (cumulatif en flux).
+type gUsage struct {
+	PromptTokenCount     int `json:"promptTokenCount"`
+	CandidatesTokenCount int `json:"candidatesTokenCount"`
+	ThoughtsTokenCount   int `json:"thoughtsTokenCount"`
+}
+
+// reply : ce qu'on retient d'une réponse — texte, refus éventuel, tokens.
+type reply struct {
+	text, blocked string
+	usage         gUsage
+}
+
+func (r gResponse) reply() reply {
+	text, blocked := r.text()
+	out := reply{text: text, blocked: blocked}
+	if r.UsageMetadata != nil {
+		out.usage = *r.UsageMetadata
+	}
+	return out
+}
+
+// report transmet la mesure d'un appel à OnUsage.
+func (g *Client) report(kind string, start time.Time, u gUsage, ok bool) {
+	if g.opts.OnUsage == nil {
+		return
+	}
+	g.opts.OnUsage(UsageEvent{
+		Kind: kind, Model: g.model, OK: ok,
+		PromptTokens: u.PromptTokenCount, OutputTokens: u.CandidatesTokenCount + u.ThoughtsTokenCount,
+		Duration: time.Since(start),
+	})
 }
 
 // text concatène les parts du premier candidat ; blocked signale un refus.
@@ -253,46 +301,49 @@ func (g *Client) GenerateBlock(ctx context.Context, spec prompts.BlockSpec, req 
 }
 
 // readPlain lit une réponse generateContent complète (non streamée).
-func readPlain(r io.Reader) (text, blocked string, err error) {
+func readPlain(r io.Reader) (reply, error) {
 	data, err := io.ReadAll(r)
 	if err != nil {
-		return "", "", err
+		return reply{}, err
 	}
 	var out gResponse
 	if err := json.Unmarshal(data, &out); err != nil {
-		return "", "", &Error{Code: "upstream", Status: http.StatusOK, Message: "réponse Gemini illisible : " + err.Error()}
+		return reply{}, &Error{Code: "upstream", Status: http.StatusOK, Message: "réponse Gemini illisible : " + err.Error()}
 	}
-	text, blocked = out.text()
-	return text, blocked, nil
+	return out.reply(), nil
 }
 
 // StreamBlock : même contrat, via streamGenerateContent (SSE). Le retry n'est
 // tenté que si rien n'a encore été transmis — on ne rejoue pas un flux entamé.
 func (g *Client) StreamBlock(ctx context.Context, spec prompts.BlockSpec, req GenerateRequest, onDelta func(string)) (string, error) {
-	return g.generate(ctx, spec, req, g.stream, "streamGenerateContent?alt=sse", func(r io.Reader) (string, string, error) {
-		text, blocked, sent, err := readSSE(r, onDelta)
+	return g.generate(ctx, spec, req, g.stream, "streamGenerateContent?alt=sse", func(r io.Reader) (reply, error) {
+		rep, sent, err := readSSE(r, onDelta)
 		if err != nil && sent {
-			return "", "", netError(err) // flux entamé : pas de retry
+			return rep, netError(err) // flux entamé : pas de retry
 		}
-		return text, blocked, err
+		return rep, err
 	})
 }
 
 // generate : un appel de génération de bloc, puis le filet de sécurité commun.
 func (g *Client) generate(ctx context.Context, spec prompts.BlockSpec, req GenerateRequest, hc *http.Client, method string,
-	read func(io.Reader) (text, blocked string, err error)) (string, error) {
+	read func(io.Reader) (reply, error)) (string, error) {
 	raw, err := g.body(spec, req)
 	if err != nil {
 		return "", err
 	}
-	var text, blocked string
+	start := time.Now()
+	var rep reply
 	if err := g.do(ctx, hc, method, raw, func(r io.Reader) (err error) {
-		text, blocked, err = read(r)
+		rep, err = read(r)
 		return err
 	}); err != nil {
+		g.report(spec.Type, start, rep.usage, false)
 		return "", err
 	}
-	return finish(spec, text, blocked)
+	html, err := finish(spec, rep.text, rep.blocked)
+	g.report(spec.Type, start, rep.usage, err == nil)
+	return html, err
 }
 
 // do : POST raw vers method, un retry sur erreur transitoire. read consomme une
@@ -335,7 +386,8 @@ func (g *Client) do(ctx context.Context, hc *http.Client, method string, raw []b
 }
 
 // readSSE lit les événements « data: {json} » du flux Gemini.
-func readSSE(r io.Reader, onDelta func(string)) (text, blocked string, sent bool, err error) {
+// Les tokens viennent du dernier fragment qui les porte (compteurs cumulatifs).
+func readSSE(r io.Reader, onDelta func(string)) (rep reply, sent bool, err error) {
 	var sb strings.Builder
 	sc := bufio.NewScanner(r)
 	sc.Buffer(make([]byte, 0, 64<<10), 4<<20) // un événement peut dépasser 64 Ko
@@ -350,7 +402,10 @@ func readSSE(r io.Reader, onDelta func(string)) (text, blocked string, sent bool
 		}
 		t, b := chunk.text()
 		if b != "" {
-			blocked = b
+			rep.blocked = b
+		}
+		if chunk.UsageMetadata != nil {
+			rep.usage = *chunk.UsageMetadata
 		}
 		if t != "" {
 			sb.WriteString(t)
@@ -360,5 +415,6 @@ func readSSE(r io.Reader, onDelta func(string)) (text, blocked string, sent bool
 			}
 		}
 	}
-	return sb.String(), blocked, sent, sc.Err() // nil en fin de flux normale
+	rep.text = sb.String()
+	return rep, sent, sc.Err() // nil en fin de flux normale
 }

@@ -391,3 +391,19 @@ func TestMigrationFromV1(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestCounts(t *testing.T) {
+	s, ctx := newTestStore(t), context.Background()
+	c, err := s.Counts(ctx)
+	if err != nil || c.Projects != 0 || c.Versions == nil || c.Translations == nil || c.Versions[SourceGenerate] != 0 {
+		t.Fatalf("vide : %+v %v", c, err)
+	}
+	p, _ := s.Create(ctx, "a@x.fr", ProjectInput{Blocks: []BlockInput{{ID: "a", Type: "hero", HTML: "<h1>Un</h1>"}}})
+	s.SaveBlock(ctx, p.ID, BlockInput{ID: "a", Type: "hero", HTML: "<h1>Deux</h1>", Source: SourceVariant}, nil)
+	s.Create(ctx, "b@x.fr", ProjectInput{})
+	s.SaveTranslations(ctx, p.ID, "en", []Translation{{Hash: "0123456789abcdef", Src: "Un", Text: "One", Status: StatusMachine}})
+	c, err = s.Counts(ctx)
+	if err != nil || c.Projects != 2 || c.Blocks != 1 || c.Versions[SourceVariant] != 1 || c.Versions[SourceImport] != 1 || c.Translations[StatusMachine] != 1 {
+		t.Fatalf("compteurs : %+v %v", c, err)
+	}
+}

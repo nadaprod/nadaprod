@@ -358,3 +358,64 @@ func TestTranslate(t *testing.T) {
 		t.Fatalf("annulation : %v calls=%d", err, *calls)
 	}
 }
+
+func TestOnUsage(t *testing.T) {
+	var events []UsageEvent
+	record := func(c *Client) *Client { c.opts.OnUsage = func(e UsageEvent) { events = append(events, e) }; return c }
+	withUsage := func(text string, prompt, out, thoughts int) string {
+		return fmt.Sprintf(`{"candidates":[{"content":{"parts":[{"text":%q}]},"finishReason":"STOP"}],"usageMetadata":{"promptTokenCount":%d,"candidatesTokenCount":%d,"thoughtsTokenCount":%d,"totalTokenCount":0}}`, text, prompt, out, thoughts)
+	}
+	hero, _ := prompts.GetBlockSpec("hero")
+
+	// Appel simple : tokens lus, réflexion comptée en sortie.
+	c, _ := fakeGemini(t, func(w http.ResponseWriter, r *http.Request) {
+		io.WriteString(w, withUsage("<section>ok</section>", 120, 300, 40))
+	})
+	if _, err := record(c).GenerateBlock(context.Background(), hero, GenerateRequest{Block: "hero"}); err != nil {
+		t.Fatal(err)
+	}
+	if e := events[0]; e.Kind != "hero" || e.Model != "flash-test" || !e.OK || e.PromptTokens != 120 || e.OutputTokens != 340 || e.Duration <= 0 {
+		t.Fatalf("simple : %+v", e)
+	}
+
+	// Flux : un seul événement, compteurs du dernier fragment qui les porte.
+	c, _ = fakeGemini(t, func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "data: %s\n\n", jsonCandidate("<section>"))
+		fmt.Fprintf(w, "data: %s\n\n", withUsage("a</section>", 50, 9, 0))
+	})
+	if _, err := record(c).StreamBlock(context.Background(), hero, GenerateRequest{Block: "hero"}, nil); err != nil {
+		t.Fatal(err)
+	}
+	if len(events) != 2 || events[1].PromptTokens != 50 || events[1].OutputTokens != 9 || !events[1].OK {
+		t.Fatalf("flux : %+v", events)
+	}
+
+	// Échec définitif (après retries) : un événement OK=false, une seule fois.
+	c, _ = fakeGemini(t, func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(400)
+		io.WriteString(w, `{"error":{"message":"bad"}}`)
+	})
+	if _, err := record(c).GenerateBlock(context.Background(), hero, GenerateRequest{Block: "hero"}); err == nil {
+		t.Fatal("erreur attendue")
+	}
+	if len(events) != 3 || events[2].OK {
+		t.Fatalf("échec : %+v", events)
+	}
+
+	// Traduction : un événement par lot, kind "translate".
+	c, _ = fakeGemini(t, func(w http.ResponseWriter, r *http.Request) { io.WriteString(w, withUsage(`{"a":"A"}`, 10, 5, 0)) })
+	if _, err := record(c).Translate(context.Background(), TranslateRequest{From: "fr", To: "en", Items: map[string]string{"a": "a"}}); err != nil {
+		t.Fatal(err)
+	}
+	if e := events[3]; len(events) != 4 || e.Kind != "translate" || !e.OK || e.OutputTokens != 5 {
+		t.Fatalf("traduction : %+v", events)
+	}
+
+	// Sans OnUsage : rien ne casse.
+	c, _ = fakeGemini(t, func(w http.ResponseWriter, r *http.Request) {
+		io.WriteString(w, withUsage("<section>ok</section>", 1, 1, 0))
+	})
+	if _, err := c.GenerateBlock(context.Background(), hero, GenerateRequest{Block: "hero"}); err != nil {
+		t.Fatal(err)
+	}
+}

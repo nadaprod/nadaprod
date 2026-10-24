@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 )
 
 // ---------- Routage par domaine (point 3) ----------
@@ -31,8 +32,14 @@ func (s *Store) HostMiddleware() gin.HandlerFunc {
 			c.Next()
 			return
 		}
+		start := time.Now()
 		s.serveStatic(c, id, c.Request.URL.Path)
 		c.Abort()
+		if s.OnHit != nil {
+			status := c.Writer.Status()
+			html := status >= 200 && status < 300 && strings.HasPrefix(c.Writer.Header().Get("Content-Type"), "text/html")
+			s.OnHit(id, status, int64(max(c.Writer.Size(), 0)), time.Since(start), html, c.Request.UserAgent())
+		}
 	}
 }
 

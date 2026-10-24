@@ -4,14 +4,14 @@
 # Front testé : next/web s'il existe (staging), sinon web/.
 #
 #   tools/e2e/run.sh                 # tous les scénarios
-#   tools/e2e/run.sh explorer        # un seul (home | sites | explorer | studio-i18n)
+#   tools/e2e/run.sh explorer        # un seul (home | debate | sites | explorer | studio-i18n)
 # Captures : $E2E_OUT (défaut /tmp/nadaprod-e2e).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$(readlink -f "$0")")/../.." && pwd)"
 E2E="$ROOT/tools/e2e"
 OUT="${E2E_OUT:-/tmp/nadaprod-e2e}"
 WEB="$ROOT/web"; [[ -d "$ROOT/next/web" ]] && WEB="$ROOT/next/web"
-SCENARIOS=("${@:-home sites explorer studio-i18n}"); SCENARIOS=(${SCENARIOS[*]})
+SCENARIOS=("${@:-home debate sites explorer studio-i18n}"); SCENARIOS=(${SCENARIOS[*]})
 
 TMP="$(mktemp -d)"
 PID=""

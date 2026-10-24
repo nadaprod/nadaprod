@@ -831,3 +831,44 @@ func (s *Store) moveTo(ctx context.Context, pid, bid string, rev *int64, cond st
 	})
 	return out, newRev, err
 }
+
+// ---------- Compteurs (page /debate) ----------
+
+// Counts : l'état du studio en chiffres, tous comptes confondus.
+type Counts struct {
+	Projects     int            `json:"projects"`
+	Blocks       int            `json:"blocks"`
+	Versions     map[string]int `json:"versions"`     // par origine (generate, variant, retouch…)
+	Translations map[string]int `json:"translations"` // par statut (machine, human)
+}
+
+func (s *Store) Counts(ctx context.Context) (Counts, error) {
+	out := Counts{Versions: map[string]int{}, Translations: map[string]int{}}
+	for _, src := range []string{SourceGenerate, SourceVariant, SourceRetouch, SourceRetheme, SourceEdit, SourceCode, SourceImport, SourceImage} {
+		out.Versions[src] = 0
+	}
+	out.Translations[StatusMachine], out.Translations[StatusHuman] = 0, 0
+	if err := s.db.QueryRowContext(ctx, `SELECT (SELECT COUNT(*) FROM projects), (SELECT COUNT(*) FROM blocks)`).Scan(&out.Projects, &out.Blocks); err != nil {
+		return out, err
+	}
+	for q, m := range map[string]map[string]int{
+		`SELECT source, COUNT(*) FROM block_versions GROUP BY source`: out.Versions,
+		`SELECT status, COUNT(*) FROM translations GROUP BY status`:   out.Translations,
+	} {
+		rows, err := s.db.QueryContext(ctx, q)
+		if err != nil {
+			return out, err
+		}
+		for rows.Next() {
+			var k string
+			var n int
+			if err := rows.Scan(&k, &n); err != nil {
+				rows.Close()
+				return out, err
+			}
+			m[k] = n
+		}
+		rows.Close()
+	}
+	return out, nil
+}

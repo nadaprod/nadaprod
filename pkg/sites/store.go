@@ -11,6 +11,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"time"
 )
 
 // Package sites — les sites importés. Un site = un dossier, le filesystem
@@ -47,6 +48,11 @@ type Store struct {
 	mu         sync.RWMutex
 	domains    map[string]string // host → siteID
 	buildLocks sync.Map          // siteID → *sync.Mutex (build.go)
+
+	// OnHit, s'il est défini, est appelé après chaque requête servie sur un
+	// domaine branché (mesure de /debate, pkg/stats). html : réponse 2xx en
+	// text/html. Le user-agent ne sert qu'à reconnaître un robot.
+	OnHit func(site string, status int, bytes int64, dur time.Duration, html bool, userAgent string)
 }
 
 func NewStore(root, twBin, fontsDir, i18nDir string) (*Store, error) {
@@ -185,4 +191,24 @@ func (s *Store) listPages(id string) ([]string, error) {
 		return pages[i] < pages[j]
 	})
 	return pages, err
+}
+
+// Counts : nombre de sites, de sites en ligne (domaine branché) et de pages.
+func (s *Store) Counts() (sites, live, pages int, err error) {
+	entries, err := os.ReadDir(s.root)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+	for _, e := range entries {
+		if !e.IsDir() {
+			continue
+		}
+		sites++
+		if s.meta(e.Name()).Domain != "" {
+			live++
+		}
+		p, _ := s.listPages(e.Name())
+		pages += len(p)
+	}
+	return sites, live, pages, nil
 }

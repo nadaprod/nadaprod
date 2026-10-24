@@ -1,10 +1,14 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -13,6 +17,7 @@ import (
 	"nadaprod/pkg/gemini"
 	"nadaprod/pkg/images"
 	"nadaprod/pkg/projects"
+	"nadaprod/pkg/stats"
 	"nadaprod/pkg/studio"
 )
 
@@ -62,9 +67,20 @@ func main() {
 	// Alias officiel Google pointant toujours vers le dernier Flash stable.
 	model := envOr("GEMINI_MODEL", "gemini-3.7-flash")
 
+	// Mesure de /debate (doc/STATS.md) : appels IA et visites des sites
+	// publiés, agrégés par jour — aucune donnée personnelle.
+	statsStore, err := stats.Open(envOr("STATS_FILE", "./stats.db"))
+	if err != nil {
+		log.Fatal("initialisation de la base stats : ", err)
+	}
+
 	client := gemini.NewClient(apiKey, model, gemini.Options{
 		Temperature:     envFloat("GEMINI_TEMPERATURE"), // défaut 0.7
 		MaxOutputTokens: envInt("GEMINI_MAX_TOKENS"),    // défaut 8192
+		OnUsage: func(e gemini.UsageEvent) {
+			statsStore.AI(stats.AIEvent{Kind: e.Kind, Model: e.Model, OK: e.OK,
+				PromptTokens: e.PromptTokens, OutputTokens: e.OutputTokens, Duration: e.Duration})
+		},
 	})
 
 	store, err := siteStore()
@@ -72,6 +88,9 @@ func main() {
 		log.Fatal("initialisation du stockage sites : ", err)
 	}
 	go store.BuildAll() // publie tous les sites en arrière-plan au démarrage
+	store.OnHit = func(site string, status int, bytes int64, dur time.Duration, html bool, ua string) {
+		statsStore.Hit(site, status, bytes, dur, html, stats.IsBot(ua))
+	}
 
 	// Comptes : root vient de l'environnement, les autres de users.json.
 	rootEmail := envOr("ROOT_EMAIL", "web@l3dlp.com")
@@ -111,7 +130,7 @@ func main() {
 	// Front statique public (vitrine, connexion, liste d'attente)
 	r.StaticFile("/", "./web/home.html") // page vitrine publique NADAPROD
 	r.StaticFile("/robots.txt", "./web/robots.txt")
-	for _, page := range []string{"demo", "login", "waiting-list", // /<page> → ./web/<page>.html
+	for _, page := range []string{"demo", "login", "waiting-list", "debate", // /<page> → ./web/<page>.html
 		"about", "legal", "opensource", "privacy", "solutions", "terms"} {
 		r.StaticFile("/"+page, "./web/"+page+".html")
 	}
@@ -153,6 +172,20 @@ func main() {
 		SiteAccess: users.CanAccess,
 	})
 
+	// Chiffres publics de /debate (cache 60 s) ; détail par site pour root.
+	stats.Register(api, apiAuthed.Group("", auth.RequireRoot()), stats.Deps{
+		Store: statsStore,
+		Counts: func(ctx context.Context) (stats.AppCounts, error) {
+			pc, err := projectStore.Counts(ctx)
+			if err != nil {
+				return stats.AppCounts{}, err
+			}
+			sites, live, pages, err := store.Counts()
+			return stats.AppCounts{Projects: pc.Projects, Blocks: pc.Blocks, Versions: pc.Versions, Translations: pc.Translations,
+				Sites: sites, LiveSites: live, Pages: pages}, err
+		},
+	})
+
 	api.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"ok": true, "model": model})
 	})
@@ -166,6 +199,16 @@ func main() {
 		}
 		c.Data(http.StatusNotFound, "text/html; charset=utf-8", page)
 	})
+
+	// Arrêt du service : le tampon des visites est écrit avant de partir.
+	go func() {
+		sig := make(chan os.Signal, 1)
+		signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
+		<-sig
+		_ = statsStore.Close()
+		_ = projectStore.Close()
+		os.Exit(0)
+	}()
 
 	addr := envOr("ADDR", ":8080")
 	log.Printf("NADAPROD sur http://localhost%s (modèle %s)", addr, model)

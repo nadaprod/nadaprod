@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"time"
 )
 
 // TranslateRequest : un lot de segments à traduire (id → texte source, marqueurs
@@ -49,22 +50,16 @@ func (g *Client) Translate(ctx context.Context, req TranslateRequest) (map[strin
 		if err != nil {
 			return out, err
 		}
-		var text, blocked string
-		if err := g.do(ctx, g.http, "generateContent", raw, func(r io.Reader) (err error) {
-			text, blocked, err = readPlain(r)
+		start := time.Now()
+		var rep reply
+		err = g.do(ctx, g.http, "generateContent", raw, func(r io.Reader) (err error) {
+			rep, err = readPlain(r)
 			return err
-		}); err != nil {
+		})
+		got, err := parseTranslation(rep, err)
+		g.report("translate", start, rep.usage, err == nil)
+		if err != nil {
 			return out, err
-		}
-		if blocked != "" {
-			return out, &Error{Code: "blocked", Status: http.StatusOK, Message: "gemini a refusé cette traduction (" + blocked + ")"}
-		}
-		var got map[string]string
-		if m := jsonFenceRe.FindStringSubmatch(text); m != nil {
-			text = m[1]
-		}
-		if err := json.Unmarshal([]byte(strings.TrimSpace(text)), &got); err != nil {
-			return out, &Error{Code: "upstream", Status: http.StatusOK, Message: "traduction Gemini illisible : " + err.Error()}
 		}
 		for id, v := range got {
 			if _, asked := items[id]; asked && strings.TrimSpace(v) != "" {
@@ -73,6 +68,25 @@ func (g *Client) Translate(ctx context.Context, req TranslateRequest) (map[strin
 		}
 	}
 	return out, nil
+}
+
+// parseTranslation : le JSON id → traduction d'une réponse (fence tolérée).
+func parseTranslation(rep reply, err error) (map[string]string, error) {
+	if err != nil {
+		return nil, err
+	}
+	if rep.blocked != "" {
+		return nil, &Error{Code: "blocked", Status: http.StatusOK, Message: "gemini a refusé cette traduction (" + rep.blocked + ")"}
+	}
+	text := rep.text
+	if m := jsonFenceRe.FindStringSubmatch(text); m != nil {
+		text = m[1]
+	}
+	var got map[string]string
+	if err := json.Unmarshal([]byte(strings.TrimSpace(text)), &got); err != nil {
+		return nil, &Error{Code: "upstream", Status: http.StatusOK, Message: "traduction Gemini illisible : " + err.Error()}
+	}
+	return got, nil
 }
 
 func (g *Client) translateBody(req TranslateRequest, items map[string]string) ([]byte, error) {
