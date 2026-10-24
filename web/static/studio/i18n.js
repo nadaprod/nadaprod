@@ -231,10 +231,18 @@ async function autoTranslate(lang) {
   render();
   try {
     await flush(); // le serveur traduit ce qu'il a en base
-    const r = await api(`/projects/${S.project.id}/i18n/${lang}/translate`, { method: 'POST', body: {} });
-    Object.assign((T.data.translations[lang] ||= {}), r.translations || {});
-    const n = Object.keys(r.translations || {}).length;
-    const failed = (r.failed || []).length;
+    // Le serveur traduit au plus 200 segments par appel : on enchaîne tant
+    // qu'il en reste et qu'un lot progresse (un échec persistant ne boucle pas).
+    let n = 0, failed = 0, r;
+    do {
+      r = await api(`/projects/${S.project.id}/i18n/${lang}/translate`, { method: 'POST', body: {} });
+      const got = Object.keys(r.translations || {}).length;
+      Object.assign((T.data.translations[lang] ||= {}), r.translations || {});
+      n += got;
+      failed = (r.failed || []).length;
+      render();
+      if (!got) break;
+    } while (r.remaining > 0);
     toast(failed ? t('tr.autoPartial', { n, failed }) : t('tr.autoDone', { n, lang: langName(lang) }), !failed);
     if (T.preview === lang) showPreview(lang);
   } catch (e) {
