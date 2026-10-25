@@ -30,7 +30,8 @@
     others: [],                      // autres CSS/JS du site (menu « + »)
     settingValue: false,
     cssTimer: null, reloadTimer: null,
-    previewOn: true,
+    previewOn: false,                // l'aperçu se montre à la demande (plus léger)
+    stale: false,                    // aperçu à recharger quand il réapparaîtra
   };
   const t = (k, p) => cfg.t(k, p);
 
@@ -112,12 +113,14 @@
 
   function setPreview(on) {
     S.previewOn = on;
+    if (!$('#cmPane')) return; // atelier pas encore monté : appliqué à l'ouverture
     $('#cmPane').classList.toggle('hidden', !on);
     $('#cmSplit').classList.toggle('hidden', !on);
     $('#cmPreview').setAttribute('aria-pressed', String(on));
     $('#cmPreview').classList.toggle('text-vio-400', on);
     S.editor?.layout();
     cfg.onPreview(on);
+    if (on && S.stale) reload();
   }
 
   /* ───────── Onglets & modèles ───────── */
@@ -196,6 +199,8 @@
     clearTimeout(S.reloadTimer);
     const fr = $('#cmFrame');
     if (!S.site || !S.page) return;
+    if (!S.previewOn) { S.stale = true; return; } // masqué : rien à charger pour l'instant
+    S.stale = false;
     fr.src = '/preview/' + S.site + '/' + S.page + '?t=' + Date.now();
   }
 

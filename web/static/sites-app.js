@@ -57,11 +57,11 @@ const MARKUP = {
       <button id="btnNewPage" class="h-9 px-3 rounded-lg text-xs font-medium border border-ink-600 hover:bg-ink-800" title="Nouvelle page dans ce site" data-i18n-title="sites.newPageTitle" data-i18n="sites.newPage">+ Page</button>
       <button id="btnStudio" class="h-9 px-3 rounded-lg text-xs font-medium border border-vio-500/60 text-vio-400 hover:bg-vio-500/10" title="Ouvrir cette page dans le studio de blocs" data-i18n-title="sites.openStudioTitle" data-i18n="sites.openStudio">Studio</button>
       <div class="flex items-center gap-1 rounded-lg bg-ink-800 p-1 border border-ink-700" role="group" aria-label="Mode d'édition" data-i18n-aria-label="sites.modeGroup">
-        <button data-mode="visual" class="mode-btn px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 text-ink-300 hover:text-ink-100" title="Édition visuelle assistée par IA" data-i18n-title="sites.modeVisualTitle">
-          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4l1.5 4L18 9.5 13.5 11 12 15l-1.5-4L6 9.5 10.5 8 12 4Z" stroke-linejoin="round"/></svg><span data-i18n="sites.modeVisual">Visuel · IA</span>
-        </button>
         <button data-mode="code" class="mode-btn px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 text-ink-300 hover:text-ink-100" title="Édition manuelle du code (Monaco)" data-i18n-title="sites.modeCodeTitle">
           <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M13 5l-2 14" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="sites.modeCode">Code</span>
+        </button>
+        <button data-mode="visual" class="mode-btn px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 text-ink-300 hover:text-ink-100" title="Édition visuelle assistée par IA" data-i18n-title="sites.modeVisualTitle">
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4l1.5 4L18 9.5 13.5 11 12 15l-1.5-4L6 9.5 10.5 8 12 4Z" stroke-linejoin="round"/></svg><span data-i18n="sites.modeVisual">Visuel · IA</span>
         </button>
       </div>
       <button id="btnSave" class="h-9 px-4 rounded-lg text-xs font-semibold btn-primary" data-i18n="sites.save">Enregistrer la page</button>
@@ -503,7 +503,10 @@ function openEditor(site, page) {
   if (S.mode === 'code') CodeMode.close();
   S.siteId = site.id; S.domain = site.domain || ''; S.dirty = false;
   S.settings = Object.assign({}, DEFAULT_SETTINGS, site.settings);
-  S.mode = 'visual'; S.frameStale = false; renderMode();
+  // L'atelier de code d'abord (plus léger) ; le visuel · IA est le mode de
+  // secours — chargé seulement à la demande, ou si Monaco est injoignable.
+  configureCode();
+  S.mode = 'code'; S.frameStale = true; renderMode();
   renderSettings();
   showEditor(true);
   $('#domainInput').value = S.domain;
@@ -519,13 +522,17 @@ function closeEditor() {
   loadSites();
 }
 async function loadPage(p) {
-  S.page = p; S.dirty = false; S.frameStale = false; setSelection(false, t('sites.selNone'));
+  S.page = p; S.dirty = false; setSelection(false, t('sites.selNone'));
   $('#dirtyDot').classList.add('hidden');
-  $('#frame').src = '/edit/' + S.siteId + '/' + p;
   markExplorer();
-  if (S.mode === 'code') {
-    try { await CodeMode.open(S.siteId, p); } catch (_) { toast(t('sites.cantRead'), false); }
-  }
+  if (S.mode !== 'code') return showFrame();
+  S.frameStale = true; // la vue visuelle se chargera si on y passe
+  try { await CodeMode.open(S.siteId, p); }
+  catch (_) { S.mode = 'visual'; renderMode(); showFrame(); } // Monaco injoignable : le visuel prend le relais
+}
+function showFrame() {
+  S.frameStale = false;
+  $('#frame').src = '/edit/' + S.siteId + '/' + S.page;
 }
 function setSelection(has, label) {
   S.hasSelection = has;
@@ -610,10 +617,12 @@ function renderMode() {
    Chaque panneau garde sa préférence ; le mode focus les masque tous sans y
    toucher, et en sortir rend la disposition telle qu'elle était. */
 const wide = matchMedia('(min-width: 1280px)');
-const P = Object.assign({ explorer: true, aside: true, preview: true, zen: false }, (() => {
-  try { return JSON.parse(localStorage.getItem('np-panes')) || {}; } catch (_) { return {}; }
+// v2 : l'aperçu du code est masqué par défaut (clé changée pour que tout le monde reparte de là).
+const PANES_KEY = 'np-panes-v2';
+const P = Object.assign({ explorer: true, aside: true, preview: false, zen: false }, (() => {
+  try { return JSON.parse(localStorage.getItem(PANES_KEY)) || {}; } catch (_) { return {}; }
 })());
-const savePanes = () => { try { localStorage.setItem('np-panes', JSON.stringify(P)); } catch (_) {} };
+const savePanes = () => { try { localStorage.setItem(PANES_KEY, JSON.stringify(P)); } catch (_) {} };
 const rightPane = () => S.mode === 'code' ? 'preview' : 'aside';
 const panes = () => (wide.matches ? ['explorer', rightPane()] : [rightPane()]);
 const shown = (k) => !P.zen && P[k];
@@ -685,6 +694,13 @@ function getVisualHTML() {
   });
 }
 
+function configureCode() {
+  CodeMode.configure({
+    loadMonaco, toast, t, onDirty: setDirty, onFiles: markExplorer,
+    onPreview: (on) => { if (shown('preview') !== on) setPane('preview', on); },
+  });
+}
+
 async function enterCode() {
   if (S.mode === 'code' || !S.siteId) return;
   // Les retouches visuelles non enregistrées sont reprises telles quelles dans le code.
@@ -693,10 +709,7 @@ async function enterCode() {
     html = await getVisualHTML();
     if (html == null) return toast(t('sites.pageNoAnswerSave'), false);
   }
-  CodeMode.configure({
-    loadMonaco, toast, t, onDirty: setDirty, onFiles: markExplorer,
-    onPreview: (on) => { if (shown('preview') !== on) setPane('preview', on); },
-  });
+  configureCode();
   try { await CodeMode.open(S.siteId, S.page, { html }); } catch (_) { return toast(t('sites.monacoDown'), false); }
   S.mode = 'code'; renderMode();
 }
@@ -709,7 +722,7 @@ async function enterVisual() {
   }
   CodeMode.close();
   S.mode = 'visual'; renderMode();
-  if (S.frameStale) loadPage(S.page);
+  if (S.frameStale) showFrame();
 }
 
 window.addEventListener('message', (e) => {
