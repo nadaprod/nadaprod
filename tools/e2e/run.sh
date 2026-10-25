@@ -11,7 +11,7 @@ ROOT="$(cd "$(dirname "$(readlink -f "$0")")/../.." && pwd)"
 E2E="$ROOT/tools/e2e"
 OUT="${E2E_OUT:-/tmp/nadaprod-e2e}"
 WEB="$ROOT/web"; [[ -d "$ROOT/next/web" ]] && WEB="$ROOT/next/web"
-SCENARIOS=("${@:-home debate sites explorer studio-i18n}"); SCENARIOS=(${SCENARIOS[*]})
+SCENARIOS=("${@:-home debate sites explorer studio-i18n theme}"); SCENARIOS=(${SCENARIOS[*]})
 
 TMP="$(mktemp -d)"
 PID=""
@@ -68,8 +68,9 @@ seed_demo() { # site à dossiers pour l'explorateur
 fails=0
 for s in "${SCENARIOS[@]}"; do
 	case "$s" in
-	sites) seed_sites ;;
-	explorer) seed_demo ;;
+	sites) seed_sites; SEEDED_SITES=1 ;;
+	explorer) seed_demo; SEEDED_DEMO=1 ;;
+	theme) [[ -n "${SEEDED_SITES:-}" ]] || seed_sites; [[ -n "${SEEDED_DEMO:-}" ]] || seed_demo ;;
 	esac
 	echo "── $s"
 	node "$E2E/$s.mjs" "$B" "$OUT" || fails=$((fails + 1))

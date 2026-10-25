@@ -33,7 +33,7 @@ fi
 # du staging reste en production (à supprimer à la main, volontairement).
 echo "Front :"
 rsync -rc --delay-updates --exclude webfonts --exclude webfonts.tgz --itemize-changes next/web/ web/ | grep '^>' || echo "  (rien à copier)"
-command cp -f next/tools/appcss/tailwind.config.js tools/appcss/tailwind.config.js
+rsync -rc next/tools/appcss/ tools/appcss/ # config Tailwind + composants (input.css)
 chown -R www-data:www-data web tools/appcss
 
 if [[ "${1:-}" == "--build" ]]; then
