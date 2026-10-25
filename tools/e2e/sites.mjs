@@ -36,7 +36,7 @@ try {
   check('palette: Ctrl+K ouvre', await ev(`document.querySelector('#palette').open`));
   await key('ArrowDown', 'ArrowDown', { vk: 40 }); await key('ArrowDown', 'ArrowDown', { vk: 40 });
   await key('Enter', 'Enter', { vk: 13 }); await sleep(1200);
-  check('palette: Entrée ouvre l’éditeur', await ev(`!document.querySelector('#viewEdit').classList.contains('hidden') && document.querySelector('#frame').src.includes('/edit/landing-ete/index.html')`));
+  check('palette: Entrée ouvre l’éditeur', await ev(`!document.querySelector('#viewEdit').classList.contains('hidden') && CodeMode.active() === 'index.html' && !document.querySelector('#codeWrap').classList.contains('hidden')`));
   check('case projet: site ouvert', (await ev(`document.querySelector('#projectName').textContent`)) === 'landing-ete');
   check('édition: domaine éditable (root)', !(await ev(`document.querySelector('#domainInput').classList.contains('hidden')`)));
   await shot('s03-editor');

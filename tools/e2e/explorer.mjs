@@ -2,15 +2,18 @@
 import { harness } from './lib.mjs';
 
 const h = await harness({ width: 1600 });
-const { ev, nav, shot, key, type, check, login, sleep, viewport, noExceptions } = h;
+const { ev, nav, shot, key, type, check, login, sleep, viewport, noExceptions, send } = h;
 
 try {
   await login('web@l3dlp.com', 'smokepass123');
-  await ev(`localStorage.removeItem('np-panes'); localStorage.removeItem('np-explorer-w')`);
+  await ev(`localStorage.removeItem('np-panes'); localStorage.removeItem('np-panes-v2'); localStorage.removeItem('np-explorer-w')`);
   await nav('/sites?open=demo'); await sleep(2000);
   const vis = (sel) => ev(`(() => { const el = document.querySelector(${JSON.stringify(sel)}); return !!el && el.offsetParent !== null; })()`);
   check('explorateur visible (écran large)', await vis('#explorer'));
   check('liste déroulante masquée', !(await vis('#pageSelect')));
+  check('ouverture en mode code', await vis('#codeWrap'));
+  check('aperçu du code masqué par défaut', !(await vis('#cmPane')));
+  check('vue visuelle pas chargée (plus léger)', !(await ev(`document.querySelector('#frame').getAttribute('src')`)));
   const items = await ev(`[...document.querySelectorAll('[data-x-path]')].map(e => e.dataset.xPath)`);
   check('arbre : dossiers d\'abord, puis fichiers', JSON.stringify(items) === JSON.stringify(['css/', 'fr/', 'js/', 'contact.html', 'index.html']), JSON.stringify(items));
   check('fichier actif surligné', (await ev(`document.querySelector('[data-x-path][aria-selected=true]')?.dataset.xPath`)) === 'index.html');
@@ -20,7 +23,7 @@ try {
   await ev(`document.querySelector('[data-x-path="fr/"]').click()`); await sleep(200);
   check('dossier déplié', (await ev(`document.querySelector('[data-x-path="fr/"]').getAttribute('aria-expanded')`)) === 'true');
   await ev(`document.querySelector('[data-x-path="fr/index.html"]').click()`); await sleep(1200);
-  check('page ouverte depuis l\'arbre', (await ev(`document.querySelector('#frame').src`)).endsWith('/edit/demo/fr/index.html'));
+  check('page ouverte depuis l\'arbre (en code)', (await ev(`CodeMode.active()`)) === 'fr/index.html');
   check('actif = fr/index.html', (await ev(`document.querySelector('[data-x-path][aria-selected=true]')?.dataset.xPath`)) === 'fr/index.html');
 
   // clavier
@@ -49,7 +52,7 @@ try {
   check('bouton pressé', (await ev(`document.querySelector('#btnPanes').getAttribute('aria-pressed')`)) === 'true');
   await shot('x-03-focus');
   await ev(`document.querySelector('#btnPanes').click()`); await sleep(300);
-  check('restauration', (await vis('#explorer')) && (codeOn ? await vis('#cmPane') : true));
+  check('restauration (aperçu reste masqué : préférence)', (await vis('#explorer')) && !(await vis('#cmPane')));
 
   // ⌘B / ⌘⇧B (Ctrl en headless)
   await key('b', 'KeyB', { mod: 2, vk: 66 });
@@ -58,15 +61,25 @@ try {
   check('Ctrl+B le réaffiche', await vis('#explorer'));
   if (codeOn) {
     await key('B', 'KeyB', { mod: 10, vk: 66 });
-    check('Ctrl+Shift+B masque l\'aperçu', !(await vis('#cmPane')));
+    check('Ctrl+Shift+B affiche l\'aperçu', await vis('#cmPane'));
     await key('B', 'KeyB', { mod: 10, vk: 66 });
+    check('Ctrl+Shift+B le masque', !(await vis('#cmPane')));
   }
   // mémorisé après rechargement
   await ev(`document.querySelector('#btnPanes').click()`); await sleep(200);
   await nav('/sites?open=demo'); await sleep(2000);
   check('disposition mémorisée (explorateur masqué)', !(await vis('#explorer')));
   await ev(`document.querySelector('#btnPanes').click()`); await sleep(300);
-  check('mode visuel : explorateur + retouche IA restaurés', (await vis('#explorer')) && (await vis('#editAside')));
+  check('restauration après rechargement', await vis('#explorer'));
+  await ev(`document.querySelector('[data-mode=visual]').click()`); await sleep(1200);
+  check('mode visuel (secours) : retouche IA + page chargée à la demande', (await vis('#editAside')) && (await ev(`document.querySelector('#frame').src`)).includes('/edit/demo/'));
+
+  // Monaco injoignable : le mode visuel prend le relais (c'est son rôle de secours).
+  await send('Network.enable');
+  await send('Network.setBlockedURLs', { urls: ['*cdn.jsdelivr.net*'] });
+  await nav('/sites?open=demo'); await sleep(2500);
+  check('CDN bloqué : bascule sur le visuel', (await vis('#visualWrap')) && (await ev(`document.querySelector('#frame').src`)).includes('/edit/demo/'));
+  await send('Network.setBlockedURLs', { urls: [] });
 
   // écran moyen : pas d'explorateur, liste déroulante
   await viewport(1100, 800); await sleep(500);
