@@ -1,0 +1,67 @@
+/* NADAPROD — jetons de couleur communs : landing, /debate ET l'app (studio,
+   sites, connexion). Une seule identité, deux thèmes.
+   - Canaux RGB (--ink-*, --acc-*) : lus par Tailwind (rgb(var(--x) / α)),
+     voir tools/appcss/tailwind.config.js. ink-900 = fond, ink-100 = texte.
+   - Variables nommées (--bg, --text-main…) : CSS écrit à la main (landing).
+   Thème : html[data-theme] (choix mémorisé, static/theme.js), sinon le système. */
+
+:root {
+  /* Clair — papier chaud */
+  --ink-950: 255 255 255;
+  --ink-900: 250 250 247;
+  --ink-850: 243 243 238;
+  --ink-800: 235 235 229;
+  --ink-700: 214 214 207;
+  --ink-600: 196 196 188;
+  --ink-400: 138 138 130;
+  --ink-300: 85 85 79;
+  --ink-200: 51 51 47;
+  --ink-100: 11 11 10;
+
+  --acc-fill: 204 255 0;   /* vert acide, signature : fonds */
+  --acc-on: 0 0 0;         /* texte posé sur le vert */
+  --acc-fg: 77 102 0;      /* le vert lisible en texte / trait sur fond clair */
+  --edge: 11 11 10;        /* trait et ombre franche des boutons */
+  --ok: 4 120 87;          /* statuts lisibles en texte (succès / attention / erreur) */
+  --warn: 180 83 9;
+  --err: 185 28 28;
+
+  --bg: #fafaf7;
+  --surface: #f1f1ec;
+  --text-main: #0b0b0a;
+  --text-secondary: #55554f;
+  --text-dim: #8a8a82;
+  --border: #d6d6cf;
+  --accent: #ccff00;
+  --selection-bg: #0b0b0a;
+  --selection-text: #fafaf7;
+  --logo-filter: invert(1);
+  --shadow-hard: 6px 6px 0 rgba(0, 0, 0, .15);
+
+  --font-display: 'Big Shoulders Display', 'Bebas Neue', sans-serif;
+  --font-accent: 'Fraunces', Georgia, serif;
+  --font-body: 'Archivo', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  color-scheme: light;
+}
+
+/* Sombre — noir chaud (jamais #000), même vert */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ink-950: 5 5 4; --ink-900: 10 10 9; --ink-850: 15 15 14; --ink-800: 22 22 21; --ink-700: 35 35 31;
+    --ink-600: 48 48 44; --ink-400: 108 108 102; --ink-300: 163 163 155; --ink-200: 201 201 193; --ink-100: 243 243 238;
+    --acc-fg: 204 255 0; --edge: 0 0 0; --ok: 52 211 153; --warn: 251 191 36; --err: 248 113 113;
+    --bg: #0a0a09; --surface: #131312; --text-main: #f3f3ee; --text-secondary: #a3a39b; --text-dim: #6c6c66;
+    --border: #2c2c29; --selection-bg: #ccff00; --selection-text: #000; --logo-filter: none; --shadow-hard: 6px 6px 0 #000;
+    color-scheme: dark;
+  }
+}
+html[data-theme="dark"] {
+  --ink-950: 5 5 4; --ink-900: 10 10 9; --ink-850: 15 15 14; --ink-800: 22 22 21; --ink-700: 35 35 31;
+  --ink-600: 48 48 44; --ink-400: 108 108 102; --ink-300: 163 163 155; --ink-200: 201 201 193; --ink-100: 243 243 238;
+  --acc-fg: 204 255 0; --edge: 0 0 0; --ok: 52 211 153; --warn: 251 191 36; --err: 248 113 113;
+  --bg: #0a0a09; --surface: #131312; --text-main: #f3f3ee; --text-secondary: #a3a39b; --text-dim: #6c6c66;
+  --border: #2c2c29; --selection-bg: #ccff00; --selection-text: #000; --logo-filter: none; --shadow-hard: 6px 6px 0 #000;
+  color-scheme: dark;
+}

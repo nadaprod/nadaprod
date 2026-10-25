@@ -1,23 +1,10 @@
 /* NADAPROD — comportements communs des pages publiques (landing, /debate) :
- * thème clair/sombre mémorisé, bascule FR/EN, bouton « Connexion » qui
+ * bascule FR/EN, bouton « Connexion » qui
  * devient « Mon compte » quand une session est ouverte.
- * À charger dans le <head>, après /static/i18n.js (le thème s'applique avant
- * le premier rendu : pas de flash). Expose toggleTheme() et toggleLanguage(). */
+ * À charger après /static/i18n.js et /static/theme.js (thème : theme.js).
+ * Expose toggleLanguage(). */
 (function () {
   'use strict';
-  try {
-    const th = localStorage.getItem('nadaprod-theme');
-    if (th) document.documentElement.dataset.theme = th;
-  } catch (_) {}
-
-  // Thème : choix mémorisé, sinon celui du système.
-  window.toggleTheme = function () {
-    const html = document.documentElement;
-    const dark = html.dataset.theme ? html.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
-    html.dataset.theme = dark ? 'light' : 'dark';
-    try { localStorage.setItem('nadaprod-theme', html.dataset.theme); } catch (_) {}
-  };
-
   window.toggleLanguage = function () { I18N.setLang(I18N.lang === 'fr' ? 'en' : 'fr'); };
   const langLabel = () => {
     const b = document.getElementById('lang-btn');

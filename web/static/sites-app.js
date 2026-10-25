@@ -64,7 +64,7 @@ const MARKUP = {
           <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M13 5l-2 14" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="sites.modeCode">Code</span>
         </button>
       </div>
-      <button id="btnSave" class="h-9 px-4 rounded-lg text-xs font-semibold bg-gradient-to-r from-vio-600 to-indigo-600 hover:from-vio-500 hover:to-indigo-500 text-white shadow-lg shadow-vio-600/20" data-i18n="sites.save">Enregistrer la page</button>
+      <button id="btnSave" class="h-9 px-4 rounded-lg text-xs font-semibold btn-primary" data-i18n="sites.save">Enregistrer la page</button>
       <span id="dirtyDot" class="hidden h-2 w-2 rounded-full bg-amber-400" title="Modifications non enregistrées" data-i18n-title="sites.dirtyTitle"></span>
     </div>
 
@@ -106,13 +106,14 @@ const MARKUP = {
   userBox: `
     <div id="userBox" class="ml-auto flex items-center gap-2">
       <span id="userEmail" class="text-xs font-mono text-ink-400 hidden lg:inline"></span>
+      <button type="button" onclick="toggleTheme()" class="h-9 w-9 rounded-lg border border-ink-600 hover:bg-ink-800 text-ink-300 hover:text-ink-100 grid place-items-center" title="Thème clair / sombre" data-i18n-title="common.theme" aria-label="Thème clair / sombre" data-i18n-aria-label="common.theme">◐</button>
       <button id="btnLogout" class="h-9 px-3 rounded-lg text-xs font-medium border border-ink-600 hover:bg-ink-800 text-ink-300 hover:text-ink-100" data-i18n="common.logout">Déconnexion</button>
     </div>`,
 
   viewEdit: `
   <div id="viewEdit" class="hidden flex-1 min-h-0 flex">
     <aside id="explorer" class="hidden xl:flex relative w-60 shrink-0 flex-col border-r border-ink-700 bg-ink-900 min-h-0"></aside>
-    <main class="flex-1 min-w-0 bg-black p-4">
+    <main class="flex-1 min-w-0 bg-ink-850 p-4">
       <div id="visualWrap" class="h-full rounded-xl overflow-hidden ring-1 ring-ink-700 shadow-2xl shadow-black/50 bg-white">
         <iframe id="frame" title="Page en cours d'édition" data-i18n-title="sites.frameTitle" class="w-full h-full"></iframe>
       </div>
@@ -133,7 +134,7 @@ const MARKUP = {
           <label for="aiPrompt" class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" data-i18n="sites.aiLabel">Retoucher avec l'IA</label>
           <textarea id="aiPrompt" rows="4" placeholder="Ex. : passe ce bouton en style outline violet, arrondi complet…" data-i18n-placeholder="sites.aiPh"
             class="w-full rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm p-3 placeholder:text-ink-400/70 resize-y select-text"></textarea>
-          <button id="btnAI" disabled class="mt-2 w-full h-11 rounded-xl bg-gradient-to-r from-vio-600 to-indigo-600 hover:from-vio-500 hover:to-indigo-500 text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+          <button id="btnAI" disabled class="mt-2 w-full h-11 rounded-xl btn-primary text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             <svg id="aiSpin" class="h-4 w-4 animate-spin hidden" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.25" stroke-width="3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
             <span id="aiLabel" data-i18n="sites.aiButton">Modifier l'élément</span>
           </button>
@@ -162,7 +163,7 @@ const MARKUP = {
       </div>
       <div class="flex justify-end gap-2">
         <button type="button" id="npCancel" class="h-9 px-4 rounded-lg text-sm border border-ink-600 hover:bg-ink-800" data-i18n="studio.cancel">Annuler</button>
-        <button type="submit" class="h-9 px-4 rounded-lg text-sm font-semibold bg-vio-600 hover:bg-vio-500 text-white" data-i18n="sites.newPageGo">Créer</button>
+        <button type="submit" class="h-9 px-4 rounded-lg text-sm font-semibold btn-primary" data-i18n="sites.newPageGo">Créer</button>
       </div>
     </form>
   </dialog>
@@ -211,18 +212,7 @@ function loadMonaco() {
     s.onload = () => {
       window.require.config({ paths: { vs: MONACO_CDN + '/vs' } });
       window.require(['vs/editor/editor.main'], () => {
-        monaco.editor.defineTheme('nadaprod', {
-          base: 'vs-dark', inherit: true, rules: [],
-          colors: {
-            'editor.background': '#0E1117',
-            'editor.lineHighlightBackground': '#131722',
-            'editorGutter.background': '#0E1117',
-            'editorLineNumber.foreground': '#5C687F',
-            'editor.selectionBackground': '#2A3245',
-            'editorWidget.background': '#131722',
-            'editorCursor.foreground': '#A78BFA',
-          },
-        });
+        NPTheme.monaco(monaco); // thèmes clair / sombre, suit la bascule (static/theme.js)
         resolve(window.monaco);
       });
     };
@@ -260,7 +250,7 @@ function row(s) {
       <div class="flex items-center gap-1.5">
         ${open}
         <button data-newpage="${esc(s.id)}" class="${btn}" title="${t('sites.newPageTitle')}">${t('sites.newPage')}</button>
-        <button data-open="${esc(s.id)}" class="h-8 px-3 rounded-md text-[11px] font-mono uppercase tracking-[0.08em] font-semibold bg-vio-600 hover:bg-vio-500 text-white">${t('sites.edit')}</button>
+        <button data-open="${esc(s.id)}" class="h-8 px-3 rounded-md text-[11px] font-mono uppercase tracking-[0.08em] font-semibold btn-primary">${t('sites.edit')}</button>
         ${ME && ME.root ? `<button data-remove="${esc(s.id)}" class="h-8 w-8 rounded-md border border-red-500/30 text-red-400 hover:bg-red-500/10 grid place-items-center" title="${t('sites.deleteSite')}" aria-label="${t('sites.deleteSite')}">${ICON.trash}</button>` : ''}
       </div>
     </div>`;

@@ -5,12 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title data-i18n="login.docTitle">NADAPROD — Connexion</title>
 <meta name="robots" content="noindex">
+<link href="/static/tokens.css" rel="stylesheet">
 <link href="/static/tw.css" rel="stylesheet">
 <link href="/static/fonts.css" rel="stylesheet">
+<script src="/static/theme.js"></script>
 <script src="/static/i18n.js"></script>
 </head>
-<body class="h-full bg-black text-ink-100 font-sans antialiased">
+<body class="h-full bg-ink-900 text-ink-100 font-sans antialiased">
 
+<div class="fixed top-4 right-4 z-10"><button type="button" onclick="toggleTheme()" class="h-9 w-9 rounded-lg border border-ink-600 hover:bg-ink-800 text-ink-300 hover:text-ink-100 grid place-items-center" title="Thème clair / sombre" data-i18n-title="common.theme" aria-label="Thème clair / sombre" data-i18n-aria-label="common.theme">◐</button></div>
 <div class="min-h-full flex flex-col items-center justify-center p-6">
   <a href="/" class="mb-8 hover:opacity-90"><img src="/gfx/logo.png" class="h-12" alt="NADAPROD"></a>
 
@@ -31,7 +34,7 @@
     </div>
     <p id="error" class="hidden text-xs text-red-400"></p>
     <button id="btnLogin" type="submit"
-      class="w-full h-11 rounded-xl bg-gradient-to-r from-vio-600 to-indigo-600 hover:from-vio-500 hover:to-indigo-500 text-white text-sm font-semibold disabled:opacity-50" data-i18n="login.submit">
+      class="w-full h-11 rounded-xl btn-primary text-sm font-semibold disabled:opacity-50" data-i18n="login.submit">
       Se connecter
     </button>
     <p class="text-xs text-ink-400 text-center pt-1" data-i18n="login.noAccount">Pas de compte ? <a href="/waiting-list" class="text-vio-400 hover:underline">Rejoindre la liste d'attente</a></p>

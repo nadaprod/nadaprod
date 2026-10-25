@@ -20,7 +20,7 @@ export async function projectsDialog() {
   const m = openModal({
     title: t('studio.projectsTitle'), size: 'md',
     body: `<div class="flex flex-wrap gap-2 mb-4">
-        <button data-new class="h-9 px-3.5 rounded-lg text-sm font-semibold bg-vio-600 hover:bg-vio-500 text-white">${esc(t('studio.projectNew'))}</button>
+        <button data-new class="h-9 px-3.5 rounded-lg text-sm font-semibold btn-primary">${esc(t('studio.projectNew'))}</button>
         <button data-import class="h-9 px-3.5 rounded-lg text-sm border border-ink-600 hover:bg-ink-800">${esc(t('studio.projectImport'))}</button>
         <input data-file type="file" accept=".json,application/json" class="hidden">
       </div>
@@ -144,7 +144,7 @@ export function publishDialog() {
           <input id="pubSite" autocomplete="off" class="${field}"></div>
         <label class="flex items-start gap-2 text-xs text-ink-300"><input id="pubRemember" type="checkbox" class="mt-0.5 accent-vio-500"><span>${esc(t('studio.publishRemember'))}</span></label>
         <p data-out class="hidden text-sm rounded-xl border p-3"></p>
-        <button data-go class="w-full h-10 rounded-xl text-sm font-semibold bg-gradient-to-r from-vio-600 to-indigo-600 hover:from-vio-500 hover:to-indigo-500 text-white disabled:opacity-60 disabled:cursor-wait">${esc(t('studio.publishGo'))}</button>
+        <button data-go class="w-full h-10 rounded-xl text-sm font-semibold btn-primary disabled:opacity-60 disabled:cursor-wait">${esc(t('studio.publishGo'))}</button>
       </form>`,
   });
   const q = (s) => m.el.querySelector(s);
@@ -219,7 +219,7 @@ export async function siteDialog() {
           <p data-exists class="hidden mt-1.5 text-[11px] text-amber-400">${esc(t('studio.siteExists'))}</p></div>
         <label data-ow class="hidden flex items-start gap-2 text-xs text-ink-300"><input id="siteOverwrite" type="checkbox" class="mt-0.5 accent-vio-500"><span>${esc(t('studio.siteOverwrite'))}</span></label>
         <p data-out class="hidden text-sm rounded-xl border p-3"></p>
-        <button data-go class="w-full h-10 rounded-xl text-sm font-semibold bg-gradient-to-r from-vio-600 to-indigo-600 hover:from-vio-500 hover:to-indigo-500 text-white disabled:opacity-60 disabled:cursor-wait">${esc(t('studio.siteGo'))}</button>
+        <button data-go class="w-full h-10 rounded-xl text-sm font-semibold btn-primary disabled:opacity-60 disabled:cursor-wait">${esc(t('studio.siteGo'))}</button>
       </form>`,
   });
   const q = (s) => m.el.querySelector(s);

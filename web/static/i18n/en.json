@@ -12,6 +12,7 @@
   "code.resize": "Resize",
   "common.errorCode": "Error {code}",
   "common.logout": "Log out",
+  "common.theme": "Light / dark theme",
   "debate.aiCO2": "estimated CO₂e",
   "debate.aiMeta": "creation",
   "debate.aiRequests": "requests to the AI",

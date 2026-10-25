@@ -4,8 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title data-i18n="editor.docTitle">NADAPROD — Éditeur de blocs Tailwind</title>
+<link href="/static/tokens.css" rel="stylesheet">
 <link href="/static/tw.css" rel="stylesheet">
 <link href="/static/fonts.css" rel="stylesheet">
+<script src="/static/theme.js"></script>
 <script src="/static/i18n.js"></script>
 <style>
   /* HUD : équerres aux coins des cadres de l'onglet Traduction */
@@ -14,10 +16,10 @@
   .hud::after { bottom: -1px; right: -1px; border-bottom: 1px solid; border-right: 1px solid; }
 </style>
 </head>
-<body class="h-full bg-black text-ink-100 font-sans antialiased overflow-hidden select-none">
+<body class="h-full bg-ink-900 text-ink-100 font-sans antialiased overflow-hidden select-none">
 
 <!-- Voile de démarrage : retiré par main.js une fois le projet chargé -->
-<div id="boot" class="fixed inset-0 z-50 grid place-items-center bg-black">
+<div id="boot" class="fixed inset-0 z-50 grid place-items-center bg-ink-900">
   <svg class="h-6 w-6 animate-spin text-vio-400" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.25" stroke-width="3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
 </div>
 
@@ -57,11 +59,12 @@
       <button id="btnPalette" class="h-9 px-2.5 rounded-lg border border-ink-700 bg-ink-850 hover:bg-ink-800 text-[11px] font-mono text-ink-300 flex items-center gap-1.5" title="Palette de commandes" data-i18n-title="studio.paletteTitle">
         <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5" stroke-linecap="round"/></svg>⌘K
       </button>
+      <button type="button" onclick="toggleTheme()" class="h-9 w-9 rounded-lg border border-ink-600 hover:bg-ink-800 text-ink-300 hover:text-ink-100 grid place-items-center" title="Thème clair / sombre" data-i18n-title="common.theme" aria-label="Thème clair / sombre" data-i18n-aria-label="common.theme">◐</button>
       <a href="/sites" class="h-9 px-3 rounded-lg text-xs font-medium text-ink-300 hover:text-ink-100 hover:bg-ink-800 flex items-center gap-1.5">
         <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3Z"/></svg><span data-i18n="editor.sitesLink">Sites importés</span>
       </a>
       <div class="relative">
-        <button id="btnExport" aria-haspopup="menu" aria-expanded="false" class="h-9 px-4 rounded-lg text-xs font-semibold bg-gradient-to-r from-vio-600 to-indigo-600 hover:from-vio-500 hover:to-indigo-500 text-white flex items-center gap-1.5 shadow-lg shadow-vio-600/20">
+        <button id="btnExport" aria-haspopup="menu" aria-expanded="false" class="h-9 px-4 rounded-lg text-xs font-semibold btn-primary flex items-center gap-1.5">
           <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="studio.exportBtn">Exporter</span>
         </button>
         <div id="exportMenu" role="menu" class="hidden absolute right-0 top-11 z-30 w-72 rounded-xl border border-ink-600 bg-ink-900 shadow-2xl p-1.5">
@@ -108,7 +111,7 @@
     </aside>
 
     <!-- ══════════ Canvas central ══════════ -->
-    <main class="flex-1 min-w-0 canvas-dots bg-black relative flex flex-col">
+    <main class="flex-1 min-w-0 canvas-dots bg-ink-850 relative flex flex-col">
       <div class="flex-1 min-h-0 overflow-auto scrollbar-thin p-6 flex items-start justify-center">
         <div id="frameShell" class="transition-all duration-300 w-full max-w-full rounded-xl overflow-hidden ring-1 ring-ink-700 shadow-2xl shadow-black/50 bg-white" style="height: calc(100vh - 8.5rem);">
           <!-- sandbox sans allow-same-origin : le HTML généré tourne dans une origine opaque,
@@ -116,7 +119,7 @@
           <iframe id="preview" sandbox="allow-scripts" title="Aperçu de la page" data-i18n-title="editor.previewTitle" class="w-full h-full bg-white"></iframe>
         </div>
       </div>
-      <button id="trPreviewBadge" class="hidden absolute top-2 left-1/2 -translate-x-1/2 z-10 h-6 px-2.5 border border-cyan-400/60 bg-black/80 text-cyan-200 font-mono text-[10px] uppercase tracking-[0.2em] hover:bg-cyan-400/10" title="Revenir à la langue source" data-i18n-title="tr.previewExit"></button>
+      <button id="trPreviewBadge" class="hidden absolute top-2 left-1/2 -translate-x-1/2 z-10 h-6 px-2.5 border border-cyan-400/60 bg-ink-900/90 text-acc-fg font-mono text-[10px] uppercase tracking-[0.2em] hover:bg-cyan-400/10" title="Revenir à la langue source" data-i18n-title="tr.previewExit"></button>
       <div id="emptyState" class="absolute inset-0 grid place-items-center pointer-events-none">
         <div class="text-center max-w-sm">
           <div class="mx-auto h-12 w-12 rounded-2xl border border-dashed border-ink-600 grid place-items-center mb-4">
@@ -175,7 +178,7 @@
               <input id="imagesToggle" type="checkbox" class="accent-vio-500"><span data-i18n="studio.imagesToggle">Remplacer les images d'attente par de vraies photos</span>
             </label>
             <div class="flex gap-2">
-              <button id="btnGenerate" class="flex-1 h-11 rounded-xl bg-gradient-to-r from-vio-600 to-indigo-600 hover:from-vio-500 hover:to-indigo-500 text-white text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shadow-vio-600/25 disabled:opacity-60 disabled:cursor-wait">
+              <button id="btnGenerate" class="flex-1 h-11 rounded-xl btn-primary text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-wait">
                 <svg id="genIcon" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.7 4.6L18 9l-4.3 1.4L12 15l-1.7-4.6L6 9l4.3-1.4L12 3ZM19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15Z" stroke-linejoin="round"/></svg>
                 <svg id="genSpin" class="h-4 w-4 animate-spin hidden" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.25" stroke-width="3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
                 <span id="genLabel" data-i18n="editor.generate">Générer ce bloc</span>
@@ -209,7 +212,7 @@
             <p id="retouchRootHint" class="hidden text-xs text-amber-400" data-i18n="studio.retouchRoot">C'est le bloc entier : pour le refaire, utilisez plutôt son générateur (quittez le mode retouche).</p>
             <textarea id="retouchInput" rows="3" placeholder="Ex. : bouton plus gros, en couleur d'accent" data-i18n-placeholder="studio.retouchPh"
               class="w-full rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm p-3 placeholder:text-ink-400/70 resize-y select-text"></textarea>
-            <button id="btnRetouch" class="w-full h-10 rounded-xl bg-gradient-to-r from-vio-600 to-indigo-600 hover:from-vio-500 hover:to-indigo-500 text-white text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-wait">
+            <button id="btnRetouch" class="w-full h-10 rounded-xl btn-primary text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-wait">
               <svg id="retouchSpin" class="h-4 w-4 animate-spin hidden" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.25" stroke-width="3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
               <span data-i18n="studio.retouchGo">Retoucher avec l'IA</span>
             </button>

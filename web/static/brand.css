@@ -6,35 +6,7 @@
    à la rigueur du condensé. Texte : Archivo. Étiquettes :
    JetBrains Mono (c'est un outil de développeur).
    Tout est servi depuis /webfonts : zéro requête Google. */
-:root {
-    --bg: #fafaf7;
-    --surface: #f1f1ec;
-    --text-main: #0b0b0a;
-    --text-secondary: #55554f;
-    --text-dim: #8a8a82;
-    --border: #d6d6cf;
-    --accent: #ccff00;           /* vert acide, signature */
-    --selection-bg: #0b0b0a;
-    --selection-text: #fafaf7;
-    --logo-filter: invert(1);
-    --shadow-hard: 6px 6px 0 rgba(0,0,0,.15);
-
-    --font-display: 'Big Shoulders Display', 'Bebas Neue', sans-serif;
-    --font-accent: 'Fraunces', Georgia, serif;
-    --font-body: 'Archivo', system-ui, -apple-system, sans-serif;
-    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-    --ease: cubic-bezier(0.16, 1, 0.3, 1);
-}
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-        --bg: #0a0a09; --surface: #131312; --text-main: #f3f3ee; --text-secondary: #a3a39b; --text-dim: #6c6c66;
-        --border: #2c2c29; --selection-bg: #ccff00; --selection-text: #000; --logo-filter: none; --shadow-hard: 6px 6px 0 #000;
-    }
-}
-html[data-theme="dark"] {
-    --bg: #0a0a09; --surface: #131312; --text-main: #f3f3ee; --text-secondary: #a3a39b; --text-dim: #6c6c66;
-    --border: #2c2c29; --selection-bg: #ccff00; --selection-text: #000; --logo-filter: none; --shadow-hard: 6px 6px 0 #000;
-}
+/* Couleurs, polices et thèmes : static/tokens.css (communs avec l'app). */
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
 ::selection { background: var(--selection-bg); color: var(--selection-text); }

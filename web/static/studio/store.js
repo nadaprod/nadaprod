@@ -189,7 +189,7 @@ function conflict() {
   const m = openModal({
     title: t('studio.conflictTitle'), size: 'sm',
     body: `<p class="text-sm text-ink-200 leading-relaxed">${esc(t('studio.conflictBody'))}</p>
-      <div class="mt-5 flex justify-end"><button data-reload autofocus class="h-9 px-4 rounded-lg text-sm font-semibold bg-vio-600 hover:bg-vio-500 text-white">${esc(t('studio.reload'))}</button></div>`,
+      <div class="mt-5 flex justify-end"><button data-reload autofocus class="h-9 px-4 rounded-lg text-sm font-semibold btn-primary">${esc(t('studio.reload'))}</button></div>`,
   });
   m.el.querySelector('[data-reload]').onclick = () => location.reload();
 }

@@ -1,10 +1,23 @@
 // Config Tailwind des pages de l'app (web/{studio,sites,drafts,login,waiting-list}.html
-// et les modules web/static/studio/*.js, qui produisent du HTML à classes Tailwind).
-// Miroir du `tailwind.config` inline historique de ces pages — compilée par
-// bin/build.sh en web/static/tw.css (fini cdn.tailwindcss.com dans notre UI,
-// cohérent avec ce que le pipeline impose aux sites publiés).
+// et les modules web/static/studio/*.js, qui produisent du HTML à classes Tailwind),
+// compilée par bin/build.sh en web/static/tw.css (pas de CDN dans notre UI).
 // Après tout ajout de classe dans ces pages : relancer bin/build.sh (ou la
 // commande tailwindcss seule) pour régénérer tw.css.
+//
+// Identité commune avec le landing : les couleurs sont des variables CSS
+// (web/static/tokens.css, thèmes clair et sombre) — ink = gris chauds,
+// vio / indigo / cyan = le vert acide de NADAPROD. Les noms de classes de
+// l'app restent ceux d'origine : c'est la palette qui a changé, pas le HTML.
+// Coins presque carrés et ombres franches, comme sur le landing.
+const v = (name) => `rgb(var(--${name}) / <alpha-value>)`;
+const ink = Object.fromEntries([950, 900, 850, 800, 700, 600, 400, 300, 200, 100].map((n) => [n, v('ink-' + n)]));
+// Accent : en texte / trait = --acc-fg (vert en sombre, olive lisible en clair) ;
+// la teinte 600 sert de fond (--acc-fill, toujours le vert acide).
+const accent = { 200: v('acc-fg'), 300: v('acc-fg'), 400: v('acc-fg'), 500: v('acc-fg'), 600: v('acc-fill') };
+// Statuts : les teintes claires (200–400, celles du texte et des pastilles) suivent
+// le thème pour rester lisibles sur fond clair ; 500 et plus gardent Tailwind.
+const status = (name) => ({ 200: v(name), 300: v(name), 400: v(name) });
+
 module.exports = {
   content: [
     "./web/studio.html",
@@ -20,13 +33,19 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        display: ['"Space Grotesk"', 'sans-serif'],
-        sans: ['Inter', 'sans-serif'],
+        display: ['"Big Shoulders Display"', '"Bebas Neue"', 'sans-serif'],
+        sans: ['Archivo', 'system-ui', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'monospace'],
       },
-      colors: {
-        ink: { 950: '#07090D', 900: '#0A0C11', 850: '#0E1117', 800: '#131722', 700: '#1C2230', 600: '#2A3245', 400: '#5C687F', 300: '#8A94A8', 200: '#B9C0CF', 100: '#E7EAF1' },
-        vio: { 500: '#8B5CF6', 400: '#A78BFA', 600: '#7C3AED' },
+      colors: { ink, vio: accent, indigo: accent, cyan: accent, emerald: status('ok'), amber: status('warn'), red: status('err'), acc: { fill: v('acc-fill'), on: v('acc-on'), fg: v('acc-fg') } },
+      borderRadius: { sm: '1px', DEFAULT: '2px', md: '2px', lg: '2px', xl: '3px', '2xl': '4px', '3xl': '6px' },
+      boxShadow: {
+        sm: '2px 2px 0 0 rgb(0 0 0 / 0.25)',
+        DEFAULT: '3px 3px 0 0 rgb(0 0 0 / 0.3)',
+        md: '3px 3px 0 0 rgb(0 0 0 / 0.3)',
+        lg: '4px 4px 0 0 rgb(0 0 0 / 0.35)',
+        xl: '5px 5px 0 0 rgb(0 0 0 / 0.3)',
+        '2xl': '5px 5px 0 0 rgb(0 0 0 / 0.3)',
       },
     },
   },

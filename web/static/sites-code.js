@@ -247,7 +247,7 @@
     if (S.editor) return;
     const monacoNS = await cfg.loadMonaco();
     S.editor = monacoNS.editor.create($('#cmEditor', host), {
-      model: null, theme: 'nadaprod',
+      model: null, theme: NPTheme.dark() ? 'nadaprod-dark' : 'nadaprod-light',
       automaticLayout: true, minimap: { enabled: true }, wordWrap: 'on',
       fontSize: 13, fontFamily: '"JetBrains Mono", monospace', tabSize: 2,
       scrollBeyondLastLine: false, padding: { top: 12 },

@@ -125,7 +125,7 @@ export function initStructure() {
     e.dataTransfer.dropEffect = drag.id ? 'move' : 'copy';
     clearMarks();
     const { item, after } = dropIndex(e);
-    if (item) { item.setAttribute('data-drop', ''); item.style.boxShadow = after ? '0 2px 0 0 #8B5CF6' : '0 -2px 0 0 #8B5CF6'; }
+    if (item) { item.setAttribute('data-drop', ''); item.style.boxShadow = after ? '0 2px 0 0 rgb(var(--acc-fg))' : '0 -2px 0 0 rgb(var(--acc-fg))'; }
   });
   zone.addEventListener('dragleave', (e) => { if (!zone.contains(e.relatedTarget)) clearMarks(); });
   zone.addEventListener('drop', (e) => {

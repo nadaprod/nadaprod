@@ -4,8 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title data-i18n="sites.docTitle">NADAPROD — Sites</title>
+<link href="/static/tokens.css" rel="stylesheet">
 <link href="/static/tw.css" rel="stylesheet">
 <link href="/static/fonts.css" rel="stylesheet">
+<script src="/static/theme.js"></script>
 <script src="/static/i18n.js"></script>
 <script src="/static/sites-code.js"></script>
 <script src="/static/sites-explorer.js"></script>
@@ -33,7 +35,7 @@
 <!-- /sites — tous les sites importés, une seule liste A→Z. En ligne / brouillon
      n'est qu'un repère graphique ; la case « Projet en cours » ouvre la palette.
      Toute la mécanique : static/sites-app.js. /drafts redirige ici. -->
-<body class="h-full bg-black text-ink-100 font-sans antialiased overflow-hidden select-none">
+<body class="h-full bg-ink-900 text-ink-100 font-sans antialiased overflow-hidden select-none">
 
 <div class="h-full flex flex-col">
 
@@ -73,7 +75,7 @@
           </span>
           <input id="fileInput" type="file" accept=".zip,.gz,.tgz,application/zip,application/gzip" class="hidden">
         </label>
-        <button id="btnNewSite" class="h-full min-h-11 px-4 text-[11px] font-mono uppercase tracking-[0.12em] font-semibold bg-vio-600 hover:bg-vio-500 text-white" data-i18n="sites.newSite">+ Nouveau site (studio)</button>
+        <button id="btnNewSite" class="h-full min-h-11 px-4 text-[11px] font-mono uppercase tracking-[0.12em] font-semibold btn-primary" data-i18n="sites.newSite">+ Nouveau site (studio)</button>
       </div>
 
       <!-- Liste A→Z -->
@@ -91,7 +93,7 @@
         <div class="flex flex-wrap items-center gap-2 border-t border-ink-700 pt-4">
           <input id="nuEmail" type="email" placeholder="email@exemple.fr" data-i18n-placeholder="sites.accEmailPh" class="h-9 flex-1 min-w-40 rounded-md bg-ink-850 border border-ink-700 text-xs font-mono px-3 outline-none focus:border-cyan-400/60 select-text">
           <input id="nuPass" type="password" placeholder="mot de passe (8+)" data-i18n-placeholder="sites.accPassPh" autocomplete="new-password" class="h-9 w-44 rounded-md bg-ink-850 border border-ink-700 text-xs font-mono px-3 outline-none focus:border-cyan-400/60 select-text">
-          <button id="nuAdd" class="h-9 px-4 rounded-md text-[11px] font-mono uppercase tracking-[0.08em] font-semibold bg-vio-600 hover:bg-vio-500 text-white" data-i18n="sites.accCreate">Créer le compte</button>
+          <button id="nuAdd" class="h-9 px-4 rounded-md text-[11px] font-mono uppercase tracking-[0.08em] font-semibold btn-primary" data-i18n="sites.accCreate">Créer le compte</button>
         </div>
         <div class="border-t border-ink-700 pt-4">
           <p class="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-400 mb-3" data-i18n="sites.accWlTitle">Liste d'attente</p>

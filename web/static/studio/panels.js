@@ -38,7 +38,7 @@ export function renderInspector() {
   $('#noCode').classList.toggle('hidden', !!b);
   $('#codePanel').classList.toggle('hidden', !b);
   $('#btnRetouchMode').classList.toggle('bg-vio-600', S.mode === 'element');
-  $('#btnRetouchMode').classList.toggle('text-white', S.mode === 'element');
+  $('#btnRetouchMode').classList.toggle('text-black', S.mode === 'element');
   $('#btnRetouchMode').setAttribute('aria-pressed', String(S.mode === 'element'));
   $('#btnUndo').disabled = !b?.can_undo;
   $('#btnRedo').disabled = !b?.can_redo;
@@ -82,14 +82,7 @@ function loadMonaco() {
     s.onload = () => {
       window.require.config({ paths: { vs: MONACO_CDN + '/vs' } });
       window.require(['vs/editor/editor.main'], () => {
-        monaco.editor.defineTheme('nadaprod', {
-          base: 'vs-dark', inherit: true, rules: [],
-          colors: {
-            'editor.background': '#0E1117', 'editor.lineHighlightBackground': '#131722', 'editorGutter.background': '#0E1117',
-            'editorLineNumber.foreground': '#5C687F', 'editor.selectionBackground': '#2A3245', 'editorWidget.background': '#131722',
-            'editorCursor.foreground': '#A78BFA',
-          },
-        });
+        NPTheme.monaco(monaco); // thèmes clair / sombre, suit la bascule (static/theme.js)
         resolve(window.monaco);
       });
     };
@@ -114,7 +107,7 @@ async function mountCodeEditor() {
     const host = $('#codeMonaco');
     host.classList.remove('hidden');
     codeMonaco = monaco.editor.create(host, {
-      value: $('#codeEditor').value, language: 'html', theme: 'nadaprod',
+      value: $('#codeEditor').value, language: 'html', theme: NPTheme.dark() ? 'nadaprod-dark' : 'nadaprod-light',
       automaticLayout: true, minimap: { enabled: false }, wordWrap: 'on',
       fontSize: 12, fontFamily: '"JetBrains Mono", monospace', tabSize: 2,
       scrollBeyondLastLine: false, padding: { top: 10 },
@@ -172,7 +165,7 @@ function compare(b, v) {
         <div><p class="mb-2 text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400">${esc(t('studio.src_' + v.source))} · ${esc(ago(v.created_at))}</p>${thumb(v.html)}</div>
         <div><p class="mb-2 text-[10px] font-mono uppercase tracking-[0.15em] text-vio-400">${esc(t('studio.current'))}</p>${thumb(b.html)}</div>
       </div>
-      ${v.current ? '' : `<div class="mt-5 flex justify-end"><button data-go class="h-9 px-4 rounded-lg text-sm font-semibold bg-vio-600 hover:bg-vio-500 text-white">${esc(t('studio.restoreThis'))}</button></div>`}`,
+      ${v.current ? '' : `<div class="mt-5 flex justify-end"><button data-go class="h-9 px-4 rounded-lg text-sm font-semibold btn-primary">${esc(t('studio.restoreThis'))}</button></div>`}`,
   });
   fitThumbs(m.el);
   const go = m.el.querySelector('[data-go]');
@@ -331,7 +324,7 @@ function pickImage() {
     body: `<form data-form class="flex gap-2">
         <input data-q autofocus value="${esc(el.photo || el.alt || '')}" placeholder="${esc(t('studio.imagesPh'))}"
           class="flex-1 h-10 rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm px-3 select-text">
-        <button class="h-10 px-4 rounded-xl text-sm font-semibold bg-vio-600 hover:bg-vio-500 text-white">${esc(t('studio.search'))}</button>
+        <button class="h-10 px-4 rounded-xl text-sm font-semibold btn-primary">${esc(t('studio.search'))}</button>
       </form>
       <p data-note class="mt-3 text-xs text-ink-400"></p>
       <div data-grid class="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-3"></div>`,

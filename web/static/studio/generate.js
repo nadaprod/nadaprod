@@ -159,7 +159,7 @@ export async function variants() {
       <div data-view class="grid place-items-center rounded-lg bg-ink-800 text-ink-400 text-xs" style="aspect-ratio:1280/720">
         <svg class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.25" stroke-width="3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
       </div>
-      <button data-pick disabled class="h-9 rounded-lg text-sm font-semibold bg-vio-600 hover:bg-vio-500 text-white disabled:opacity-40 disabled:cursor-not-allowed">${esc(t('studio.variantPick'))}</button>
+      <button data-pick disabled class="h-9 rounded-lg text-sm font-semibold btn-primary disabled:opacity-40 disabled:cursor-not-allowed">${esc(t('studio.variantPick'))}</button>
     </div>`;
   const m = openModal({
     title: t('studio.variantsTitle', { block: specOf(b.type).label }), size: 'xl', onClose: () => ctrl.abort(),
