@@ -24,7 +24,7 @@ try {
   check('5 segments (seo, titre, phrase, alt, bouton)', n === 5, String(n));
   const srcs = await ev(`[...document.querySelectorAll('[data-tr-seg] p')].map(p => p.textContent.trim())`);
   check('entités décodées à l\'affichage', srcs.some(s => s.includes('Bonjour R&D')) && !srcs.some(s => s.includes('&amp;')), JSON.stringify(srcs));
-  check('marqueurs en puces', await ev(`[...document.querySelectorAll('[data-tr-seg] p')].some(p => p.innerHTML.includes('border-cyan-400'))`));
+  check('marqueurs en puces', await ev(`[...document.querySelectorAll('[data-tr-seg] p span.font-mono')].some(sp => /^\\/?\\d+\\/?$/.test(sp.textContent))`));
   await shot('r-01-tab');
 
   const rowOf = (txt) => `[...document.querySelectorAll('[data-tr-seg]')].find(r => r.querySelector('p').textContent.includes(${JSON.stringify(txt)}))`;

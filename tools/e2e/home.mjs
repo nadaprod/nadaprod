@@ -9,16 +9,18 @@ try {
   await ev(`localStorage.removeItem('nadaprod-theme'); localStorage.setItem('nadaprod-lang', 'fr')`);
   await nav('/'); await sleep(1500);
 
-  const fonts = await ev(`document.fonts.ready.then(() => ['900 40px "Big Shoulders Display"', 'italic 300 40px Fraunces', '400 16px Archivo', '500 12px "JetBrains Mono"'].map(f => document.fonts.check(f)))`);
+  // Chargées depuis le miroir local (le mono ne sert pas sur le premier onglet : on le demande).
+  const fonts = await ev(`(() => { const F = ['400 40px "Permanent Marker"', 'italic 300 40px Fraunces', '400 16px Archivo', '400 12px "JetBrains Mono"']; return Promise.all(F.map(f => document.fonts.load(f))).then(() => F.map(f => document.fonts.check(f))); })()`);
   check('polices locales chargées', fonts.every(Boolean), JSON.stringify(fonts));
-  check('héro : accent italique + condensé', await ev(`getComputedStyle(document.querySelector('#hero-title .accent')).fontStyle === 'italic' && getComputedStyle(document.querySelector('#hero-title')).fontFamily.includes('Big Shoulders')`));
+  check('héro : au marqueur seul (un geste)', await ev(`getComputedStyle(document.querySelector('#hero-title .accent')).fontFamily.startsWith('"Permanent Marker"') && getComputedStyle(document.querySelector('#hero-title')).fontFamily.startsWith('"Permanent Marker"')`));
   check('preuves chiffrées', (await ev(`[...document.querySelectorAll('.proof b')].map(b => b.textContent).join()`)) === '15,1,0,0');
   check('pas de clé i18n brute', !(await ev(`/\\bhome\\.[a-z][A-Za-z0-9_]+/.test(document.body.innerText)`)));
   await shot('h-01-home-light');
 
   await ev(`document.querySelectorAll('.nav-item')[1].click()`); await sleep(900);
-  check('onglet Outil + ancre', (await ev(`location.hash + '|' + document.querySelectorAll('#tab-app .grid-item').length`)) === '#app|5');
-  check('carte Langues : badge Nouveau', (await ev(`document.querySelector('.badge-new').textContent`)) === 'Nouveau');
+  check('onglet Outil + ancre : 5 rangées', (await ev(`location.hash + '|' + document.querySelectorAll('#tab-app .row').length`)) === '#app|5');
+  check('épuré : ni texture, ni étiquette numérotée, ni badge', await ev(`!document.querySelector('.texture-overlay, .badge-new, .kicker') && ![...document.querySelectorAll('#tab-app .label')].some(l => /^\\d/.test(l.textContent))`));
+  check('le vert ne marque que l\'onglet actif ici', await ev(`getComputedStyle(document.querySelector('.nav-item.active')).backgroundColor === 'rgb(204, 255, 0)' && getComputedStyle(document.querySelectorAll('.nav-item')[0]).backgroundColor !== 'rgb(204, 255, 0)'`));
   await shot('h-02-app');
 
   await nav('/#services'); await sleep(1200);
