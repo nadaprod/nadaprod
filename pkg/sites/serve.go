@@ -79,16 +79,22 @@ func (s *Store) serveStatic(c *gin.Context, id, urlPath string) {
 		http.ServeFile(c.Writer, c.Request, target)
 		return
 	}
-	// Introuvable — jamais de boucle : la page 404 du site si elle existe (vrai
-	// statut 404), sinon retour à l'accueil, mais seulement s'il existe et
-	// qu'on n'y est pas déjà (un site sans index.html bouclait sur « / »).
+	// Pas d'index.html : une racine vide est un choix d'auteur (vectrices) —
+	// page blanche, servie normalement, ni erreur ni redirection (l'ancienne
+	// redirection vers « / » bouclait ici).
+	if urlPath == "/" {
+		c.Data(http.StatusOK, "text/html; charset=utf-8", []byte("<!doctype html><meta charset=\"utf-8\"><title></title>\n"))
+		return
+	}
+	// Introuvable : la page 404 du site si elle existe (vrai statut 404),
+	// sinon retour à l'accueil s'il existe, sinon 404 nu — jamais de boucle.
 	if page := find("/404.html"); page != "" {
 		if raw, err := os.ReadFile(page); err == nil {
 			c.Data(http.StatusNotFound, "text/html; charset=utf-8", raw)
 			return
 		}
 	}
-	if urlPath != "/" && find("/") != "" {
+	if find("/") != "" {
 		c.Redirect(http.StatusMovedPermanently, "/")
 		return
 	}

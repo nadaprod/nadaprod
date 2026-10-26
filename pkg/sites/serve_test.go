@@ -12,7 +12,8 @@ import (
 
 // Une page introuvable sur un domaine branché ne boucle jamais : page 404 du
 // site si elle existe, sinon retour à l'accueil s'il existe, sinon 404 nu.
-// (Un site importé sans index.html renvoyait « / » vers « / » à l'infini.)
+// Un site sans index.html a une racine vide voulue : page blanche en 200.
+// (Il renvoyait « / » vers « / » à l'infini.)
 func TestServeStaticMissing(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	st, err := NewStore(t.TempDir(), "", "", "")
@@ -55,10 +56,10 @@ func TestServeStaticMissing(t *testing.T) {
 		{"complet.test", "/", 200, "accueil", ""},
 		{"complet.test", "/a/", 200, "<p>a</p>", ""},
 		{"complet.test", "/absent", 301, "", "/"},
-		{"sansaccueil.test", "/", 404, "perdu", ""},       // bouclait
-		{"sansaccueil.test", "/absent", 404, "perdu", ""}, // la 404 du site, pas une redirection
+		{"sansaccueil.test", "/", 200, "<title></title>", ""}, // racine vide voulue (bouclait)
+		{"sansaccueil.test", "/absent", 404, "perdu", ""},     // la 404 du site, pas une redirection
 		{"sansaccueil.test", "/geometry.html", 200, "<p>g</p>", ""},
-		{"nu.test", "/", 404, "introuvable", ""}, // ni accueil ni 404 : 404 nu, sans boucle
+		{"nu.test", "/", 200, "<title></title>", ""}, // ni accueil ni 404 : racine vide
 		{"nu.test", "/absent", 404, "introuvable", ""},
 		{"complet.test", "/../secret", 0, "", ""}, // chemin hors du site : refusé ou nettoyé, jamais servi
 	}
