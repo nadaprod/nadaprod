@@ -25,7 +25,8 @@ import (
 // fichiers transformés sont dupliqués, jamais les assets.
 
 type Meta struct {
-	Domain string `json:"domain"`
+	Domain  string `json:"domain"`
+	Created string `json:"created,omitempty"` // RFC 3339, écrit à la création (absent sur les anciens sites)
 	// Réglages de publication (nil = activé — le défaut « zéro effort »).
 	Compile *bool `json:"compile,omitempty"` // Tailwind CDN → CSS compilé
 	PWA     *bool `json:"pwa,omitempty"`     // manifest + service worker générés
@@ -167,18 +168,44 @@ func (s *Store) newSite(base string) (string, error) {
 		}
 		id = fmt.Sprintf("%s-%d", base, i)
 	}
-	return id, os.MkdirAll(s.devDir(id), 0o755)
+	if err := os.MkdirAll(s.devDir(id), 0o755); err != nil {
+		return id, err
+	}
+	return id, s.writeMeta(id, Meta{Created: time.Now().UTC().Format(time.RFC3339)})
 }
 
 // listPages renvoie les chemins relatifs de tous les *.html de la source.
 func (s *Store) listPages(id string) ([]string, error) {
+	pages, _, err := s.scan(id)
+	return pages, err
+}
+
+// span : dates de la source — oldest = fichier le plus ancien (≈ l'import),
+// newest = dernière modification, tous fichiers confondus (CSS et JS compris).
+type span struct{ oldest, newest time.Time }
+
+// scan : pages HTML de la source et dates de ses fichiers, en un seul parcours.
+func (s *Store) scan(id string) ([]string, span, error) {
 	root := s.srcDir(id)
 	pages := []string{} // jamais nil : un site vide doit donner [] en JSON, pas null
+	var sp span
 	err := filepath.WalkDir(root, func(p string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
-		if !d.IsDir() && strings.HasSuffix(strings.ToLower(d.Name()), ".html") {
+		if d.IsDir() {
+			return nil
+		}
+		if info, err := d.Info(); err == nil {
+			t := info.ModTime()
+			if sp.oldest.IsZero() || t.Before(sp.oldest) {
+				sp.oldest = t
+			}
+			if t.After(sp.newest) {
+				sp.newest = t
+			}
+		}
+		if strings.HasSuffix(strings.ToLower(d.Name()), ".html") {
 			rel, _ := filepath.Rel(root, p)
 			pages = append(pages, filepath.ToSlash(rel))
 		}
@@ -190,7 +217,23 @@ func (s *Store) listPages(id string) ([]string, error) {
 		}
 		return pages[i] < pages[j]
 	})
-	return pages, err
+	return pages, sp, err
+}
+
+// Dates d'un site pour la liste : création (site.json, sinon le plus ancien
+// fichier) et dernière édition. "" si inconnue.
+func siteDates(meta Meta, sp span) (created, updated string) {
+	stamp := func(t time.Time) string {
+		if t.IsZero() {
+			return ""
+		}
+		return t.UTC().Format(time.RFC3339)
+	}
+	created = meta.Created
+	if created == "" {
+		created = stamp(sp.oldest)
+	}
+	return created, stamp(sp.newest)
 }
 
 // Counts : nombre de sites, de sites en ligne (domaine branché) et de pages.

@@ -168,11 +168,12 @@ func (s *Store) RegisterRoutes(pages, api *gin.RouterGroup, users *auth.UserStor
 			if !e.IsDir() || !users.CanAccess(c.GetString("user"), e.Name()) {
 				continue
 			}
-			pages, _ := s.listPages(e.Name())
+			pages, sp, _ := s.scan(e.Name())
 			meta := s.meta(e.Name())
+			created, updated := siteDates(meta, sp)
 			out = append(out, gin.H{
 				"id": e.Name(), "domain": meta.Domain, "pages": pages,
-				"settings": meta.settings(),
+				"settings": meta.settings(), "created_at": created, "updated_at": updated,
 			})
 		}
 		c.JSON(http.StatusOK, out)

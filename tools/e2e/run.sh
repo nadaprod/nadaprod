@@ -10,8 +10,9 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$(readlink -f "$0")")/../.." && pwd)"
 E2E="$ROOT/tools/e2e"
 OUT="${E2E_OUT:-/tmp/nadaprod-e2e}"
-WEB="$ROOT/web"; [[ -d "$ROOT/next/web" ]] && WEB="$ROOT/next/web"
-SCENARIOS=("${@:-home debate sites explorer studio-i18n theme}"); SCENARIOS=(${SCENARIOS[*]})
+WEB="$ROOT/web"; [[ -d "$ROOT/next/web" && -z "${E2E_LIVE:-}" ]] && WEB="$ROOT/next/web" # E2E_LIVE=1 : tester web/ (production)
+WEB="${E2E_WEB:-$WEB}" # E2E_WEB=<dossier> : tester une autre copie (ex. production + correctif)
+SCENARIOS=("${@:-home debate sites explorer studio-i18n theme contrast}"); SCENARIOS=(${SCENARIOS[*]})
 
 TMP="$(mktemp -d)"
 PID=""
@@ -70,7 +71,7 @@ for s in "${SCENARIOS[@]}"; do
 	case "$s" in
 	sites) seed_sites; SEEDED_SITES=1 ;;
 	explorer) seed_demo; SEEDED_DEMO=1 ;;
-	theme) [[ -n "${SEEDED_SITES:-}" ]] || seed_sites; [[ -n "${SEEDED_DEMO:-}" ]] || seed_demo ;;
+	theme|contrast) [[ -n "${SEEDED_SITES:-}" ]] || { seed_sites; SEEDED_SITES=1; }; [[ -n "${SEEDED_DEMO:-}" ]] || { seed_demo; SEEDED_DEMO=1; } ;;
 	esac
 	echo "── $s"
 	node "$E2E/$s.mjs" "$B" "$OUT" || fails=$((fails + 1))
