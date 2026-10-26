@@ -63,19 +63,41 @@ func (s *Store) serveStatic(c *gin.Context, id, urlPath string) {
 	if src := s.srcDir(id); src != bases[0] {
 		bases = append(bases, src)
 	}
-	for _, base := range bases {
-		target, err := resolve(base, urlPath)
-		if err != nil {
-			c.String(http.StatusBadRequest, "chemin invalide")
-			return
+	find := func(p string) string { // premier fichier existant, build puis source
+		for _, base := range bases {
+			if target, err := resolve(base, p); err == nil && fileExists(target) {
+				return target
+			}
 		}
-		if _, err := os.Stat(target); err == nil {
-			http.ServeFile(c.Writer, c.Request, target)
+		return ""
+	}
+	if _, err := safeJoin(bases[0], urlPath); err != nil {
+		c.String(http.StatusBadRequest, "chemin invalide")
+		return
+	}
+	if target := find(urlPath); target != "" {
+		http.ServeFile(c.Writer, c.Request, target)
+		return
+	}
+	// Introuvable — jamais de boucle : la page 404 du site si elle existe (vrai
+	// statut 404), sinon retour à l'accueil, mais seulement s'il existe et
+	// qu'on n'y est pas déjà (un site sans index.html bouclait sur « / »).
+	if page := find("/404.html"); page != "" {
+		if raw, err := os.ReadFile(page); err == nil {
+			c.Data(http.StatusNotFound, "text/html; charset=utf-8", raw)
 			return
 		}
 	}
-	// c.String(http.StatusNotFound, "404 — page introuvable")
-	c.Redirect(301, "/")
+	if urlPath != "/" && find("/") != "" {
+		c.Redirect(http.StatusMovedPermanently, "/")
+		return
+	}
+	c.String(http.StatusNotFound, "404 — page introuvable")
+}
+
+func fileExists(p string) bool {
+	st, err := os.Stat(p)
+	return err == nil && !st.IsDir()
 }
 
 // serveSource sert la source telle quelle (dev/) : c'est ce que l'éditeur de
