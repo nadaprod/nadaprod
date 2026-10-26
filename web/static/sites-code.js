@@ -45,19 +45,19 @@
       <div class="shrink-0 flex items-stretch border-b border-ink-700 bg-ink-900">
         <div id="cmTabs" role="tablist" class="flex-1 min-w-0 flex overflow-x-auto scrollbar-thin"></div>
         <div class="relative shrink-0 flex items-center border-l border-ink-700">
-          <button id="cmMore" aria-haspopup="menu" aria-expanded="false" class="h-9 px-3 text-xs font-medium text-ink-300 hover:text-ink-100 hover:bg-ink-800" title="${esc(t('code.moreTitle'))}">+</button>
-          <div id="cmMoreMenu" role="menu" class="hidden absolute right-0 top-9 z-30 w-72 max-h-80 overflow-y-auto rounded-xl border border-ink-600 bg-ink-900 shadow-2xl p-1.5"></div>
-          <button id="cmPreview" aria-pressed="true" class="h-9 px-3 text-xs font-medium text-ink-300 hover:text-ink-100 hover:bg-ink-800 border-l border-ink-700" title="${esc(t('code.previewToggle'))}">${esc(t('code.preview'))}</button>
+          <button id="cmMore" aria-haspopup="menu" aria-expanded="false" class="h-9 w-9 text-sm text-ink-300 hover:text-ink-100 hover:bg-ink-850" title="${esc(t('code.moreTitle'))}">+</button>
+          <div id="cmMoreMenu" role="menu" class="hidden absolute right-0 top-9 z-30 w-72 max-h-80 overflow-y-auto border border-ink-700 bg-ink-900 py-1"></div>
+          <button id="cmPreview" aria-pressed="false" class="h-9 px-3 text-[13px] text-ink-300 hover:text-ink-100 hover:bg-ink-850 border-l border-ink-700 aria-pressed:text-ink-100 aria-pressed:bg-ink-800 aria-pressed:shadow-[inset_0_-2px_0_rgb(var(--acc-fg))]" title="${esc(t('code.previewToggle'))}">${esc(t('code.preview'))}</button>
         </div>
       </div>
       <div class="flex-1 min-h-0 flex">
         <div id="cmEditor" class="flex-1 min-w-0 select-text"></div>
-        <div id="cmSplit" class="w-1.5 shrink-0 cursor-col-resize bg-ink-800 hover:bg-vio-500/60" title="${esc(t('code.resize'))}"></div>
+        <div id="cmSplit" class="w-1 shrink-0 cursor-col-resize bg-ink-700 hover:bg-ink-400" title="${esc(t('code.resize'))}"></div>
         <div id="cmPane" class="w-[45%] shrink-0 min-w-0 flex flex-col bg-white">
-          <div class="shrink-0 h-8 flex items-center gap-2 px-3 bg-ink-900 border-b border-ink-700 text-[11px] font-mono text-ink-400">
+          <div class="shrink-0 h-8 flex items-center gap-2 px-3 bg-ink-900 border-b border-ink-700 text-[11px] font-mono text-ink-300">
             <span id="cmLive" class="h-2 w-2 rounded-full bg-emerald-400" title="${esc(t('code.liveTitle'))}"></span>
             <span id="cmPaneLabel" class="truncate"></span>
-            <button id="cmReload" class="ml-auto px-2 h-6 rounded text-ink-300 hover:text-ink-100 hover:bg-ink-800" title="${esc(t('code.reload'))}">↻</button>
+            <button id="cmReload" class="ml-auto px-2 h-6 text-ink-300 hover:text-ink-100" title="${esc(t('code.reload'))}">↻</button>
           </div>
           <iframe id="cmFrame" title="${esc(t('code.previewTitle'))}" class="flex-1 w-full bg-white"></iframe>
         </div>
@@ -105,10 +105,10 @@
     const opened = new Set(S.files.map((f) => f.path));
     const list = S.others.filter((a) => !opened.has(a.path));
     $('#cmMoreMenu').innerHTML = list.length
-      ? `<p class="px-3 py-1.5 text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400">${esc(t('code.otherFiles'))}</p>` +
-        list.map((a) => `<button role="menuitem" data-open="${esc(a.path)}" class="w-full text-left rounded-lg px-3 py-1.5 text-xs hover:bg-ink-800 flex justify-between gap-3">
-          <span class="font-mono truncate">${esc(a.path)}</span><span class="text-ink-400 shrink-0">${(a.size / 1024).toFixed(1)} Ko</span></button>`).join('')
-      : `<p class="px-3 py-2 text-xs text-ink-400">${esc(t('code.noOtherFiles'))}</p>`;
+      ? `<p class="label px-3 py-2">${esc(t('code.otherFiles'))}</p>` +
+        list.map((a) => `<button role="menuitem" data-open="${esc(a.path)}" class="w-full text-left px-3 py-1.5 text-xs hover:bg-ink-850 flex justify-between gap-3">
+          <span class="font-mono truncate">${esc(a.path)}</span><span class="text-ink-300 tnum shrink-0">${(a.size / 1024).toFixed(1)} Ko</span></button>`).join('')
+      : `<p class="px-3 py-2 text-xs text-ink-300">${esc(t('code.noOtherFiles'))}</p>`;
   }
 
   function setPreview(on) {
@@ -117,7 +117,6 @@
     $('#cmPane').classList.toggle('hidden', !on);
     $('#cmSplit').classList.toggle('hidden', !on);
     $('#cmPreview').setAttribute('aria-pressed', String(on));
-    $('#cmPreview').classList.toggle('text-vio-400', on);
     S.editor?.layout();
     cfg.onPreview(on);
     if (on && S.stale) reload();
@@ -131,10 +130,10 @@
   function renderTabs() {
     $('#cmTabs').innerHTML = S.files.map((f) => `
       <div role="tab" data-tab="${esc(f.path)}" aria-selected="${f.path === S.active}" title="${esc(f.path)}"
-        class="group flex items-center gap-2 h-9 px-3 border-r border-ink-700 text-xs font-mono cursor-pointer whitespace-nowrap ${f.path === S.active ? 'bg-ink-850 text-ink-100 border-b-2 border-b-vio-500' : 'text-ink-400 hover:text-ink-200 hover:bg-ink-800'}">
+        class="group flex items-center gap-2 h-9 px-3 border-r border-ink-700 text-[12px] font-mono cursor-pointer whitespace-nowrap ${f.path === S.active ? 'bg-ink-850 text-ink-100 shadow-[inset_0_-2px_0_rgb(var(--acc-fg))]' : 'text-ink-300 hover:text-ink-100 hover:bg-ink-850'}">
         <span class="h-1.5 w-1.5 rounded-full ${f.dirty ? 'bg-amber-400' : 'bg-transparent'}"></span>
         <span>${esc(f.path.split('/').pop())}</span>
-        ${isPage(f.path) ? '' : `<button data-close="${esc(f.path)}" class="ml-1 -mr-1 h-4 w-4 rounded grid place-items-center text-ink-500 hover:text-ink-100 hover:bg-ink-700" aria-label="${esc(t('code.closeTab'))}">×</button>`}
+        ${isPage(f.path) ? '' : `<button data-close="${esc(f.path)}" class="ml-1 -mr-1 h-4 w-4 grid place-items-center text-ink-400 hover:text-ink-100" aria-label="${esc(t('code.closeTab'))}">×</button>`}
       </div>`).join('');
     $('#cmPaneLabel').textContent = S.page ? '/preview/' + S.site + '/' + S.page : '';
     updateLive();

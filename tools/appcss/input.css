@@ -2,27 +2,86 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Couleurs en variables (static/tokens.css) : le fond suit le thème. */
+/* Couleurs en variables (static/tokens.css) : le fond suit le thème.
+   Direction artistique : doc/DESIGN.md — filets plutôt que boîtes, le vert
+   en surligneur, une seule ombre franche (le bouton principal). */
 @layer base {
   html { background: rgb(var(--ink-900)); }
   ::selection { background: rgb(var(--acc-fill)); color: rgb(var(--acc-on)); }
+  :focus-visible { outline: 2px solid rgb(var(--acc-fg)); outline-offset: 2px; }
+  dialog::backdrop { background: rgb(0 0 0 / .6); }
+  /* Permanent Marker : une seule graisse, jamais de faux gras (doc/DESIGN.md, règle 2). */
+  .font-display { font-weight: 400; font-synthesis: none; letter-spacing: normal; text-transform: none; }
 }
 
-/* Bouton principal NADAPROD : vert acide, texte noir, ombre franche — le même
-   geste que les boutons du landing. Remplace les anciens dégradés violets. */
 @layer components {
+  /* Le bouton principal : un seul par écran. Vert acide, texte noir, ombre franche. */
   .btn-primary {
+    display: inline-flex; align-items: center; justify-content: center; gap: .375rem;
+    font-family: Archivo, system-ui, sans-serif; font-weight: 600; font-size: 13px;
+    text-transform: none; letter-spacing: 0;
     background: rgb(var(--acc-fill));
     color: rgb(var(--acc-on));
     border: 2px solid rgb(var(--edge));
     box-shadow: 3px 3px 0 0 rgb(var(--edge));
-    font-weight: 700;
     transition: transform .15s cubic-bezier(.16, 1, .3, 1), box-shadow .15s cubic-bezier(.16, 1, .3, 1);
   }
   .btn-primary:hover:not(:disabled) { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 0 rgb(var(--edge)); }
   .btn-primary:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: 1px 1px 0 0 rgb(var(--edge)); }
-  .btn-primary:focus-visible { outline: 2px solid rgb(var(--acc-fg)); outline-offset: 2px; }
-  .btn-primary:disabled { box-shadow: none; }
+  .btn-primary:disabled { box-shadow: none; opacity: .45; cursor: not-allowed; }
+
+  /* Bouton calme : tout le reste. Filet, pas d'ombre, casse normale. */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: .375rem;
+    height: 2.25rem; padding: 0 .75rem; white-space: nowrap;
+    font-family: Archivo, system-ui, sans-serif; font-weight: 500; font-size: 13px; line-height: 1;
+    color: rgb(var(--ink-200)); background: transparent;
+    border: 1px solid rgb(var(--ink-700)); border-radius: 2px;
+    transition: border-color .15s, color .15s, background-color .15s;
+  }
+  .btn:hover:not(:disabled) { border-color: rgb(var(--ink-400)); color: rgb(var(--ink-100)); }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+  .btn[aria-pressed="true"] { color: rgb(var(--ink-100)); border-color: rgb(var(--ink-400)); background: rgb(var(--ink-800)); }
+  .btn-sm { height: 2rem; padding: 0 .625rem; font-size: 12px; }
+  .btn-icon { width: 2.25rem; padding: 0; }
+  .btn-sm.btn-icon { width: 2rem; }
+  /* Sans bord : actions secondaires d'une ligne, liens d'en-tête. */
+  .btn-ghost { border-color: transparent; color: rgb(var(--ink-300)); }
+  .btn-ghost:hover:not(:disabled) { border-color: rgb(var(--ink-700)); }
+  .btn-danger { color: rgb(var(--err)); }
+  .btn-danger:hover:not(:disabled) { color: rgb(var(--err)); border-color: rgb(var(--err) / .6); }
+
+  /* Bouton encré : l'action forte d'un panneau quand le vert est déjà pris
+     (Générer, Retoucher). Encre pleine, pas de vert, pas d'ombre. */
+  .btn-ink { background: rgb(var(--ink-100)); color: rgb(var(--ink-900)); border-color: rgb(var(--ink-100)); font-weight: 600; }
+  .btn-ink:hover:not(:disabled) { background: rgb(var(--ink-200)); border-color: rgb(var(--ink-200)); color: rgb(var(--ink-900)); }
+
+  /* L'unique style en majuscules espacées : l'étiquette de section. */
+  .label {
+    font-family: Archivo, system-ui, sans-serif; font-weight: 600; font-size: 11px; line-height: 1.2;
+    letter-spacing: .08em; text-transform: uppercase; color: rgb(var(--ink-300));
+  }
+  .tnum { font-variant-numeric: tabular-nums; }
+
+  /* Groupe segmenté (modes, onglets compacts) : l'état courant est surligné. */
+  .seg { display: inline-flex; border: 1px solid rgb(var(--ink-700)); border-radius: 2px; }
+  .seg > button { height: 2rem; padding: 0 .75rem; font: 500 13px/1 Archivo, system-ui, sans-serif; color: rgb(var(--ink-300)); display: inline-flex; align-items: center; gap: .375rem; }
+  .seg > button + button { border-left: 1px solid rgb(var(--ink-700)); }
+  .seg > button:hover { color: rgb(var(--ink-100)); }
+  .seg > button[aria-pressed="true"], .seg > button[aria-checked="true"] { color: rgb(var(--ink-100)); background: rgb(var(--ink-800)); box-shadow: inset 0 -2px 0 rgb(var(--acc-fg)); }
+
+  .seg > button[aria-checked="true"] .tnum { color: rgb(var(--ink-100)); }
+
+  /* Champ : la seule boîte avec le bouton. */
+  .field {
+    height: 2.25rem; padding: 0 .75rem; border-radius: 2px;
+    background: rgb(var(--ink-850)); border: 1px solid rgb(var(--ink-700));
+    font-size: 13px; color: rgb(var(--ink-100)); outline: none;
+  }
+  .field::placeholder { color: rgb(var(--ink-400)); }
+  .field:focus { border-color: rgb(var(--acc-fg)); }
+
+  kbd { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: rgb(var(--ink-300)); border: 1px solid rgb(var(--ink-700)); border-radius: 2px; padding: 1px 4px; }
 }
 
 /* Utilitaires maison de l'éditeur. */
@@ -31,4 +90,9 @@
   .scrollbar-thin::-webkit-scrollbar { width: 8px; height: 8px; }
   .scrollbar-thin::-webkit-scrollbar-thumb { background: rgb(var(--ink-600)); border-radius: 0; }
   .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  .btn-primary:hover:not(:disabled), .btn-primary:active:not(:disabled) { transform: none; }
 }

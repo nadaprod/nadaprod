@@ -8,7 +8,7 @@
 // (web/static/tokens.css, thèmes clair et sombre) — ink = gris chauds,
 // vio / indigo / cyan = le vert acide de NADAPROD. Les noms de classes de
 // l'app restent ceux d'origine : c'est la palette qui a changé, pas le HTML.
-// Coins presque carrés et ombres franches, comme sur le landing.
+// Coins presque carrés ; une seule ombre franche (le bouton principal).
 const v = (name) => `rgb(var(--${name}) / <alpha-value>)`;
 const ink = Object.fromEntries([950, 900, 850, 800, 700, 600, 400, 300, 200, 100].map((n) => [n, v('ink-' + n)]));
 // Accent : en texte / trait = --acc-fg (vert en sombre, olive lisible en clair) ;
@@ -33,20 +33,15 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        display: ['"Big Shoulders Display"', '"Bebas Neue"', 'sans-serif'],
+        display: ['"Permanent Marker"', 'sans-serif'],
         sans: ['Archivo', 'system-ui', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'monospace'],
       },
       colors: { ink, vio: accent, indigo: accent, cyan: accent, emerald: status('ok'), amber: status('warn'), red: status('err'), acc: { fill: v('acc-fill'), on: v('acc-on'), fg: v('acc-fg') } },
       borderRadius: { sm: '1px', DEFAULT: '2px', md: '2px', lg: '2px', xl: '3px', '2xl': '4px', '3xl': '6px' },
-      boxShadow: {
-        sm: '2px 2px 0 0 rgb(0 0 0 / 0.25)',
-        DEFAULT: '3px 3px 0 0 rgb(0 0 0 / 0.3)',
-        md: '3px 3px 0 0 rgb(0 0 0 / 0.3)',
-        lg: '4px 4px 0 0 rgb(0 0 0 / 0.35)',
-        xl: '5px 5px 0 0 rgb(0 0 0 / 0.3)',
-        '2xl': '5px 5px 0 0 rgb(0 0 0 / 0.3)',
-      },
+      // Pas d'ombre dans l'app (doc/DESIGN.md, règle 4) : la seule ombre franche
+      // est celle de .btn-primary. Les fenêtres tiennent par un filet + un voile.
+      boxShadow: Object.fromEntries(['sm', 'DEFAULT', 'md', 'lg', 'xl', '2xl', 'inner'].map((k) => [k, '0 0 #0000'])),
     },
   },
 };

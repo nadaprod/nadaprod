@@ -21,16 +21,54 @@ const isLive = (s) => !!s.domain;
 const pagesOf = (s) => s.pages || [];
 const fold = (s) => String(s || '').normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
 const byName = (a, b) => fold(a.id).localeCompare(fold(b.id));
-// Statut = pur repère graphique : point cyan qui pulse (en ligne), anneau ambre (brouillon).
+// Statut = pur repère graphique, immobile : disque plein (en ligne), anneau (brouillon).
 const glyph = (s, size = 'h-2 w-2') => isLive(s)
-  ? `<span class="${size} shrink-0 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,.7)] animate-pulse" title="${t('sites.searchLive')}"></span>`
-  : `<span class="${size} shrink-0 rounded-full border border-amber-400/80" title="${t('sites.searchDraft')}"></span>`;
+  ? `<span class="${size} shrink-0 rounded-full bg-ink-100" title="${t('sites.searchLive')}"></span>`
+  : `<span class="${size} shrink-0 rounded-full border border-ink-300" title="${t('sites.searchDraft')}"></span>`;
 const ICON = {
   trash: '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-9 0 1 13h8l1-13" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   search: '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5" stroke-linecap="round"/></svg>',
 };
 
 let sites = [];      // dernier GET /api/sites, trié A→Z
+// Filtre de la liste (?filtre=live|drafts, partageable) ; la palette ⌘K, elle, reste globale.
+const FILTERS = { all: () => true, live: isLive, drafts: (s) => !isLive(s) };
+const param = (k, allowed, def) => { const v = new URLSearchParams(location.search).get(k); return allowed[v] ? v : def; };
+let filter = param('filtre', FILTERS, 'all');
+// Tri dans le filtre courant (?tri=) ; plus récent / plus gros d'abord, égalités → A→Z.
+// Une date vide compte comme la plus ancienne. La palette ⌘K reste A→Z.
+const newest = (k) => (a, b) => (b[k] || '').localeCompare(a[k] || '') || byName(a, b);
+const SORTS = {
+  az: byName,
+  edit: newest('updated_at'),
+  pages: (a, b) => pagesOf(b).length - pagesOf(a).length || byName(a, b),
+  creation: newest('created_at'),
+};
+let sort = param('tri', SORTS, 'az');
+
+// Dates lisibles, sans bibliothèque : « il y a 3 j », « 12 sept. ».
+function relTime(iso) {
+  const t0 = Date.parse(iso); if (!iso || isNaN(t0)) return '';
+  const sec = (t0 - Date.now()) / 1000;
+  const rtf = new Intl.RelativeTimeFormat(I18N.lang, { numeric: 'auto', style: 'short' });
+  for (const [u, n] of [['year', 31536000], ['month', 2592000], ['week', 604800], ['day', 86400], ['hour', 3600], ['minute', 60]]) {
+    if (Math.abs(sec) >= n) return rtf.format(Math.round(sec / n), u);
+  }
+  return rtf.format(0, 'minute');
+}
+function shortDate(iso) {
+  const t0 = Date.parse(iso); if (!iso || isNaN(t0)) return '';
+  const d = new Date(t0), sameYear = d.getFullYear() === new Date().getFullYear();
+  return new Intl.DateTimeFormat(I18N.lang, { day: 'numeric', month: 'short', ...(sameYear ? {} : { year: 'numeric' }) }).format(d);
+}
+
+// Écrit ?filtre= et ?tri= dans l'adresse (les valeurs par défaut n'y figurent pas).
+function writeQuery() {
+  const q = new URLSearchParams(location.search);
+  if (filter === 'all') q.delete('filtre'); else q.set('filtre', filter);
+  if (sort === 'az') q.delete('tri'); else q.set('tri', sort);
+  history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : ''));
+}
 let ME = null;       // compte connecté ({email, root, sites}) — /api/me au boot (le serveur fait foi)
 const S = {
   siteId: null, page: null, domain: '', dirty: false, hasSelection: false, aiBusy: false, saveResolve: null,
@@ -44,146 +82,147 @@ const DEFAULT_SETTINGS = { compile: true, pwa: true, gdpr: true, fonts: true };
 const MARKUP = {
   project: `
     <button id="btnProject" type="button" aria-haspopup="dialog" title="Changer de projet (⌘K)" data-i18n-title="sites.currentTitle"
-      class="hud-corners group h-9 min-w-0 max-w-xs flex items-center gap-2.5 px-3 rounded-md border border-ink-700 bg-ink-950/60 hover:border-cyan-400/50 hover:bg-ink-850 transition-colors">
-      <span class="hide-editing text-[9px] font-mono uppercase tracking-[0.18em] text-ink-400 shrink-0" data-i18n="sites.current">Projet en cours</span>
+      class="btn min-w-0 max-w-xs gap-2.5 shrink">
+      <span class="hide-editing text-ink-300 shrink-0" data-i18n="sites.current">Projet en cours</span>
       <span id="projectGlyph" class="contents"></span>
-      <span id="projectName" class="min-w-0 truncate text-xs font-mono text-ink-100"></span>
-      <kbd class="ml-auto text-[9px] font-mono text-ink-400 border border-ink-700 rounded px-1 py-px group-hover:text-cyan-300">⌘K</kbd>
+      <span id="projectName" class="min-w-[3rem] truncate font-mono text-[12px] text-ink-100"></span>
+      <kbd class="ml-1 hidden xl:inline">⌘K</kbd>
     </button>`,
 
   editControls: `
     <div id="editControls" class="hidden mx-auto flex items-center gap-2">
-      <select id="pageSelect" class="xl:hidden h-9 rounded-lg bg-ink-800 border border-ink-600 text-xs px-2 outline-none focus:border-vio-500"></select>
-      <button id="btnNewPage" class="h-9 px-3 rounded-lg text-xs font-medium border border-ink-600 hover:bg-ink-800" title="Nouvelle page dans ce site" data-i18n-title="sites.newPageTitle" data-i18n="sites.newPage">+ Page</button>
-      <button id="btnStudio" class="h-9 px-3 rounded-lg text-xs font-medium border border-vio-500/60 text-vio-400 hover:bg-vio-500/10" title="Ouvrir cette page dans le studio de blocs" data-i18n-title="sites.openStudioTitle" data-i18n="sites.openStudio">Studio</button>
-      <div class="flex items-center gap-1 rounded-lg bg-ink-800 p-1 border border-ink-700" role="group" aria-label="Mode d'édition" data-i18n-aria-label="sites.modeGroup">
-        <button data-mode="code" class="mode-btn px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 text-ink-300 hover:text-ink-100" title="Édition manuelle du code (Monaco)" data-i18n-title="sites.modeCodeTitle">
-          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M13 5l-2 14" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="sites.modeCode">Code</span>
+      <select id="pageSelect" class="xl:hidden field font-mono text-[12px] px-2"></select>
+      <button id="btnNewPage" class="btn" title="Nouvelle page dans ce site" data-i18n-title="sites.newPageTitle" data-i18n="sites.newPage">+ Page</button>
+      <button id="btnStudio" class="btn" title="Ouvrir cette page dans le studio de blocs" data-i18n-title="sites.openStudioTitle" data-i18n="sites.openStudio">Studio</button>
+      <div class="seg" role="group" aria-label="Mode d'édition" data-i18n-aria-label="sites.modeGroup">
+        <button data-mode="code" aria-pressed="false" class="mode-btn" title="Édition manuelle du code (Monaco)" data-i18n-title="sites.modeCodeTitle">
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M13 5l-2 14" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="hidden xl:inline" data-i18n="sites.modeCode">Code</span>
         </button>
-        <button data-mode="visual" class="mode-btn px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 text-ink-300 hover:text-ink-100" title="Édition visuelle assistée par IA" data-i18n-title="sites.modeVisualTitle">
-          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4l1.5 4L18 9.5 13.5 11 12 15l-1.5-4L6 9.5 10.5 8 12 4Z" stroke-linejoin="round"/></svg><span data-i18n="sites.modeVisual">Visuel · IA</span>
+        <button data-mode="visual" aria-pressed="false" class="mode-btn" title="Édition visuelle assistée par IA" data-i18n-title="sites.modeVisualTitle">
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4l1.5 4L18 9.5 13.5 11 12 15l-1.5-4L6 9.5 10.5 8 12 4Z" stroke-linejoin="round"/></svg><span class="hidden xl:inline" data-i18n="sites.modeVisual">Visuel · IA</span>
         </button>
       </div>
-      <button id="btnSave" class="h-9 px-4 rounded-lg text-xs font-semibold btn-primary" data-i18n="sites.save">Enregistrer la page</button>
+      <button id="btnSave" class="btn-primary h-9 px-4" data-i18n="sites.save">Enregistrer la page</button>
       <span id="dirtyDot" class="hidden h-2 w-2 rounded-full bg-amber-400" title="Modifications non enregistrées" data-i18n-title="sites.dirtyTitle"></span>
     </div>
 
     <div id="editRight" class="hidden flex items-center gap-2">
-      <button id="btnPanes" aria-pressed="false" title="Panneaux : tout masquer / restaurer (⌘B explorateur · ⌘⇧B panneau droit)" data-i18n-title="sites.panesTitle" aria-label="Panneaux" data-i18n-aria-label="sites.panes" class="h-9 w-9 rounded-lg border border-ink-600 hover:bg-ink-800 grid place-items-center text-ink-300 hover:text-ink-100 aria-pressed:border-vio-500/60 aria-pressed:text-vio-300">
-        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><rect data-pane-l x="4.5" y="5.5" width="4" height="13" rx=".5" fill="currentColor" stroke="none"/><rect data-pane-r x="15.5" y="5.5" width="4" height="13" rx=".5" fill="currentColor" stroke="none"/></svg>
+      <button id="btnPanes" aria-pressed="false" title="Panneaux : tout masquer / restaurer (⌘B explorateur · ⌘⇧B panneau droit)" data-i18n-title="sites.panesTitle" aria-label="Panneaux" data-i18n-aria-label="sites.panes" class="btn btn-icon">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="1"/><rect data-pane-l x="4.5" y="5.5" width="4" height="13" fill="currentColor" stroke="none"/><rect data-pane-r x="15.5" y="5.5" width="4" height="13" fill="currentColor" stroke="none"/></svg>
       </button>
-      <input id="domainInput" placeholder="votre-domaine.fr" data-i18n-placeholder="sites.domainPh" class="h-9 w-40 rounded-lg bg-ink-800 border border-ink-600 text-xs px-3 outline-none focus:border-vio-500 select-text">
-      <button id="btnDomain" class="h-9 px-3 rounded-lg text-xs font-medium border border-ink-600 hover:bg-ink-800" data-i18n="sites.domainAttach">Brancher le domaine</button>
-      <span id="domainRO" class="hidden h-9 px-3 rounded-lg text-xs font-mono border border-ink-700 text-emerald-400 items-center"></span>
+      <input id="domainInput" placeholder="votre-domaine.fr" data-i18n-placeholder="sites.domainPh" aria-label="Domaine" data-i18n-aria-label="sites.domainLabel" class="field w-32 xl:w-44 font-mono text-[12px] select-text read-only:bg-transparent read-only:text-ink-100 read-only:border-ink-700">
+      <button id="btnDomain" class="btn" data-i18n="sites.domainAttach">Brancher le domaine</button>
+      <a id="btnOpenDomain" href="#" target="_blank" rel="noopener" class="hidden btn" title="Ouvrir le site en ligne" data-i18n-title="sites.domainOpenTitle" data-i18n="sites.domainOpen">Ouvrir</a>
+      <button id="btnDetach" class="hidden btn" data-i18n="sites.domainDetach">Débrancher</button>
       <div class="relative">
-        <button id="btnSettings" title="Réglages de publication" data-i18n-title="sites.settingsBtn" aria-label="Réglages de publication" data-i18n-aria-label="sites.settingsBtn" aria-expanded="false" class="h-9 w-9 rounded-lg border border-ink-600 hover:bg-ink-800 grid place-items-center text-ink-300 hover:text-ink-100">
+        <button id="btnSettings" title="Réglages de publication" data-i18n-title="sites.settingsBtn" aria-label="Réglages de publication" data-i18n-aria-label="sites.settingsBtn" aria-expanded="false" class="btn btn-icon">
           <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.56-1.11 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.08A1.7 1.7 0 0 0 10.1 4.1V4a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56h.08a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.08a1.7 1.7 0 0 0 1.56 1.03H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.56 1.03Z" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
-        <div id="settingsPanel" class="hidden absolute right-0 top-11 w-80 rounded-xl border border-ink-700 bg-ink-900 shadow-2xl shadow-black/60 p-4 space-y-4 z-50">
-          <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400" data-i18n="sites.settingsTitle">Publication</p>
+        <div id="settingsPanel" class="hidden absolute right-0 top-11 w-80 border border-ink-700 bg-ink-900 p-4 space-y-4 z-50">
+          <p class="label" data-i18n="sites.settingsTitle">Publication</p>
           <label class="flex items-start gap-3 cursor-pointer">
-            <input type="checkbox" data-setting="compile" class="mt-0.5 h-4 w-4 rounded border-ink-600 bg-ink-800 accent-vio-500">
-            <span class="text-xs leading-relaxed"><span class="font-semibold text-ink-100 block" data-i18n="sites.setCompileTitle">Tailwind compilé</span><span class="text-ink-400" data-i18n="sites.setCompileDesc">Remplace <span class="font-mono">cdn.tailwindcss.com</span> par un CSS compilé sur le serveur — plus rapide, sans dépendance externe.</span></span>
+            <input type="checkbox" data-setting="compile" class="mt-0.5 h-4 w-4 accent-vio-500">
+            <span class="text-[13px] leading-relaxed"><span class="font-semibold text-ink-100 block" data-i18n="sites.setCompileTitle">Tailwind compilé</span><span class="text-ink-300" data-i18n="sites.setCompileDesc">Remplace <span class="font-mono">cdn.tailwindcss.com</span> par un CSS compilé sur le serveur — plus rapide, sans dépendance externe.</span></span>
           </label>
           <label class="flex items-start gap-3 cursor-pointer">
-            <input type="checkbox" data-setting="fonts" class="mt-0.5 h-4 w-4 rounded border-ink-600 bg-ink-800 accent-vio-500">
-            <span class="text-xs leading-relaxed"><span class="font-semibold text-ink-100 block" data-i18n="sites.setFontsTitle">Polices locales</span><span class="text-ink-400" data-i18n="sites.setFontsDesc">Les polices <span class="font-mono">fonts.googleapis.com</span> sont copiées et servies par votre site — aucune requête vers Google.</span></span>
+            <input type="checkbox" data-setting="fonts" class="mt-0.5 h-4 w-4 accent-vio-500">
+            <span class="text-[13px] leading-relaxed"><span class="font-semibold text-ink-100 block" data-i18n="sites.setFontsTitle">Polices locales</span><span class="text-ink-300" data-i18n="sites.setFontsDesc">Les polices <span class="font-mono">fonts.googleapis.com</span> sont copiées et servies par votre site — aucune requête vers Google.</span></span>
           </label>
           <label class="flex items-start gap-3 cursor-pointer">
-            <input type="checkbox" data-setting="pwa" class="mt-0.5 h-4 w-4 rounded border-ink-600 bg-ink-800 accent-vio-500">
-            <span class="text-xs leading-relaxed"><span class="font-semibold text-ink-100 block" data-i18n="sites.setPwaTitle">PWA automatique</span><span class="text-ink-400" data-i18n="sites.setPwaDesc">Manifest, icône et service worker générés : site installable et consultable hors-ligne. Si le site fournit déjà les siens, ils sont respectés.</span></span>
+            <input type="checkbox" data-setting="pwa" class="mt-0.5 h-4 w-4 accent-vio-500">
+            <span class="text-[13px] leading-relaxed"><span class="font-semibold text-ink-100 block" data-i18n="sites.setPwaTitle">PWA automatique</span><span class="text-ink-300" data-i18n="sites.setPwaDesc">Manifest, icône et service worker générés : site installable et consultable hors-ligne. Si le site fournit déjà les siens, ils sont respectés.</span></span>
           </label>
           <label class="flex items-start gap-3 cursor-pointer">
-            <input type="checkbox" data-setting="gdpr" class="mt-0.5 h-4 w-4 rounded border-ink-600 bg-ink-800 accent-vio-500">
-            <span class="text-xs leading-relaxed"><span class="font-semibold text-ink-100 block" data-i18n="sites.setGdprTitle">Bandeau RGPD</span><span class="text-ink-400" data-i18n="sites.setGdprDesc">« Zéro stress : tout est local » — bouton OK et lien vers les <a href="https://nadaprod.com/legal" target="_blank" rel="noopener" class="text-vio-400 hover:underline">mentions légales</a>.</span></span>
+            <input type="checkbox" data-setting="gdpr" class="mt-0.5 h-4 w-4 accent-vio-500">
+            <span class="text-[13px] leading-relaxed"><span class="font-semibold text-ink-100 block" data-i18n="sites.setGdprTitle">Bandeau RGPD</span><span class="text-ink-300" data-i18n="sites.setGdprDesc">« Zéro stress : tout est local » — bouton OK et lien vers les <a href="https://nadaprod.com/legal" target="_blank" rel="noopener" class="text-acc-fg underline underline-offset-2">mentions légales</a>.</span></span>
           </label>
-          <p class="text-[11px] text-ink-400 leading-relaxed border-t border-ink-700 pt-3" data-i18n="sites.settingsNote">Appliqué à la version publiée (domaine branché). L'éditeur travaille toujours sur la source d'origine.</p>
+          <p class="text-xs text-ink-300 leading-relaxed border-t border-ink-700 pt-3" data-i18n="sites.settingsNote">Appliqué à la version publiée (domaine branché). L'éditeur travaille toujours sur la source d'origine.</p>
         </div>
       </div>
-      <button id="btnBack" class="h-9 px-3 rounded-lg text-xs font-medium text-ink-300 hover:text-ink-100" data-i18n="sites.back">← Mes sites</button>
+      <button id="btnBack" class="btn btn-ghost shrink-0" data-i18n="sites.back">← Mes sites</button>
     </div>`,
 
   userBox: `
     <div id="userBox" class="ml-auto flex items-center gap-2">
-      <span id="userEmail" class="text-xs font-mono text-ink-400 hidden lg:inline"></span>
-      <button type="button" onclick="toggleTheme()" class="h-9 w-9 rounded-lg border border-ink-600 hover:bg-ink-800 text-ink-300 hover:text-ink-100 grid place-items-center" title="Thème clair / sombre" data-i18n-title="common.theme" aria-label="Thème clair / sombre" data-i18n-aria-label="common.theme">◐</button>
-      <button id="btnLogout" class="h-9 px-3 rounded-lg text-xs font-medium border border-ink-600 hover:bg-ink-800 text-ink-300 hover:text-ink-100" data-i18n="common.logout">Déconnexion</button>
+      <span id="userEmail" class="text-xs text-ink-300 hidden lg:inline mr-1"></span>
+      <button type="button" onclick="toggleTheme()" class="btn btn-icon" title="Thème clair / sombre" data-i18n-title="common.theme" aria-label="Thème clair / sombre" data-i18n-aria-label="common.theme">◐</button>
+      <button id="btnLogout" class="btn" data-i18n="common.logout">Déconnexion</button>
     </div>`,
 
   viewEdit: `
   <div id="viewEdit" class="hidden flex-1 min-h-0 flex">
     <aside id="explorer" class="hidden xl:flex relative w-60 shrink-0 flex-col border-r border-ink-700 bg-ink-900 min-h-0"></aside>
-    <main class="flex-1 min-w-0 bg-ink-850 p-4">
-      <div id="visualWrap" class="h-full rounded-xl overflow-hidden ring-1 ring-ink-700 shadow-2xl shadow-black/50 bg-white">
+    <main class="flex-1 min-w-0 bg-ink-850 p-3">
+      <div id="visualWrap" class="h-full overflow-hidden border border-ink-700 bg-white">
         <iframe id="frame" title="Page en cours d'édition" data-i18n-title="sites.frameTitle" class="w-full h-full"></iframe>
       </div>
-      <div id="codeWrap" class="hidden h-full rounded-xl overflow-hidden ring-1 ring-ink-700 shadow-2xl shadow-black/50 bg-ink-850 select-text"></div>
+      <div id="codeWrap" class="hidden h-full overflow-hidden border border-ink-700 bg-ink-900 select-text"></div>
     </main>
-    <aside id="editAside" class="w-[22.5rem] shrink-0 border-l border-ink-700 bg-ink-900 flex flex-col min-h-0">
-      <div class="p-4 space-y-4 flex-1 overflow-y-auto">
-        <div>
-          <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400" data-i18n="sites.selLabel">Élément sélectionné</p>
-          <p id="selInfo" class="font-display font-semibold text-lg tracking-tight mt-0.5 text-ink-400" data-i18n="sites.selNone">aucun</p>
-          <p class="text-xs text-ink-400 mt-1 leading-relaxed" data-i18n="sites.selHelp">Cliquez sur un élément dans la page pour le sélectionner, double-cliquez pour éditer son texte, <span class="font-mono">Échap</span> pour désélectionner.</p>
-        </div>
-        <div class="flex gap-2">
-          <button id="btnParent" disabled class="flex-1 h-9 rounded-lg text-xs font-medium border border-ink-600 hover:bg-ink-800 disabled:opacity-40" data-i18n="sites.parent">Parent ↰</button>
-          <button id="btnDelete" disabled class="flex-1 h-9 rounded-lg text-xs font-medium border border-red-500/40 text-red-400 hover:bg-red-500/10 disabled:opacity-40" data-i18n="sites.deleteEl">Supprimer</button>
-        </div>
-        <div>
-          <label for="aiPrompt" class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" data-i18n="sites.aiLabel">Retoucher avec l'IA</label>
+    <aside id="editAside" class="w-[22rem] shrink-0 border-l border-ink-700 bg-ink-900 flex flex-col min-h-0">
+      <div class="flex-1 overflow-y-auto divide-y divide-ink-700">
+        <section class="p-4">
+          <p class="label" data-i18n="sites.selLabel">Élément sélectionné</p>
+          <p id="selInfo" class="font-mono text-sm mt-2 text-ink-400" data-i18n="sites.selNone">aucun</p>
+          <p class="text-xs text-ink-300 mt-2 leading-relaxed" data-i18n="sites.selHelp">Cliquez sur un élément dans la page pour le sélectionner, double-cliquez pour éditer son texte, <span class="font-mono">Échap</span> pour désélectionner.</p>
+          <div class="flex gap-2 mt-3">
+            <button id="btnParent" disabled class="btn btn-sm flex-1" data-i18n="sites.parent">Parent ↰</button>
+            <button id="btnDelete" disabled class="btn btn-sm btn-danger flex-1" data-i18n="sites.deleteEl">Supprimer</button>
+          </div>
+        </section>
+        <section class="p-4">
+          <label for="aiPrompt" class="label block mb-2" data-i18n="sites.aiLabel">Retoucher avec l'IA</label>
           <textarea id="aiPrompt" rows="4" placeholder="Ex. : passe ce bouton en style outline violet, arrondi complet…" data-i18n-placeholder="sites.aiPh"
-            class="w-full rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm p-3 placeholder:text-ink-400/70 resize-y select-text"></textarea>
-          <button id="btnAI" disabled class="mt-2 w-full h-11 rounded-xl btn-primary text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            class="w-full bg-ink-850 border border-ink-700 focus:border-acc-fg outline-none text-sm p-3 placeholder:text-ink-400 resize-y select-text"></textarea>
+          <button id="btnAI" disabled class="btn w-full mt-2 h-10">
             <svg id="aiSpin" class="h-4 w-4 animate-spin hidden" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.25" stroke-width="3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
             <span id="aiLabel" data-i18n="sites.aiButton">Modifier l'élément</span>
           </button>
-        </div>
-        <div class="rounded-xl border border-ink-700 bg-ink-850 p-3">
-          <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 mb-2" data-i18n="sites.liveTitle">Mise en ligne</p>
+        </section>
+        <section class="p-4">
+          <p class="label mb-2" data-i18n="sites.liveTitle">Mise en ligne</p>
           <p id="liveInfo" class="text-xs text-ink-300 leading-relaxed"></p>
-        </div>
+        </section>
       </div>
     </aside>
   </div>
 
   <!-- Nouvelle page : vierge dans le studio, copie d'une page, ou page vierge simple -->
-  <dialog id="newPageDlg" class="rounded-2xl border border-ink-600 bg-ink-900 text-ink-100 p-0 w-full max-w-md backdrop:bg-black/70">
-    <form method="dialog" id="newPageForm" class="p-5 space-y-4">
-      <p class="font-display font-semibold tracking-tight" data-i18n="sites.newPageTitle">Nouvelle page dans ce site</p>
+  <dialog id="newPageDlg" class="border border-ink-700 bg-ink-900 text-ink-100 p-0 w-full max-w-md">
+    <form method="dialog" id="newPageForm" class="p-6 space-y-5">
+      <p class="font-semibold text-base" data-i18n="sites.newPageTitle">Nouvelle page dans ce site</p>
       <div>
-        <label class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" for="npName" data-i18n="sites.newPageName">Nom de la page</label>
-        <input id="npName" required maxlength="120" placeholder="a-propos" class="w-full h-10 rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 outline-none text-sm px-3 select-text">
+        <label class="label block mb-2" for="npName" data-i18n="sites.newPageName">Nom de la page</label>
+        <input id="npName" required maxlength="120" placeholder="a-propos" class="field w-full font-mono select-text">
       </div>
-      <div class="space-y-2 text-sm">
+      <div class="space-y-2.5 text-sm">
         <label class="flex items-center gap-2"><input type="radio" name="npMode" value="studio" checked class="accent-vio-500"><span data-i18n="sites.newPageStudio">La composer dans le studio (IA)</span></label>
         <label class="flex items-center gap-2"><input type="radio" name="npMode" value="copy" class="accent-vio-500"><span data-i18n="sites.newPageCopy">Copier une page existante :</span>
-          <select id="npFrom" class="h-8 flex-1 rounded-lg bg-ink-800 border border-ink-600 text-xs px-2 outline-none"></select></label>
+          <select id="npFrom" class="field h-8 flex-1 font-mono text-[12px] px-2"></select></label>
         <label class="flex items-center gap-2"><input type="radio" name="npMode" value="blank" class="accent-vio-500"><span data-i18n="sites.newPageBlank">Page vierge, à éditer ici</span></label>
       </div>
-      <div class="flex justify-end gap-2">
-        <button type="button" id="npCancel" class="h-9 px-4 rounded-lg text-sm border border-ink-600 hover:bg-ink-800" data-i18n="studio.cancel">Annuler</button>
-        <button type="submit" class="h-9 px-4 rounded-lg text-sm font-semibold btn-primary" data-i18n="sites.newPageGo">Créer</button>
+      <div class="flex justify-end gap-2 pt-1">
+        <button type="button" id="npCancel" class="btn" data-i18n="studio.cancel">Annuler</button>
+        <button type="submit" class="btn-primary h-9 px-4" data-i18n="sites.newPageGo">Créer</button>
       </div>
     </form>
   </dialog>
 
   <!-- Palette : tous les sites A→Z, recherche instantanée -->
-  <dialog id="palette" aria-label="Projets" data-i18n-aria-label="sites.current" class="hud-corners overflow-visible mt-[12vh] w-full max-w-xl rounded-lg border border-ink-700 bg-ink-900/95 text-ink-100 p-0 shadow-2xl shadow-black/70 backdrop:bg-black/70 backdrop:backdrop-blur-sm">
-    <div class="flex items-center gap-2.5 px-3.5 border-b border-ink-700">
-      <span class="text-cyan-400">${ICON.search}</span>
+  <dialog id="palette" aria-label="Projets" data-i18n-aria-label="sites.current" class="mt-[12vh] w-full max-w-xl border border-ink-700 bg-ink-900 text-ink-100 p-0">
+    <div class="flex items-center gap-2.5 px-4 border-b border-ink-700">
+      <span class="text-ink-300">${ICON.search}</span>
       <input id="paletteInput" type="text" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="paletteList" aria-autocomplete="list"
         placeholder="Rechercher un site, un domaine, une page…" data-i18n-placeholder="sites.searchPh"
-        class="flex-1 h-12 bg-transparent outline-none text-sm font-mono placeholder:text-ink-400 select-text">
-      <span id="paletteCount" class="text-[10px] font-mono tabular-nums text-ink-400"></span>
+        class="flex-1 h-12 bg-transparent outline-none text-sm placeholder:text-ink-400 select-text">
+      <span id="paletteCount" class="text-xs tnum text-ink-300"></span>
     </div>
-    <div id="paletteList" role="listbox" class="max-h-[60vh] overflow-y-auto overflow-x-hidden p-1.5"></div>
-    <p class="px-3.5 py-2 border-t border-ink-700 text-[10px] font-mono uppercase tracking-[0.14em] text-ink-400" data-i18n="sites.paletteHint">↑↓ naviguer · ↵ ouvrir · Échap fermer</p>
+    <div id="paletteList" role="listbox" class="max-h-[60vh] overflow-y-auto overflow-x-hidden py-1"></div>
+    <p class="px-4 py-2 border-t border-ink-700 text-xs text-ink-300" data-i18n="sites.paletteHint">↑↓ naviguer · ↵ ouvrir · Échap fermer</p>
   </dialog>
 
   <!-- Toast -->
   <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 translate-y-16 opacity-0 transition-all duration-300 z-50 pointer-events-none">
-    <div class="px-4 py-2.5 rounded-xl bg-ink-800 border border-ink-600 text-sm shadow-2xl flex items-center gap-2">
+    <div class="px-4 py-2.5 bg-ink-800 border border-ink-600 text-sm flex items-center gap-2">
       <span id="toastDot" class="h-2 w-2 rounded-full bg-emerald-400"></span><span id="toastMsg"></span>
     </div>
   </div>`,
@@ -234,24 +273,31 @@ function toast(msg, ok = true) {
 
 /* ───────── Vue liste ───────── */
 
-const btn = 'h-8 px-2.5 rounded-md text-[11px] font-mono uppercase tracking-[0.08em] border border-ink-700 text-ink-300 hover:text-ink-100 hover:border-ink-600 hover:bg-ink-850 grid place-items-center';
+// Le fait sur lequel on trie, en fin de ligne (rien si la date est inconnue).
+function sortFact(s) {
+  const f = sort === 'edit' && relTime(s.updated_at) ? t('sites.factEdited', { when: relTime(s.updated_at) })
+    : sort === 'creation' && shortDate(s.created_at) ? t('sites.factCreated', { date: shortDate(s.created_at) }) : '';
+  return f ? ` · <span data-fact class="text-ink-200">${esc(f)}</span>` : '';
+}
+
 function row(s) {
   const n = pagesOf(s).length;
   const open = isLive(s)
-    ? `<a href="https://${encodeURIComponent(s.domain)}/" target="_blank" rel="noopener" class="${btn} hover:!border-cyan-400/50 hover:!text-cyan-300">${t('sites.visit')}</a>`
-    : `<a href="/preview/${encodeURIComponent(s.id)}/" target="_blank" class="${btn}">${t('sites.preview')}</a>`;
+    ? `<a href="https://${encodeURIComponent(s.domain)}/" target="_blank" rel="noopener" class="btn btn-sm btn-ghost">${t('sites.visit')}</a>`
+    : `<a href="/preview/${encodeURIComponent(s.id)}/" target="_blank" class="btn btn-sm btn-ghost">${t('sites.preview')}</a>`;
+  // Toute la rangée ouvre l'éditeur (clic) ; le bouton du nom reste le chemin clavier.
   return `
-    <div class="group grid grid-cols-[auto_1fr_auto] items-center gap-4 px-4 py-3 border-b border-ink-800 last:border-b-0 hover:bg-ink-900/80">
+    <div data-row="${esc(s.id)}" class="group grid grid-cols-[auto_1fr_auto] items-center gap-4 px-2 py-3 border-b border-ink-700 cursor-pointer hover:bg-ink-850">
       ${glyph(s)}
-      <button data-open="${esc(s.id)}" class="min-w-0 text-left">
-        <span class="block truncate font-mono text-sm text-ink-100 group-hover:text-cyan-300">${esc(s.id)}</span>
-        <span class="block truncate text-[11px] font-mono text-ink-400">${isLive(s) ? esc(s.domain) : '—'} · <span class="tabular-nums">${n}</span> p.</span>
+      <button data-open="${esc(s.id)}" class="min-w-0 text-left outline-offset-4">
+        <span class="block truncate font-mono text-sm text-ink-100">${esc(s.id)}</span>
+        <span class="block truncate text-xs text-ink-300 mt-0.5">${isLive(s) ? `<span class="font-mono">${esc(s.domain)}</span> · ` : ''}<span class="tnum ${sort === 'pages' ? 'text-ink-100 font-semibold' : ''}">${n === 1 ? t('sites.pageCountOne') : t('sites.pageCountMany', { n })}</span>${sortFact(s)}</span>
       </button>
-      <div class="flex items-center gap-1.5">
+      <div class="flex items-center gap-1 opacity-70 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
         ${open}
-        <button data-newpage="${esc(s.id)}" class="${btn}" title="${t('sites.newPageTitle')}">${t('sites.newPage')}</button>
-        <button data-open="${esc(s.id)}" class="h-8 px-3 rounded-md text-[11px] font-mono uppercase tracking-[0.08em] font-semibold btn-primary">${t('sites.edit')}</button>
-        ${ME && ME.root ? `<button data-remove="${esc(s.id)}" class="h-8 w-8 rounded-md border border-red-500/30 text-red-400 hover:bg-red-500/10 grid place-items-center" title="${t('sites.deleteSite')}" aria-label="${t('sites.deleteSite')}">${ICON.trash}</button>` : ''}
+        <button data-newpage="${esc(s.id)}" class="btn btn-sm btn-ghost" title="${t('sites.newPageTitle')}">${t('sites.newPage')}</button>
+        <button data-open="${esc(s.id)}" class="btn btn-sm">${t('sites.edit')}</button>
+        ${ME && ME.root ? `<button data-remove="${esc(s.id)}" class="btn btn-sm btn-icon btn-ghost btn-danger" title="${t('sites.deleteSite')}" aria-label="${t('sites.deleteSite')}">${ICON.trash}</button>` : ''}
       </div>
     </div>`;
 }
@@ -259,14 +305,49 @@ function row(s) {
 async function loadSites() {
   sites = (await fetch('/api/sites').then(r => r.json()).catch(() => []) || []).sort(byName);
   const live = sites.filter(isLive).length;
-  const count = (sel, n) => document.querySelectorAll(`[data-count="${sel}"]`).forEach(el => { el.textContent = String(n).padStart(2, '0'); });
+  const count = (sel, n) => document.querySelectorAll(`[data-count="${sel}"]`).forEach(el => { el.textContent = n; });
   count('sites', sites.length);
   count('live', live);
   count('drafts', sites.length - live);
-  count('pages', sites.reduce((n, s) => n + pagesOf(s).length, 0));
-  $('#siteList').innerHTML = sites.length ? sites.map(row).join('')
-    : `<p class="px-4 py-8 text-sm text-ink-400 text-center">${t('sites.emptyList')}</p>`;
+  const pages = sites.reduce((n, s) => n + pagesOf(s).length, 0);
+  count('pages', pages);
+  renderList();
   if ($('#palette').open) renderPalette();
+}
+
+// La liste suit le filtre courant ; l'ordre A→Z est celui de `sites`.
+function renderList() {
+  for (const [attr, cur] of [['filter', filter], ['sort', sort]]) {
+    document.querySelectorAll(`[data-${attr}]`).forEach(b => {
+      const on = b.dataset[attr] === cur;
+      b.setAttribute('aria-checked', String(on));
+      b.tabIndex = on ? 0 : -1;
+    });
+  }
+  const shown = sites.filter(FILTERS[filter]).sort(SORTS[sort]);
+  // KPI pages : celles des sites affichés, libellé explicite selon le filtre.
+  const n = shown.reduce((k, s) => k + pagesOf(s).length, 0);
+  if ($('#pagesTotal')) {
+    $('[data-pages-n]').textContent = n;
+    $('[data-pages-label]').textContent = t(`sites.pagesKpi_${filter}${n === 1 ? '_one' : ''}`);
+  }
+  const empty = !sites.length ? t('sites.emptyList') : t(filter === 'live' ? 'sites.emptyLiveFilter' : 'sites.emptyDraftsFilter');
+  $('#siteList').innerHTML = shown.length ? shown.map(row).join('')
+    : `<p class="py-10 text-sm text-ink-300">${empty}</p>`;
+}
+
+function setFilter(f) {
+  if (!FILTERS[f] || f === filter) return;
+  filter = f;
+  writeQuery();
+  renderList();
+}
+
+function setSort(k) {
+  if (!SORTS[k] || k === sort) return;
+  sort = k;
+  writeQuery();
+  renderList();
 }
 
 /* ───────── Palette « Projet en cours » : tous les sites A→Z ───────── */
@@ -288,19 +369,19 @@ function renderPalette() {
   const q = $('#paletteInput').value;
   hits = search(q);
   cursor = Math.min(cursor, Math.max(hits.length - 1, 0));
-  $('#paletteCount').textContent = `${String(hits.length).padStart(2, '0')}/${String(sites.length).padStart(2, '0')}`;
+  $('#paletteCount').textContent = hits.length === sites.length ? sites.length : `${hits.length} / ${sites.length}`;
   $('#paletteList').innerHTML = hits.length ? hits.map((h, i) => `
     <div id="hit-${i}" role="option" aria-selected="${i === cursor}" data-hit="${i}"
-      class="relative flex items-center gap-3 rounded-md px-3 py-2 cursor-pointer ${i === cursor ? 'bg-ink-800 before:absolute before:left-0 before:inset-y-1.5 before:w-0.5 before:rounded before:bg-cyan-400' : 'hover:bg-ink-850'}">
+      class="relative flex items-center gap-3 px-4 py-2 cursor-pointer ${i === cursor ? 'bg-ink-800 before:absolute before:left-0 before:inset-y-0 before:w-0.5 before:bg-acc-fg' : 'hover:bg-ink-850'}">
       ${glyph(h.s)}
       <div class="flex-1 min-w-0">
-        <p class="truncate text-sm font-mono ${i === cursor ? 'text-cyan-200' : 'text-ink-100'}">${esc(h.s.id)}${isLive(h.s) ? `<span class="text-ink-400 text-xs ml-2">${esc(h.s.domain)}</span>` : ''}</p>
+        <p class="truncate text-sm font-mono text-ink-100">${esc(h.s.id)}${isLive(h.s) ? `<span class="text-ink-300 text-xs ml-2">${esc(h.s.domain)}</span>` : ''}</p>
         ${h.pages.length && q.trim() ? `<p class="flex flex-wrap gap-1 mt-1">${h.pages.slice(0, 5).map(p =>
-          `<button data-hit="${i}" data-page="${esc(p)}" class="text-[10px] font-mono px-1.5 py-0.5 rounded border border-ink-700 text-ink-300 hover:text-cyan-300 hover:border-cyan-400/40">${esc(p)}</button>`).join('')}</p>` : ''}
+          `<button data-hit="${i}" data-page="${esc(p)}" class="text-[11px] font-mono px-1.5 py-0.5 border border-ink-700 text-ink-300 hover:text-ink-100 hover:border-ink-400">${esc(p)}</button>`).join('')}</p>` : ''}
       </div>
-      <span class="text-[10px] font-mono tabular-nums text-ink-400 shrink-0">${String(pagesOf(h.s).length).padStart(2, '0')} p.</span>
+      <span class="text-xs tnum text-ink-300 shrink-0">${pagesOf(h.s).length}</span>
     </div>`).join('')
-    : `<p class="px-3 py-6 text-xs font-mono text-ink-400 text-center">${esc(t('sites.searchEmpty', { q: q.trim() }))}</p>`;
+    : `<p class="px-4 py-6 text-sm text-ink-300">${esc(t('sites.searchEmpty', { q: q.trim() }))}</p>`;
   $('#paletteInput').setAttribute('aria-activedescendant', hits.length ? 'hit-' + cursor : '');
   $('#hit-' + cursor)?.scrollIntoView({ block: 'nearest' });
 }
@@ -442,27 +523,27 @@ async function loadAccounts() {
   ]);
   const siteIds = sites.map(s => s.id);
   $('#userList').innerHTML = users.length ? users.map(u => `
-    <div class="rounded-xl border border-ink-700 bg-ink-850 p-3 space-y-2">
+    <div class="py-3 border-b border-ink-700 space-y-2.5">
       <div class="flex items-center gap-2">
         <p class="flex-1 min-w-0 text-sm font-mono truncate">${esc(u.email)}</p>
-        <button data-upass="${esc(u.email)}" class="h-8 px-2.5 rounded-lg text-[11px] font-medium border border-ink-600 hover:bg-ink-800">${t('sites.accPass')}</button>
-        <button data-udel="${esc(u.email)}" class="h-8 w-8 rounded-lg border border-red-500/40 text-red-400 hover:bg-red-500/10 grid place-items-center" title="${t('sites.accDeleteBtn')}" aria-label="${t('sites.accDeleteBtn')}">${ICON.trash}</button>
+        <button data-upass="${esc(u.email)}" class="btn btn-sm">${t('sites.accPass')}</button>
+        <button data-udel="${esc(u.email)}" class="btn btn-sm btn-icon btn-ghost btn-danger" title="${t('sites.accDeleteBtn')}" aria-label="${t('sites.accDeleteBtn')}">${ICON.trash}</button>
       </div>
       <div class="flex flex-wrap gap-x-4 gap-y-1.5">
         ${siteIds.map(id => `<label class="flex items-center gap-1.5 text-xs cursor-pointer text-ink-300 hover:text-ink-100">
-          <input type="checkbox" data-assign="${esc(u.email)}" value="${esc(id)}" ${u.sites.includes(id) ? 'checked' : ''} class="h-3.5 w-3.5 rounded border-ink-600 bg-ink-800 accent-vio-500"><span class="font-mono">${esc(id)}</span>
-        </label>`).join('') || `<span class="text-xs text-ink-400">${t('sites.accNoSites')}</span>`}
+          <input type="checkbox" data-assign="${esc(u.email)}" value="${esc(id)}" ${u.sites.includes(id) ? 'checked' : ''} class="h-3.5 w-3.5 accent-vio-500"><span class="font-mono">${esc(id)}</span>
+        </label>`).join('') || `<span class="text-xs text-ink-300">${t('sites.accNoSites')}</span>`}
       </div>
     </div>`).join('')
-  : `<p class="text-xs text-ink-400">${t('sites.accEmpty')}</p>`;
+  : `<p class="py-3 text-sm text-ink-300">${t('sites.accEmpty')}</p>`;
   $('#waitList').innerHTML = (wl || []).length ? wl.slice().reverse().map(e => `
-    <div class="rounded-lg border border-ink-700 bg-ink-850 px-3 py-2 text-xs">
-      <span class="font-mono text-ink-400">${esc((e.date || '').slice(0, 10))}</span>
-      <span class="font-mono text-vio-400 ml-2">${esc(e.email)}</span>
+    <div class="py-2.5 border-b border-ink-700 text-xs">
+      <span class="font-mono tnum text-ink-300">${esc((e.date || '').slice(0, 10))}</span>
+      <span class="font-mono text-ink-100 ml-2">${esc(e.email)}</span>
       ${e.name ? `<span class="text-ink-200 ml-2">${esc(e.name)}</span>` : ''}
       ${e.message ? `<p class="text-ink-300 mt-1 leading-relaxed">${esc(e.message)}</p>` : ''}
     </div>`).join('')
-  : `<p class="text-xs text-ink-400">${t('sites.accWlEmpty')}</p>`;
+  : `<p class="py-3 text-sm text-ink-300">${t('sites.accWlEmpty')}</p>`;
 }
 
 // L'attribution d'un site est enregistrée dès le clic sur sa case.
@@ -509,7 +590,6 @@ function openEditor(site, page) {
   S.mode = 'code'; S.frameStale = true; renderMode();
   renderSettings();
   showEditor(true);
-  $('#domainInput').value = S.domain;
   renderDomain();
   $('#pageSelect').innerHTML = pagesOf(site).map(p => `<option value="${esc(p)}">${esc(p)}</option>`).join('');
   const target = pagesOf(site).includes(page) ? page : pagesOf(site)[0];
@@ -550,13 +630,18 @@ function setDirty(d) {
 
 // Le branchement de domaine est réservé à root ; un utilisateur le voit en lecture seule.
 function renderDomain() {
-  const isRoot = !!(ME && ME.root);
-  $('#domainInput').classList.toggle('hidden', !isRoot);
-  $('#btnDomain').classList.toggle('hidden', !isRoot);
-  const ro = $('#domainRO');
-  ro.textContent = S.domain;
-  ro.classList.toggle('hidden', isRoot || !S.domain);
-  ro.classList.toggle('flex', !isRoot && !!S.domain);
+  const isRoot = !!(ME && ME.root), has = !!S.domain;
+  const input = $('#domainInput');
+  // Un seul motif : sans domaine, champ éditable + « Brancher » (root) ;
+  // branché, le même champ en lecture seule (sélectionnable) + « Ouvrir » (+ « Débrancher », root).
+  input.value = S.domain;
+  input.readOnly = has;
+  input.setAttribute('aria-readonly', String(has));
+  input.classList.toggle('hidden', !has && !isRoot);
+  $('#btnDomain').classList.toggle('hidden', has || !isRoot);
+  $('#btnOpenDomain').classList.toggle('hidden', !has);
+  $('#btnOpenDomain').href = has ? 'https://' + encodeURIComponent(S.domain) + '/' : '#';
+  $('#btnDetach').classList.toggle('hidden', !has || !isRoot);
   $('#liveInfo').innerHTML = S.domain
     ? t('sites.liveOn', { domain: esc(S.domain) })
     : t(isRoot ? 'sites.liveNoneRoot' : 'sites.liveNoneUser');
@@ -569,6 +654,19 @@ async function attachDomain() {
     S.domain = data.domain;
     renderDomain();
     toast(domain ? t('sites.domainOn', { domain: data.domain }) : t('sites.domainOff'));
+    loadSites(); // compteurs et filtres de la liste
+  } catch (err) { toast(err.message, false); }
+}
+
+async function detachDomain() {
+  if (!S.domain || !confirm(t('sites.domainDetachConfirm', { domain: S.domain }))) return;
+  try {
+    await api('/api/sites/' + S.siteId + '/domain', 'PUT', { domain: '' });
+    S.domain = '';
+    renderDomain();
+    $('#domainInput').focus();
+    toast(t('sites.domainOff'));
+    loadSites();
   } catch (err) { toast(err.message, false); }
 }
 
@@ -601,11 +699,7 @@ const post = (msg) => frameWin().postMessage(msg, location.origin);
 let lastSelectedHTML = '';
 
 function renderMode() {
-  document.querySelectorAll('.mode-btn').forEach(b => {
-    const on = b.dataset.mode === S.mode;
-    b.classList.toggle('bg-ink-700', on);
-    b.classList.toggle('text-ink-100', on);
-  });
+  document.querySelectorAll('.mode-btn').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === S.mode)));
   $('#visualWrap').classList.toggle('hidden', S.mode !== 'visual');
   $('#codeWrap').classList.toggle('hidden', S.mode !== 'code');
   applyPanes();
@@ -786,6 +880,16 @@ async function aiEdit() {
 
 /* ───────── Écouteurs ───────── */
 function bind() {
+  // Filtre et tri : groupes radio, flèches gauche/droite (motif ARIA).
+  const radios = (sel, attr, order, get, set) => $(sel)?.addEventListener('keydown', (e) => {
+    const d = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+    if (!d) return;
+    e.preventDefault();
+    set(order[(order.indexOf(get()) + d + order.length) % order.length]);
+    $(`[data-${attr}="${get()}"]`).focus();
+  });
+  radios('#siteFilter', 'filter', ['all', 'live', 'drafts'], () => filter, setFilter);
+  radios('#siteSort', 'sort', ['az', 'edit', 'pages', 'creation'], () => sort, setSort);
   $('#btnPanes').addEventListener('click', togglePanes);
   wide.addEventListener('change', () => S.siteId && applyPanes());
   // ⌘B / ⌘⇧B comme dans VS Code ; en capture, avant que Monaco ne voie la touche.
@@ -802,6 +906,12 @@ function bind() {
     if ((el = on('[data-newpage]'))) return openNewPage(el.dataset.newpage);
     if ((el = on('[data-open]'))) {
       const site = sites.find(x => x.id === el.dataset.open);
+      return site && openEditor(site);
+    }
+    if ((el = on('[data-filter]'))) return setFilter(el.dataset.filter);
+    if ((el = on('[data-sort]'))) return setSort(el.dataset.sort);
+    if ((el = on('[data-row]')) && !on('a, button, input, label')) {
+      const site = sites.find(x => x.id === el.dataset.row);
       return site && openEditor(site);
     }
     if (on('#btnSettings')) return toggleSettingsPanel();
@@ -853,6 +963,8 @@ function bind() {
   $('#btnParent').addEventListener('click', () => post({ type: 'wp:parent' }));
   $('#btnDelete').addEventListener('click', () => { post({ type: 'wp:delete' }); setDirty(true); });
   $('#btnDomain').addEventListener('click', attachDomain);
+  $('#btnDetach').addEventListener('click', detachDomain);
+  $('#domainInput').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.target.readOnly) attachDomain(); });
   document.addEventListener('keydown', (e) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 's' && S.siteId) { e.preventDefault(); savePage(); }
   });
@@ -878,8 +990,10 @@ async function start() {
   // Lien profond (?open=<site>&page=<chemin>), y compris depuis l'ancienne URL /drafts.
   const q = new URLSearchParams(location.search);
   const site = q.get('open') && sites.find(s => s.id === q.get('open'));
-  history.replaceState(null, '', location.pathname);
-  if (site) openEditor(site, q.get('page'));
+  const page = q.get('page');
+  q.delete('open'); q.delete('page'); // ?filtre= reste dans l'adresse
+  history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : ''));
+  if (site) openEditor(site, page);
 }
 
 window.SitesApp = { start };

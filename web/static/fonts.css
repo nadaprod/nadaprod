@@ -2,6 +2,9 @@
    remplace fonts.googleapis.com (zéro requête externe, RGPD-friendly).
    Familles/graisse utilisées par home, login, waiting-list, editor, sites, drafts. */
 
+/* Titres (landing, /debate, app) : Permanent Marker — le trait de marqueur, une seule graisse. */
+@font-face { font-family: 'Permanent Marker'; font-style: normal; font-weight: 400; font-display: swap; src: url('/webfonts/Permanent%20Marker/regular.ttf') format('truetype'); }
+
 /* Landing (home) : Big Shoulders Display (titres), Fraunces italique (accents),
    Archivo (texte). Bebas Neue reste pour les pages satellites. */
 @font-face { font-family: 'Big Shoulders Display'; font-style: normal; font-weight: 300; font-display: swap; src: url('/webfonts/Big%20Shoulders%20Display/300.ttf') format('truetype'); }

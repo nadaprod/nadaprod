@@ -20,19 +20,19 @@ export async function projectsDialog() {
   const m = openModal({
     title: t('studio.projectsTitle'), size: 'md',
     body: `<div class="flex flex-wrap gap-2 mb-4">
-        <button data-new class="h-9 px-3.5 rounded-lg text-sm font-semibold btn-primary">${esc(t('studio.projectNew'))}</button>
-        <button data-import class="h-9 px-3.5 rounded-lg text-sm border border-ink-600 hover:bg-ink-800">${esc(t('studio.projectImport'))}</button>
+        <button data-new class="btn-primary h-9 px-4">${esc(t('studio.projectNew'))}</button>
+        <button data-import class="btn">${esc(t('studio.projectImport'))}</button>
         <input data-file type="file" accept=".json,application/json" class="hidden">
       </div>
-      <div class="space-y-1.5">${list.map((p) => `
-        <div class="flex items-center gap-3 rounded-xl border ${p.id === S.project.id ? 'border-vio-500/70 bg-vio-500/10' : 'border-ink-700 bg-ink-850'} p-3">
+      <div class="border-t border-ink-700">${list.map((p) => `
+        <div class="flex items-center gap-3 py-3 border-b border-ink-700 ${p.id === S.project.id ? 'pl-3 shadow-[inset_2px_0_0_rgb(var(--acc-fg))]' : ''}">
           <button data-open="${esc(p.id)}" class="flex-1 min-w-0 text-left">
             <p class="text-sm font-medium text-ink-100 truncate">${esc(p.name)}</p>
-            <p class="text-[11px] font-mono text-ink-400">${esc(t('studio.projectMeta', { n: p.blocks }))} · ${esc(ago(p.updated_at))}</p>
+            <p class="text-xs text-ink-300 mt-0.5">${esc(t('studio.projectMeta', { n: p.blocks }))} · ${esc(ago(p.updated_at))}</p>
           </button>
-          <a href="/api/projects/${esc(p.id)}/export.json" download class="p-1.5 rounded-lg text-ink-300 hover:text-ink-100 hover:bg-ink-800" title="${esc(t('studio.exportJSON'))}" aria-label="${esc(t('studio.exportJSON'))}">
+          <a href="/api/projects/${esc(p.id)}/export.json" download class="btn btn-sm btn-icon btn-ghost" title="${esc(t('studio.exportJSON'))}" aria-label="${esc(t('studio.exportJSON'))}">
             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-          <button data-del="${esc(p.id)}" class="p-1.5 rounded-lg text-red-400 hover:bg-red-500/20" title="${esc(t('studio.projectDelete'))}" aria-label="${esc(t('studio.projectDelete'))}">
+          <button data-del="${esc(p.id)}" class="btn btn-sm btn-icon btn-ghost btn-danger" title="${esc(t('studio.projectDelete'))}" aria-label="${esc(t('studio.projectDelete'))}">
             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-9 0 1 13h8l1-13" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         </div>`).join('')}</div>`,
   });
@@ -92,9 +92,9 @@ function pickExportLang(langs) {
   const src = S.seo.lang || 'fr';
   const m = openModal({
     title: t('tr.exportLangTitle'), size: 'sm',
-    body: `<p class="text-xs text-ink-400 mb-3">${esc(t('tr.exportLangHint'))}</p>
-      <div class="grid grid-cols-3 gap-1.5 font-mono text-[11px]">
-        ${[src, ...langs].map((l, i) => `<button data-lang="${esc(l)}" ${i === 0 ? 'autofocus' : ''} class="h-9 border ${i === 0 ? 'border-vio-500/60 text-vio-300' : 'border-ink-600 text-ink-200'} hover:border-cyan-400/70 hover:text-cyan-200 uppercase tracking-wider">${esc(l)}${i === 0 ? ' · src' : ''}</button>`).join('')}
+    body: `<p class="text-xs text-ink-300 mb-4">${esc(t('tr.exportLangHint'))}</p>
+      <div class="grid grid-cols-3 gap-2">
+        ${[src, ...langs].map((l, i) => `<button data-lang="${esc(l)}" ${i === 0 ? 'autofocus' : ''} class="btn h-10 font-mono text-[12px] uppercase ${i === 0 ? 'border-ink-400 text-ink-100' : ''}">${esc(l)}${i === 0 ? '<span class="font-sans normal-case text-ink-300 ml-1">· src</span>' : ''}</button>`).join('')}
       </div>`,
   });
   m.el.addEventListener('click', (e) => {
@@ -124,27 +124,27 @@ export function publishDialog() {
   if (!S.page.some((b) => b.html)) return toast(t('studio.exportEmpty'), false);
   const last = ['netlify', 'cloudflare'].includes(S.project.publish?.provider) ? S.project.publish : {};
   const tokens = savedTokens();
-  const field = 'w-full h-10 rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm px-3 select-text';
-  const label = 'text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2';
+  const field = 'field w-full h-10 text-sm select-text';
+  const label = 'label block mb-2';
   const m = openModal({
     title: t('studio.publishTitle'), size: 'sm',
     body: `<form data-form class="space-y-4">
-        ${last.url ? `<p class="text-xs text-ink-300">${esc(t('studio.publishLast'))} <a href="${esc(last.url)}" target="_blank" rel="noopener" class="text-vio-400 hover:underline">${esc(last.url)}</a></p>` : ''}
+        ${last.url ? `<p class="text-xs text-ink-300">${esc(t('studio.publishLast'))} <a href="${esc(last.url)}" target="_blank" rel="noopener" class="text-acc-fg underline underline-offset-2 font-mono">${esc(last.url)}</a></p>` : ''}
         <div><span class="${label}">${esc(t('studio.publishProvider'))}</span>
           <div class="grid grid-cols-2 gap-2">
-            ${['netlify', 'cloudflare'].map((p) => `<label class="flex items-center gap-2 rounded-xl border border-ink-600 px-3 h-10 text-sm cursor-pointer has-[:checked]:border-vio-500 has-[:checked]:bg-vio-500/10">
+            ${['netlify', 'cloudflare'].map((p) => `<label class="flex items-center gap-2 border border-ink-700 px-3 h-10 text-sm cursor-pointer has-[:checked]:border-ink-400 has-[:checked]:bg-ink-800">
               <input type="radio" name="provider" value="${p}" ${(last.provider || 'netlify') === p ? 'checked' : ''} class="accent-vio-500">${p === 'netlify' ? 'Netlify' : 'Cloudflare Pages'}</label>`).join('')}
           </div></div>
         <div><label class="${label}" for="pubToken">${esc(t('studio.publishToken'))}</label>
           <input id="pubToken" type="password" autocomplete="off" required class="${field}">
-          <p data-help class="mt-1.5 text-[11px] text-ink-400 leading-relaxed"></p></div>
+          <p data-help class="mt-1.5 text-xs text-ink-300 leading-relaxed"></p></div>
         <div data-cf><label class="${label}" for="pubAccount">${esc(t('studio.publishAccount'))}</label>
           <input id="pubAccount" autocomplete="off" class="${field}"></div>
         <div><label class="${label}" for="pubSite" data-site-label></label>
           <input id="pubSite" autocomplete="off" class="${field}"></div>
         <label class="flex items-start gap-2 text-xs text-ink-300"><input id="pubRemember" type="checkbox" class="mt-0.5 accent-vio-500"><span>${esc(t('studio.publishRemember'))}</span></label>
-        <p data-out class="hidden text-sm rounded-xl border p-3"></p>
-        <button data-go class="w-full h-10 rounded-xl text-sm font-semibold btn-primary disabled:opacity-60 disabled:cursor-wait">${esc(t('studio.publishGo'))}</button>
+        <p data-out class="hidden text-sm border-l-2 pl-3 py-1"></p>
+        <button data-go class="btn-primary w-full h-10 disabled:cursor-wait">${esc(t('studio.publishGo'))}</button>
       </form>`,
   });
   const q = (s) => m.el.querySelector(s);
@@ -177,14 +177,14 @@ export function publishDialog() {
       const all = savedTokens();
       if (q('#pubRemember').checked) { all[p] = body.token; if (body.account_id) all[p + ':account'] = body.account_id; } else { delete all[p]; delete all[p + ':account']; }
       try { localStorage.setItem(TOKENS, JSON.stringify(all)); } catch (_) {}
-      out.className = 'text-sm rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 p-3';
+      out.className = 'text-sm border-l-2 border-emerald-400 pl-3 py-1 text-ink-100';
       out.innerHTML = `${esc(t('studio.publishDone'))} <a href="${esc(r.result.url)}" target="_blank" rel="noopener" class="underline font-medium">${esc(r.result.url)}</a>` +
-        (r.warnings?.length ? `<span class="block mt-1.5 text-xs text-amber-300">${r.warnings.map(esc).join('<br>')}</span>` : '');
+        (r.warnings?.length ? `<span class="block mt-1.5 text-xs text-amber-400">${r.warnings.map(esc).join('<br>')}</span>` : '');
       q('#pubSite').value = r.result.site;
       emit('published');
     } catch (err) {
       if (err.data?.site) q('#pubSite').value = err.data.site; // site créé malgré l'échec : on redéploiera dessus
-      out.className = 'text-sm rounded-xl border border-red-500/40 bg-red-500/10 text-red-300 p-3';
+      out.className = 'text-sm border-l-2 border-red-400 pl-3 py-1 text-red-400';
       out.textContent = (err.code === 'auth' ? t('studio.publishAuth') + ' ' : '') + err.message;
     } finally {
       go.disabled = false; go.textContent = t('studio.publishGo');
@@ -201,12 +201,12 @@ export async function siteDialog() {
   let sites;
   try { sites = await api('/sites'); } catch (e) { return toast(e.message, false); }
   const last = S.project.publish?.provider === 'site' ? S.project.publish : {};
-  const field = 'w-full h-10 rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm px-3 select-text';
-  const label = 'text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2';
+  const field = 'field w-full h-10 text-sm select-text';
+  const label = 'label block mb-2';
   const m = openModal({
     title: t('studio.siteTitle'), size: 'sm',
     body: `<form data-form class="space-y-4">
-        <p class="text-xs text-ink-400 leading-relaxed">${esc(t('studio.siteHint'))}</p>
+        <p class="text-xs text-ink-300 leading-relaxed">${esc(t('studio.siteHint'))}</p>
         <div><label class="${label}" for="siteSel">${esc(t('studio.siteSite'))}</label>
           <select id="siteSel" class="${field}">
             ${sites.map((s) => `<option value="${esc(s.id)}" ${s.id === last.site ? 'selected' : ''}>${esc(s.id)}${s.domain ? ' · ' + esc(s.domain) : ''}</option>`).join('')}
@@ -218,8 +218,8 @@ export async function siteDialog() {
           <input id="sitePath" value="${esc(last.path || 'index.html')}" placeholder="index.html" class="${field}">
           <p data-exists class="hidden mt-1.5 text-[11px] text-amber-400">${esc(t('studio.siteExists'))}</p></div>
         <label data-ow class="hidden flex items-start gap-2 text-xs text-ink-300"><input id="siteOverwrite" type="checkbox" class="mt-0.5 accent-vio-500"><span>${esc(t('studio.siteOverwrite'))}</span></label>
-        <p data-out class="hidden text-sm rounded-xl border p-3"></p>
-        <button data-go class="w-full h-10 rounded-xl text-sm font-semibold btn-primary disabled:opacity-60 disabled:cursor-wait">${esc(t('studio.siteGo'))}</button>
+        <p data-out class="hidden text-sm border-l-2 pl-3 py-1"></p>
+        <button data-go class="btn-primary w-full h-10 disabled:cursor-wait">${esc(t('studio.siteGo'))}</button>
       </form>`,
   });
   const q = (s) => m.el.querySelector(s);
@@ -250,13 +250,13 @@ export async function siteDialog() {
       const r = await api(`/projects/${S.project.id}/site`, { method: 'POST', body: { site, path: q('#sitePath').value.trim(), overwrite: q('#siteOverwrite').checked } });
       S.project.rev = r.rev;
       S.project.publish = { provider: 'site', site: r.site, path: r.path, url: r.url };
-      out.className = 'text-sm rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 p-3';
+      out.className = 'text-sm border-l-2 border-emerald-400 pl-3 py-1 text-ink-100';
       out.innerHTML = `${esc(t('studio.siteDone', { site: r.site, path: r.path }))}<span class="block mt-2 flex gap-3">
         <a href="${esc(r.url)}" target="_blank" rel="noopener" class="underline font-medium">${esc(t('studio.siteView'))}</a>
         <a href="/sites" class="underline font-medium">${esc(t('studio.siteManage'))}</a></span>`;
       toast(t('studio.siteSaved'));
     } catch (err) {
-      out.className = 'text-sm rounded-xl border border-red-500/40 bg-red-500/10 text-red-300 p-3';
+      out.className = 'text-sm border-l-2 border-red-400 pl-3 py-1 text-red-400';
       out.textContent = err.message;
       if (err.status === 409) { q('[data-ow]').classList.remove('hidden'); q('[data-exists]').classList.remove('hidden'); }
     } finally { go.disabled = false; }

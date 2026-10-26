@@ -13,9 +13,6 @@
   const store = { get: (k) => { try { return localStorage.getItem(k); } catch (_) { return null; } },
                   set: (k, v) => { try { localStorage.setItem(k, v); } catch (_) {} } };
 
-  // Couleurs d'extension (codes de VS Code, atténués).
-  const EXT = { html: 'text-orange-400', htm: 'text-orange-400', css: 'text-sky-400', js: 'text-yellow-300', mjs: 'text-yellow-300',
-                json: 'text-amber-200', svg: 'text-pink-300', md: 'text-ink-300', xml: 'text-pink-300', webmanifest: 'text-amber-200' };
   const extOf = (p) => (p.split('.').pop() || '').toLowerCase();
 
   const X = { host: null, cfg: null, site: null, files: [], open: new Set(), active: null, dirty: new Set(), filter: '', focus: null };
@@ -65,16 +62,17 @@
       const pad = 8 + r.depth * 12;
       const label = r.kind === 'dir'
         ? `${chevron(r.open)}<span class="truncate">${esc(r.name)}</span>`
-        : `<span class="w-3 shrink-0"></span><span class="shrink-0 text-[9px] font-mono font-bold uppercase w-6 ${EXT[extOf(r.path)] || 'text-ink-400'}">${esc(extOf(r.path).slice(0, 4))}</span>` +
-          (r.flat ? `<span class="truncate">${esc(r.path.split('/').pop())}<span class="ml-1.5 text-ink-400/70">${esc(r.path.split('/').slice(0, -1).join('/'))}</span></span>`
+        // Pas de pastille de type : l'extension est déjà dans le nom.
+        : `<span class="w-3 shrink-0"></span>` +
+          (r.flat ? `<span class="truncate">${esc(r.path.split('/').pop())}<span class="ml-1.5 text-ink-400">${esc(r.path.split('/').slice(0, -1).join('/'))}</span></span>`
                   : `<span class="truncate">${esc(r.name)}</span>`) +
           (dirty ? `<span class="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400"></span>` : '');
       return `<div role="treeitem" data-x-path="${esc(r.path)}" data-x-kind="${r.kind}" ${r.kind === 'dir' ? `aria-expanded="${r.open}"` : ''} aria-selected="${active}"
         tabindex="${r.path === X.focus ? 0 : -1}" style="padding-left:${pad}px"
-        class="h-[22px] pr-2 flex items-center gap-1 text-[12px] cursor-pointer select-none outline-none border-l-2
-        ${active ? 'bg-vio-500/15 text-ink-100 border-vio-400' : 'border-transparent text-ink-300 hover:bg-ink-800 hover:text-ink-100'}
-        focus:ring-1 focus:ring-inset focus:ring-vio-500/60">${label}</div>`;
-    }).join('') : `<p class="px-3 py-2 text-[11px] text-ink-400">${esc(X.cfg.t('sites.explorerEmpty'))}</p>`;
+        class="h-6 pr-2 flex items-center gap-1 font-mono text-[12px] cursor-pointer select-none outline-none border-l-2
+        ${active ? 'bg-ink-800 text-ink-100 border-acc-fg' : 'border-transparent text-ink-300 hover:bg-ink-850 hover:text-ink-100'}
+        focus-visible:bg-ink-800">${label}</div>`;
+    }).join('') : `<p class="px-3 py-2 text-xs text-ink-300">${esc(X.cfg.t('sites.explorerEmpty'))}</p>`;
   }
 
   // Les dossiers du fichier actif sont dépliés (comme « Reveal in Explorer »).
@@ -148,18 +146,18 @@
     const t = cfg.t;
     host.innerHTML = `
       <div class="shrink-0 h-9 flex items-center gap-1 pl-3 pr-1.5 border-b border-ink-700">
-        <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400" data-i18n="sites.explorer">${esc(t('sites.explorer'))}</p>
-        <span data-x-site class="min-w-0 truncate text-[10px] font-mono text-ink-400/70"></span>
-        <button data-x-collapse class="ml-auto h-6 w-6 rounded grid place-items-center text-ink-400 hover:text-ink-100 hover:bg-ink-800" title="${esc(t('sites.explorerCollapse'))}" aria-label="${esc(t('sites.explorerCollapse'))}">
+        <p class="label" data-i18n="sites.explorer">${esc(t('sites.explorer'))}</p>
+        <span data-x-site class="min-w-0 truncate text-[11px] font-mono text-ink-400"></span>
+        <button data-x-collapse class="ml-auto h-6 w-6 grid place-items-center text-ink-300 hover:text-ink-100" title="${esc(t('sites.explorerCollapse'))}" aria-label="${esc(t('sites.explorerCollapse'))}">
           <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 9 5-5 5 5M7 15l5 5 5-5" stroke-linecap="round" stroke-linejoin="round" transform="rotate(180 12 12)"/></svg>
         </button>
       </div>
-      <div class="shrink-0 p-1.5 border-b border-ink-800">
+      <div class="shrink-0 p-2 border-b border-ink-700">
         <input data-x-filter type="search" spellcheck="false" autocomplete="off" placeholder="${esc(t('sites.explorerFilter'))}" aria-label="${esc(t('sites.explorerFilter'))}"
-          class="w-full h-7 rounded bg-ink-850 border border-ink-700 focus:border-vio-500 outline-none text-[11px] font-mono px-2 select-text placeholder:text-ink-400/70">
+          class="field w-full h-7 text-[12px] px-2 select-text">
       </div>
       <div data-x-tree role="tree" aria-label="${esc(t('sites.explorer'))}" class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden py-1 scrollbar-thin"></div>
-      <div data-x-resize class="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-vio-500/60" aria-hidden="true"></div>`;
+      <div data-x-resize class="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-ink-400" aria-hidden="true"></div>`;
     const treeEl = host.querySelector('[data-x-tree]');
     treeEl.addEventListener('click', (e) => { const el = e.target.closest('[data-x-path]'); if (el) activate(el); });
     treeEl.addEventListener('keydown', onKey);

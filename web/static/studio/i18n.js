@@ -35,7 +35,7 @@ const status = (lang, hash) => {
   const e = entry(lang, hash);
   return e && e.text ? (e.status === 'human' ? 'human' : 'machine') : 'missing';
 };
-const DOT = { missing: 'bg-red-400/80', machine: 'bg-amber-400', human: 'bg-emerald-400' };
+const DOT = { missing: 'bg-red-400', machine: 'bg-amber-400', human: 'bg-emerald-400' };
 const BAR = { human: 'bg-emerald-400', machine: 'bg-amber-400' };
 
 /* Marqueurs <1>…</1> / <2/> : même jeu, bien imbriqué (miroir de i18n.Valid). */
@@ -59,7 +59,7 @@ const encode = (s) => s.split(SPLIT).map((p, i) => i % 2 ? p : p.replace(/&/g, '
 
 /* Source lisible : marqueurs rendus en puces, jamais en balises brutes. */
 const srcHTML = (src) => src.split(SPLIT).map((p, i) => i % 2
-  ? `<span class="inline-block align-baseline px-1 mx-px rounded-sm border border-cyan-400/40 text-cyan-300 text-[9px] leading-[14px] font-mono">${esc(p.slice(1, -1))}</span>`
+  ? `<span class="inline-block align-baseline px-1 mx-px border border-ink-600 text-ink-200 text-[10px] leading-[14px] font-mono">${esc(p.slice(1, -1))}</span>`
   : esc(decode(p))).join('');
 
 /* ───────── Données ───────── */
@@ -119,17 +119,17 @@ function renderHead() {
 
   // Langues cibles
   $('#trTargets').innerHTML = langs.map((l) => `
-    <span class="inline-flex items-center h-6 rounded-sm border ${l === T.lang ? 'border-cyan-400/70 text-cyan-200 bg-cyan-400/10' : 'border-ink-600 text-ink-300'} font-mono text-[10px]">
-      <button data-tr-lang="${esc(l)}" class="px-1.5 h-full uppercase tracking-wider" title="${esc(langName(l))}">${esc(l)}</button>
-      <button data-tr-remove="${esc(l)}" class="px-1 h-full border-l border-ink-700 text-ink-400 hover:text-red-400" aria-label="${esc(t('tr.removeLang', { lang: langName(l) }))}">×</button>
+    <span class="inline-flex items-center h-7 border ${l === T.lang ? 'border-ink-400 text-ink-100 bg-ink-800 shadow-[inset_0_-2px_0_rgb(var(--acc-fg))]' : 'border-ink-700 text-ink-300'} font-mono text-[11px]">
+      <button data-tr-lang="${esc(l)}" class="px-2 h-full uppercase" title="${esc(langName(l))}">${esc(l)}</button>
+      <button data-tr-remove="${esc(l)}" class="px-1.5 h-full border-l border-ink-700 text-ink-300 hover:text-red-400" aria-label="${esc(t('tr.removeLang', { lang: langName(l) }))}">×</button>
     </span>`).join('');
   const pick = $('#trPicker');
   pick.classList.toggle('hidden', !T.picker);
   if (T.picker) {
     pick.innerHTML = catalog().filter((l) => l.code !== source() && !langs.includes(l.code)).map((l) =>
-      `<button data-tr-add="${esc(l.code)}" class="flex items-center gap-2 w-full px-2 h-7 text-left hover:bg-ink-800 rounded-sm">
-        <span class="w-7 font-mono text-[10px] uppercase text-cyan-300">${esc(l.code)}</span><span class="text-[11px] text-ink-200 truncate">${esc(l.name)}</span></button>`).join('')
-      || `<p class="px-2 py-1.5 text-[10px] font-mono text-ink-400">${esc(t('tr.noMoreLangs'))}</p>`;
+      `<button data-tr-add="${esc(l.code)}" class="flex items-center gap-2 w-full px-3 h-8 text-left hover:bg-ink-850">
+        <span class="w-8 font-mono text-[11px] uppercase text-ink-300">${esc(l.code)}</span><span class="text-[13px] text-ink-100 truncate">${esc(l.name)}</span></button>`).join('')
+      || `<p class="px-3 py-2 text-xs text-ink-300">${esc(t('tr.noMoreLangs'))}</p>`;
   }
 
   $('#trEmpty').classList.toggle('hidden', !!langs.length);
@@ -141,16 +141,16 @@ function renderHead() {
     const c = counts(l);
     const pct = (n) => (c.total ? (n / c.total) * 100 : 0).toFixed(1);
     const busy = !!T.busy[l];
-    return `<div data-tr-row-lang="${esc(l)}" class="grid grid-cols-[2.2rem_1fr_auto_auto_auto] items-center gap-2 h-7 px-1.5 ${l === T.lang ? 'bg-cyan-400/[0.06]' : ''}">
-      <button data-tr-lang="${esc(l)}" class="font-mono text-[10px] uppercase tracking-wider text-left ${l === T.lang ? 'text-cyan-300' : 'text-ink-300'}">${esc(l)}</button>
+    return `<div data-tr-row-lang="${esc(l)}" class="grid grid-cols-[2.4rem_1fr_auto_auto_auto] items-center gap-2.5 h-9 border-b border-ink-700 ${l === T.lang ? 'bg-ink-850' : ''}">
+      <button data-tr-lang="${esc(l)}" class="font-mono text-[11px] uppercase text-left pl-1 ${l === T.lang ? 'text-ink-100' : 'text-ink-300'}">${esc(l)}</button>
       <div class="h-1 bg-ink-700 overflow-hidden flex" title="${esc(t('tr.statsTitle', c))}">
         <span class="${BAR.human}" style="width:${pct(c.human)}%"></span><span class="${BAR.machine}" style="width:${pct(c.machine)}%"></span>
       </div>
-      <span class="font-mono text-[10px] tabular-nums text-ink-400"><span class="text-ink-200">${c.human}</span>/<span class="text-amber-300">${c.machine}</span>/${c.total}</span>
-      <button data-tr-auto="${esc(l)}" ${busy || !c.missing ? 'disabled' : ''} class="h-5 px-1.5 rounded-sm border border-ink-600 text-[10px] font-mono text-ink-200 hover:border-cyan-400/60 hover:text-cyan-200 disabled:opacity-30 disabled:hover:border-ink-600 flex items-center gap-1" title="${esc(t('tr.autoTitle', { n: c.missing }))}">
+      <span class="font-mono text-[11px] tnum text-ink-300"><span class="text-ink-100">${c.human}</span>/<span class="text-amber-400">${c.machine}</span>/${c.total}</span>
+      <button data-tr-auto="${esc(l)}" ${busy || !c.missing ? 'disabled' : ''} class="btn btn-sm h-7 px-2 font-mono text-[11px] tnum" title="${esc(t('tr.autoTitle', { n: c.missing }))}">
         <span class="${busy ? 'animate-spin' : ''} inline-block">⟳</span>${c.missing}</button>
-      <button data-tr-preview="${esc(l)}" aria-pressed="${T.preview === l}" class="h-5 w-5 grid place-items-center rounded-sm border ${T.preview === l ? 'border-cyan-400 text-cyan-300 bg-cyan-400/10' : 'border-ink-600 text-ink-400 hover:text-ink-100'}" title="${esc(t('tr.previewTitle'))}">
-        <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+      <button data-tr-preview="${esc(l)}" aria-pressed="${T.preview === l}" class="btn btn-sm btn-icon h-7 w-7" title="${esc(t('tr.previewTitle'))}">
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>
     </div>`;
   }).join('');
 
@@ -162,20 +162,20 @@ function renderHead() {
 
 function renderList() {
   const list = visibleSegments();
-  $('#trCount').textContent = T.loading && !T.data ? '…' : String(list.length).padStart(3, '0');
+  $('#trCount').textContent = T.loading && !T.data ? '…' : list.length;
   $('#trList').innerHTML = list.length ? list.map((s) => {
     const st = status(T.lang, s.hash);
     const e = entry(T.lang, s.hash);
-    return `<div data-tr-seg="${esc(s.hash)}" class="tr-seg group grid grid-cols-[6px_1fr] gap-x-2 px-2 py-1.5 border-l border-transparent">
+    return `<div data-tr-seg="${esc(s.hash)}" class="tr-seg group grid grid-cols-[6px_1fr] gap-x-2.5 px-2 pt-3 pb-2 border-l-2 border-l-transparent">
       <span class="mt-1.5 h-1.5 w-1.5 rounded-full ${DOT[st]}" title="${esc(t('tr.st_' + st))}"></span>
       <div class="min-w-0">
-        <p class="text-[11px] leading-snug text-ink-300 break-words">${s.attr ? `<span class="mr-1 px-1 rounded-sm bg-ink-800 text-[9px] font-mono uppercase text-ink-400">${esc(s.attr)}</span>` : ''}${srcHTML(s.src)}</p>
-        <textarea rows="1" spellcheck="true" lang="${esc(T.lang)}" class="tr-input mt-1 w-full resize-none overflow-hidden bg-transparent border-0 border-b border-ink-700 focus:border-cyan-400 outline-none text-[11px] leading-snug font-mono text-ink-100 placeholder:text-ink-600 py-0.5 select-text"
+        <p class="text-[13px] leading-snug text-ink-300 break-words">${s.attr ? `<span class="mr-1.5 text-[11px] font-mono text-ink-400">${esc(s.attr)}</span>` : ''}${srcHTML(s.src)}</p>
+        <textarea rows="1" spellcheck="true" lang="${esc(T.lang)}" class="tr-input mt-1.5 w-full resize-none overflow-hidden bg-transparent border-0 border-b border-ink-700 focus:border-acc-fg outline-none text-[13px] leading-snug text-ink-100 placeholder:text-ink-400 py-0.5 select-text"
           placeholder="${esc(t('tr.missingPh'))}">${esc(decode(e?.text || ''))}</textarea>
-        <p data-tr-err class="hidden mt-0.5 text-[10px] font-mono text-red-400">${esc(t('tr.err_invalid_markers'))}</p>
+        <p data-tr-err class="hidden mt-1 text-xs text-red-400">${esc(t('tr.err_invalid_markers'))}</p>
       </div>
     </div>`;
-  }).join('') : `<p class="px-2 py-6 text-center text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400/70">${esc(t(T.data ? 'tr.noSegments' : 'tr.loading'))}</p>`;
+  }).join('') : `<p class="px-2 py-6 text-sm text-ink-300">${esc(t(T.data ? 'tr.noSegments' : 'tr.loading'))}</p>`;
   document.querySelectorAll('#trList .tr-input').forEach(grow);
 }
 
@@ -338,8 +338,8 @@ export function initI18n() {
   tab.addEventListener('focusin', (e) => {
     const row = e.target.closest?.('[data-tr-seg]');
     document.querySelectorAll('#trList .tr-seg').forEach((r) => {
-      r.classList.toggle('border-cyan-400', r === row);
-      r.classList.toggle('bg-cyan-400/[0.04]', r === row);
+      r.classList.toggle('border-l-acc-fg', r === row);
+      r.classList.toggle('bg-ink-850', r === row);
     });
   });
   // Quitter un champ enregistre aussi (sans valider une traduction machine).

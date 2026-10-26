@@ -151,19 +151,19 @@ export async function variants() {
   hideError();
   const ctrl = new AbortController();
   const slot = (i) => `
-    <div data-slot="${i}" class="flex flex-col gap-3 rounded-xl border border-ink-700 bg-ink-850 p-3">
+    <div data-slot="${i}" class="flex flex-col gap-3">
       <div class="flex items-center justify-between">
-        <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400">${esc(t('studio.variantDir' + i))}</p>
-        <span data-state class="text-[10px] font-mono text-ink-400">${esc(t('editor.generating'))}</span>
+        <p class="label">${esc(t('studio.variantDir' + i))}</p>
+        <span data-state class="text-[11px] text-ink-300">${esc(t('editor.generating'))}</span>
       </div>
-      <div data-view class="grid place-items-center rounded-lg bg-ink-800 text-ink-400 text-xs" style="aspect-ratio:1280/720">
+      <div data-view class="grid place-items-center border border-ink-700 bg-ink-850 text-ink-300 text-xs" style="aspect-ratio:1280/720">
         <svg class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.25" stroke-width="3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
       </div>
-      <button data-pick disabled class="h-9 rounded-lg text-sm font-semibold btn-primary disabled:opacity-40 disabled:cursor-not-allowed">${esc(t('studio.variantPick'))}</button>
+      <button data-pick disabled class="btn h-9">${esc(t('studio.variantPick'))}</button>
     </div>`;
   const m = openModal({
     title: t('studio.variantsTitle', { block: specOf(b.type).label }), size: 'xl', onClose: () => ctrl.abort(),
-    body: `<p class="text-xs text-ink-400 mb-4">${esc(t('studio.variantsHint'))}</p><div class="grid gap-4 lg:grid-cols-3">${[1, 2, 3].map(slot).join('')}</div>`,
+    body: `<p class="text-xs text-ink-300 mb-5">${esc(t('studio.variantsHint'))}</p><div class="grid gap-6 lg:grid-cols-3">${[1, 2, 3].map(slot).join('')}</div>`,
   });
   [1, 2, 3].forEach(async (i) => {
     const box = m.el.querySelector(`[data-slot="${i}"]`);
@@ -193,8 +193,8 @@ export async function rethemePage() {
   const m = openModal({
     title: t('studio.rethemeTitle'), size: 'sm', onClose: () => ctrl.abort(),
     body: `<p data-line class="text-sm text-ink-200"></p>
-      <div class="mt-3 h-1.5 rounded-full bg-ink-700 overflow-hidden"><div data-bar class="h-full bg-vio-500 transition-all" style="width:0%"></div></div>
-      <p class="mt-3 text-xs text-ink-400">${esc(t('studio.rethemeHint'))}</p>`,
+      <div class="mt-3 h-1 bg-ink-700 overflow-hidden"><div data-bar class="h-full bg-ink-100 transition-all" style="width:0%"></div></div>
+      <p class="mt-3 text-xs text-ink-300">${esc(t('studio.rethemeHint'))}</p>`,
   });
   S.generating = true;
   let done = 0, failed = 0;

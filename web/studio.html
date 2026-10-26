@@ -9,88 +9,81 @@
 <link href="/static/fonts.css" rel="stylesheet">
 <script src="/static/theme.js"></script>
 <script src="/static/i18n.js"></script>
-<style>
-  /* HUD : équerres aux coins des cadres de l'onglet Traduction */
-  .hud::before, .hud::after { content: ""; position: absolute; width: 7px; height: 7px; pointer-events: none; border-color: rgba(34, 211, 238, .7); }
-  .hud::before { top: -1px; left: -1px; border-top: 1px solid; border-left: 1px solid; }
-  .hud::after { bottom: -1px; right: -1px; border-bottom: 1px solid; border-right: 1px solid; }
-</style>
 </head>
 <body class="h-full bg-ink-900 text-ink-100 font-sans antialiased overflow-hidden select-none">
 
 <!-- Voile de démarrage : retiré par main.js une fois le projet chargé -->
 <div id="boot" class="fixed inset-0 z-50 grid place-items-center bg-ink-900">
-  <svg class="h-6 w-6 animate-spin text-vio-400" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.25" stroke-width="3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+  <svg class="h-6 w-6 animate-spin text-ink-300" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.25" stroke-width="3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
 </div>
 
 <div class="h-full flex flex-col">
 
   <!-- ══════════ Barre supérieure ══════════ -->
-  <header class="h-14 shrink-0 flex items-center gap-3 px-4 border-b border-ink-700 bg-ink-900">
-    <a href="/sites" class="shrink-0 hover:opacity-90"><img src="/gfx/logo.png" alt="NADAPROD" class="h-9"></a>
+  <header class="h-12 shrink-0 flex items-center gap-2 px-3 border-b border-ink-700 bg-ink-900">
+    <a href="/sites" class="shrink-0 hover:opacity-80 mr-1"><img src="/gfx/logo.png" alt="NADAPROD" class="h-7"></a>
 
     <!-- Projet courant -->
-    <button id="btnProjects" class="h-9 max-w-[16rem] px-3 rounded-lg border border-ink-700 bg-ink-850 hover:bg-ink-800 flex items-center gap-2 text-left" title="Projets" data-i18n-title="studio.projectsTitle">
+    <button id="btnProjects" class="btn max-w-[16rem] gap-2 text-left" title="Projets" data-i18n-title="studio.projectsTitle">
       <svg class="h-3.5 w-3.5 shrink-0 text-ink-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z" stroke-linejoin="round"/></svg>
-      <span id="projectLabel" class="text-xs font-medium truncate"></span>
+      <span id="projectLabel" class="truncate"></span>
       <svg class="h-3 w-3 shrink-0 text-ink-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
-    <span id="saveState" class="text-[11px] font-mono text-ink-400" role="status" aria-live="polite"></span>
+    <span id="saveState" class="text-xs text-ink-300" role="status" aria-live="polite"></span>
 
     <!-- Bascule d'aperçu -->
-    <div class="mx-auto flex items-center gap-1 rounded-lg bg-ink-800 p-1 border border-ink-700" role="group" aria-label="Largeur d'aperçu" data-i18n-aria-label="editor.vpGroup">
-      <button data-vp="desktop" class="vp-btn px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 text-ink-300 hover:text-ink-100" title="Bureau" data-i18n-title="editor.vpDesktop">
+    <div class="mx-auto seg" role="group" aria-label="Largeur d'aperçu" data-i18n-aria-label="editor.vpGroup">
+      <button data-vp="desktop" aria-pressed="false" class="vp-btn" title="Bureau" data-i18n-title="editor.vpDesktop">
         <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4" stroke-linecap="round"/></svg><span data-i18n="editor.vpDesktop">Bureau</span>
       </button>
-      <button data-vp="tablet" class="vp-btn px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 text-ink-300 hover:text-ink-100" title="Tablette" data-i18n-title="editor.vpTablet">
+      <button data-vp="tablet" aria-pressed="false" class="vp-btn" title="Tablette" data-i18n-title="editor.vpTablet">
         <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01" stroke-linecap="round"/></svg><span data-i18n="editor.vpTablet">Tablette</span>
       </button>
-      <button data-vp="mobile" class="vp-btn px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 text-ink-300 hover:text-ink-100" title="Mobile" data-i18n-title="editor.vpMobile">
+      <button data-vp="mobile" aria-pressed="false" class="vp-btn" title="Mobile" data-i18n-title="editor.vpMobile">
         <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="2" width="8" height="20" rx="2"/><path d="M12 18h.01" stroke-linecap="round"/></svg><span data-i18n="editor.vpMobile">Mobile</span>
       </button>
-      <span class="w-px h-5 bg-ink-600 mx-1"></span>
-      <button id="btnRetouchMode" aria-pressed="false" class="px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 text-ink-300 hover:text-ink-100" title="Cliquer un élément de l'aperçu pour le retoucher" data-i18n-title="studio.retouchModeTitle">
+            <button id="btnRetouchMode" aria-pressed="false" title="Cliquer un élément de l'aperçu pour le retoucher" data-i18n-title="studio.retouchModeTitle">
         <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m4 4 7 17 2.5-7.5L21 11 4 4Z" stroke-linejoin="round"/></svg><span data-i18n="studio.retouchMode">Retouche</span>
       </button>
     </div>
 
     <div class="flex items-center gap-2">
-      <span id="modelBadge" class="hidden h-9 px-2.5 rounded-lg border border-ink-700 bg-ink-850 text-[10px] font-mono text-ink-400 items-center" title="Modèle de génération actif" data-i18n-title="editor.modelTitle"></span>
-      <button id="btnPalette" class="h-9 px-2.5 rounded-lg border border-ink-700 bg-ink-850 hover:bg-ink-800 text-[11px] font-mono text-ink-300 flex items-center gap-1.5" title="Palette de commandes" data-i18n-title="studio.paletteTitle">
-        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5" stroke-linecap="round"/></svg>⌘K
+      <span id="modelBadge" class="hidden h-9 px-1 text-[11px] font-mono text-ink-300 items-center" title="Modèle de génération actif" data-i18n-title="editor.modelTitle"></span>
+      <button id="btnPalette" class="btn" title="Palette de commandes" data-i18n-title="studio.paletteTitle">
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5" stroke-linecap="round"/></svg><kbd>⌘K</kbd>
       </button>
-      <button type="button" onclick="toggleTheme()" class="h-9 w-9 rounded-lg border border-ink-600 hover:bg-ink-800 text-ink-300 hover:text-ink-100 grid place-items-center" title="Thème clair / sombre" data-i18n-title="common.theme" aria-label="Thème clair / sombre" data-i18n-aria-label="common.theme">◐</button>
-      <a href="/sites" class="h-9 px-3 rounded-lg text-xs font-medium text-ink-300 hover:text-ink-100 hover:bg-ink-800 flex items-center gap-1.5">
+      <button type="button" onclick="toggleTheme()" class="btn btn-icon" title="Thème clair / sombre" data-i18n-title="common.theme" aria-label="Thème clair / sombre" data-i18n-aria-label="common.theme">◐</button>
+      <a href="/sites" class="btn btn-ghost">
         <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3Z"/></svg><span data-i18n="editor.sitesLink">Sites importés</span>
       </a>
       <div class="relative">
-        <button id="btnExport" aria-haspopup="menu" aria-expanded="false" class="h-9 px-4 rounded-lg text-xs font-semibold btn-primary flex items-center gap-1.5">
+        <button id="btnExport" aria-haspopup="menu" aria-expanded="false" class="btn-primary h-9 px-4">
           <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="studio.exportBtn">Exporter</span>
         </button>
-        <div id="exportMenu" role="menu" class="hidden absolute right-0 top-11 z-30 w-72 rounded-xl border border-ink-600 bg-ink-900 shadow-2xl p-1.5">
-          <button role="menuitem" data-export="site" class="w-full text-left rounded-lg px-3 py-2 hover:bg-ink-800">
-            <span class="block text-sm font-medium text-vio-400" data-i18n="studio.siteTitle">Enregistrer dans un site…</span>
-            <span class="block text-[11px] text-ink-400" data-i18n="studio.siteDesc">Devient une page d'un site importé, publiée par NADAPROD.</span></button>
+        <div id="exportMenu" role="menu" class="hidden absolute right-0 top-11 z-30 w-72 border border-ink-700 bg-ink-900 py-1">
+          <button role="menuitem" data-export="site" class="w-full text-left px-4 py-2 hover:bg-ink-850">
+            <span class="block text-sm font-medium" data-i18n="studio.siteTitle">Enregistrer dans un site…</span>
+            <span class="block text-xs text-ink-300 mt-0.5" data-i18n="studio.siteDesc">Devient une page d'un site importé, publiée par NADAPROD.</span></button>
           <div class="my-1 h-px bg-ink-700"></div>
-          <button role="menuitem" data-export="html" class="w-full text-left rounded-lg px-3 py-2 hover:bg-ink-800">
+          <button role="menuitem" data-export="html" class="w-full text-left px-4 py-2 hover:bg-ink-850">
             <span class="block text-sm font-medium" data-i18n="studio.exportHTML">Page HTML autonome</span>
-            <span class="block text-[11px] text-ink-400" data-i18n="studio.exportHTMLDesc">Un seul fichier, CSS Tailwind compilé et purgé, SEO inclus.</span></button>
-          <button role="menuitem" data-export="zip" class="w-full text-left rounded-lg px-3 py-2 hover:bg-ink-800">
+            <span class="block text-xs text-ink-300 mt-0.5" data-i18n="studio.exportHTMLDesc">Un seul fichier, CSS Tailwind compilé et purgé, SEO inclus.</span></button>
+          <button role="menuitem" data-export="zip" class="w-full text-left px-4 py-2 hover:bg-ink-850">
             <span class="block text-sm font-medium" data-i18n="studio.exportZIP">Site complet (ZIP)</span>
-            <span class="block text-[11px] text-ink-400" data-i18n="studio.exportZIPDesc">index.html, styles.css, images et polices locales.</span></button>
-          <button role="menuitem" data-export="jsx" class="w-full text-left rounded-lg px-3 py-2 hover:bg-ink-800">
+            <span class="block text-xs text-ink-300 mt-0.5" data-i18n="studio.exportZIPDesc">index.html, styles.css, images et polices locales.</span></button>
+          <button role="menuitem" data-export="jsx" class="w-full text-left px-4 py-2 hover:bg-ink-850">
             <span class="block text-sm font-medium" data-i18n="studio.exportJSX">Composants React (ZIP)</span></button>
-          <button role="menuitem" data-export="vue" class="w-full text-left rounded-lg px-3 py-2 hover:bg-ink-800">
+          <button role="menuitem" data-export="vue" class="w-full text-left px-4 py-2 hover:bg-ink-850">
             <span class="block text-sm font-medium" data-i18n="studio.exportVue">Composants Vue (ZIP)</span></button>
           <div class="my-1 h-px bg-ink-700"></div>
-          <button role="menuitem" data-export="copy" class="w-full text-left rounded-lg px-3 py-2 hover:bg-ink-800 text-sm" data-i18n="editor.copyPage">Copier la page</button>
-          <button role="menuitem" data-export="json" class="w-full text-left rounded-lg px-3 py-2 hover:bg-ink-800 text-sm" data-i18n="studio.exportJSON">Sauvegarde du projet (JSON)</button>
+          <button role="menuitem" data-export="copy" class="w-full text-left px-4 py-2 hover:bg-ink-850 text-sm" data-i18n="editor.copyPage">Copier la page</button>
+          <button role="menuitem" data-export="json" class="w-full text-left px-4 py-2 hover:bg-ink-850 text-sm" data-i18n="studio.exportJSON">Sauvegarde du projet (JSON)</button>
           <div class="my-1 h-px bg-ink-700"></div>
-          <button role="menuitem" data-export="publish" class="w-full text-left rounded-lg px-3 py-2 hover:bg-ink-800">
-            <span class="block text-sm font-medium text-vio-400" data-i18n="studio.publishTitle">Publier en ligne…</span>
-            <span class="block text-[11px] text-ink-400" data-i18n="studio.publishDesc">Netlify ou Cloudflare Pages, avec votre jeton.</span></button>
-          <p id="exportLangsHint" class="hidden px-3 py-2 text-[11px] font-mono text-cyan-300/90" data-i18n="tr.exportAllLangs">Multilingue : ZIP, site et publication contiennent une URL par langue (/en/…).</p>
-          <p id="exportCompiledHint" class="hidden px-3 py-2 text-[11px] text-amber-400" data-i18n="studio.exportNoCompiler">Compilateur Tailwind absent sur ce serveur : les exports garderont le CDN.</p>
+          <button role="menuitem" data-export="publish" class="w-full text-left px-4 py-2 hover:bg-ink-850">
+            <span class="block text-sm font-medium" data-i18n="studio.publishTitle">Publier en ligne…</span>
+            <span class="block text-xs text-ink-300 mt-0.5" data-i18n="studio.publishDesc">Netlify ou Cloudflare Pages, avec votre jeton.</span></button>
+          <p id="exportLangsHint" class="hidden px-4 py-2 text-xs text-ink-300 border-t border-ink-700" data-i18n="tr.exportAllLangs">Multilingue : ZIP, site et publication contiennent une URL par langue (/en/…).</p>
+          <p id="exportCompiledHint" class="hidden px-4 py-2 text-xs text-amber-400 border-t border-ink-700" data-i18n="studio.exportNoCompiler">Compilateur Tailwind absent sur ce serveur : les exports garderont le CDN.</p>
         </div>
       </div>
     </div>
@@ -101,32 +94,29 @@
     <!-- ══════════ Rail gauche : blocs + structure ══════════ -->
     <aside class="w-64 shrink-0 border-r border-ink-700 bg-ink-900 flex flex-col min-h-0">
       <div class="p-3 border-b border-ink-700 max-h-[46%] overflow-y-auto scrollbar-thin">
-        <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 mb-2" data-i18n="editor.addBlock">Ajouter un bloc</p>
-        <div id="palette" class="grid grid-cols-2 gap-1.5"><!-- rempli via /api/blocks --></div>
+        <p class="label mb-2.5" data-i18n="editor.addBlock">Ajouter un bloc</p>
+        <div id="palette" class="grid grid-cols-2 gap-px bg-ink-700 border border-ink-700"><!-- rempli via /api/blocks --></div>
       </div>
       <div class="flex-1 min-h-0 flex flex-col">
-        <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 px-3 pt-3 pb-2" data-i18n="editor.structure">Structure de la page</p>
-        <div id="structure" role="listbox" aria-label="Structure de la page" data-i18n-aria-label="editor.structure" class="flex-1 overflow-y-auto scrollbar-thin px-3 pb-3 space-y-1.5"></div>
+        <p class="label px-3 pt-4 pb-2.5" data-i18n="editor.structure">Structure de la page</p>
+        <div id="structure" role="listbox" aria-label="Structure de la page" data-i18n-aria-label="editor.structure" class="flex-1 overflow-y-auto scrollbar-thin px-3 pb-3 space-y-px"></div>
       </div>
     </aside>
 
     <!-- ══════════ Canvas central ══════════ -->
     <main class="flex-1 min-w-0 canvas-dots bg-ink-850 relative flex flex-col">
       <div class="flex-1 min-h-0 overflow-auto scrollbar-thin p-6 flex items-start justify-center">
-        <div id="frameShell" class="transition-all duration-300 w-full max-w-full rounded-xl overflow-hidden ring-1 ring-ink-700 shadow-2xl shadow-black/50 bg-white" style="height: calc(100vh - 8.5rem);">
+        <div id="frameShell" class="transition-[width] duration-300 w-full max-w-full overflow-hidden border border-ink-700 bg-white" style="height: calc(100vh - 8.5rem);">
           <!-- sandbox sans allow-same-origin : le HTML généré tourne dans une origine opaque,
                sans accès aux cookies ni à l'API de l'app. Le dialogue passe par postMessage. -->
           <iframe id="preview" sandbox="allow-scripts" title="Aperçu de la page" data-i18n-title="editor.previewTitle" class="w-full h-full bg-white"></iframe>
         </div>
       </div>
-      <button id="trPreviewBadge" class="hidden absolute top-2 left-1/2 -translate-x-1/2 z-10 h-6 px-2.5 border border-cyan-400/60 bg-ink-900/90 text-acc-fg font-mono text-[10px] uppercase tracking-[0.2em] hover:bg-cyan-400/10" title="Revenir à la langue source" data-i18n-title="tr.previewExit"></button>
+      <button id="trPreviewBadge" class="hidden absolute top-2 left-1/2 -translate-x-1/2 z-10 h-7 pl-3 pr-3 border border-ink-700 bg-ink-900 text-ink-100 text-xs shadow-[inset_3px_0_0_rgb(var(--acc-fg))] hover:border-ink-400" title="Revenir à la langue source" data-i18n-title="tr.previewExit"></button>
       <div id="emptyState" class="absolute inset-0 grid place-items-center pointer-events-none">
         <div class="text-center max-w-sm">
-          <div class="mx-auto h-12 w-12 rounded-2xl border border-dashed border-ink-600 grid place-items-center mb-4">
-            <svg class="h-5 w-5 text-ink-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
-          </div>
-          <p class="font-display font-semibold text-ink-200" data-i18n="editor.emptyTitle">Votre page est vide</p>
-          <p class="text-sm text-ink-400 mt-1" data-i18n="editor.emptyDesc">Ajoutez un bloc depuis le rail de gauche, puis décrivez-le pour le générer avec l'IA.</p>
+          <p class="font-semibold text-ink-200" data-i18n="editor.emptyTitle">Votre page est vide</p>
+          <p class="text-sm text-ink-300 mt-1" data-i18n="editor.emptyDesc">Ajoutez un bloc depuis le rail de gauche, puis décrivez-le pour le générer avec l'IA.</p>
         </div>
       </div>
     </main>
@@ -134,12 +124,12 @@
     <!-- ══════════ Panneau droit ══════════ -->
     <aside id="rightPanel" class="w-[24rem] shrink-0 border-l border-ink-700 bg-ink-900 flex flex-col min-h-0 transition-all duration-300">
       <div class="shrink-0 flex border-b border-ink-700" role="tablist">
-        <button role="tab" data-tab="generate" class="tab-btn flex-1 h-11 text-[11px] font-semibold border-b-2" data-i18n="editor.tabGenerate">Générer</button>
-        <button role="tab" data-tab="code" class="tab-btn flex-1 h-11 text-[11px] font-semibold border-b-2" data-i18n="editor.tabCode">Code</button>
-        <button role="tab" data-tab="history" class="tab-btn flex-1 h-11 text-[11px] font-semibold border-b-2" data-i18n="studio.tabHistory">Historique</button>
-        <button role="tab" data-tab="quality" class="tab-btn flex-1 h-11 text-[11px] font-semibold border-b-2" data-i18n="studio.tabQuality">Qualité</button>
-        <button role="tab" data-tab="i18n" class="tab-btn flex-1 h-11 text-[11px] font-semibold border-b-2" data-i18n="tr.tab">Traduction</button>
-        <button role="tab" data-tab="brand" class="tab-btn flex-1 h-11 text-[11px] font-semibold border-b-2" data-i18n="editor.tabBrand">Marque</button>
+        <button role="tab" data-tab="generate" class="tab-btn flex-1 h-11 text-[12px] font-medium text-ink-300 hover:text-ink-100 border-b-2 border-transparent aria-selected:text-ink-100 aria-selected:border-acc-fg" data-i18n="editor.tabGenerate">Générer</button>
+        <button role="tab" data-tab="code" class="tab-btn flex-1 h-11 text-[12px] font-medium text-ink-300 hover:text-ink-100 border-b-2 border-transparent aria-selected:text-ink-100 aria-selected:border-acc-fg" data-i18n="editor.tabCode">Code</button>
+        <button role="tab" data-tab="history" class="tab-btn flex-1 h-11 text-[12px] font-medium text-ink-300 hover:text-ink-100 border-b-2 border-transparent aria-selected:text-ink-100 aria-selected:border-acc-fg" data-i18n="studio.tabHistory">Historique</button>
+        <button role="tab" data-tab="quality" class="tab-btn flex-1 h-11 text-[12px] font-medium text-ink-300 hover:text-ink-100 border-b-2 border-transparent aria-selected:text-ink-100 aria-selected:border-acc-fg" data-i18n="studio.tabQuality">Qualité</button>
+        <button role="tab" data-tab="i18n" class="tab-btn flex-1 h-11 text-[12px] font-medium text-ink-300 hover:text-ink-100 border-b-2 border-transparent aria-selected:text-ink-100 aria-selected:border-acc-fg" data-i18n="tr.tab">Traduction</button>
+        <button role="tab" data-tab="brand" class="tab-btn flex-1 h-11 text-[12px] font-medium text-ink-300 hover:text-ink-100 border-b-2 border-transparent aria-selected:text-ink-100 aria-selected:border-acc-fg" data-i18n="editor.tabBrand">Marque</button>
       </div>
 
       <div class="flex-1 min-h-0 overflow-y-auto scrollbar-thin">
@@ -147,183 +137,181 @@
         <!-- Onglet Générer -->
         <section id="tab-generate" class="p-4 space-y-4">
           <p id="genStatus" class="sr-only" role="status" aria-live="polite"></p>
-          <div id="noSelection" class="text-sm text-ink-400 border border-dashed border-ink-600 rounded-xl p-4" data-i18n="editor.noSelection">
+          <div id="noSelection" class="text-sm text-ink-300 leading-relaxed" data-i18n="editor.noSelection">
             Sélectionnez un bloc dans la structure (ou ajoutez-en un) pour ouvrir son générateur spécialisé.
           </div>
 
           <div id="generator" class="hidden space-y-4">
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
-                <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400" data-i18n="editor.genLabel">Générateur spécialisé</p>
-                <p id="genBlockLabel" class="font-display font-semibold text-lg tracking-tight mt-0.5"></p>
-                <p id="genBlockDesc" class="text-xs text-ink-400 mt-0.5"></p>
+                <p class="label" data-i18n="editor.genLabel">Générateur spécialisé</p>
+                <p id="genBlockLabel" class="font-semibold text-base mt-1.5"></p>
+                <p id="genBlockDesc" class="text-xs text-ink-300 mt-0.5"></p>
               </div>
               <div class="flex items-center gap-1 shrink-0">
-                <button id="btnUndo" disabled class="p-1.5 rounded-lg border border-ink-700 text-ink-300 hover:bg-ink-800 disabled:opacity-30" title="Annuler (⌘Z)" data-i18n-title="studio.undoTitle" aria-label="Annuler" data-i18n-aria-label="studio.undo">
+                <button id="btnUndo" disabled class="btn btn-sm btn-icon" title="Annuler (⌘Z)" data-i18n-title="studio.undoTitle" aria-label="Annuler" data-i18n-aria-label="studio.undo">
                   <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-                <button id="btnRedo" disabled class="p-1.5 rounded-lg border border-ink-700 text-ink-300 hover:bg-ink-800 disabled:opacity-30" title="Rétablir (⇧⌘Z)" data-i18n-title="studio.redoTitle" aria-label="Rétablir" data-i18n-aria-label="studio.redo">
+                <button id="btnRedo" disabled class="btn btn-sm btn-icon" title="Rétablir (⇧⌘Z)" data-i18n-title="studio.redoTitle" aria-label="Rétablir" data-i18n-aria-label="studio.redo">
                   <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 14 5-5-5-5M20 9H10a6 6 0 0 0 0 12h3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
               </div>
             </div>
             <div>
-              <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 mb-2" data-i18n="editor.suggestions">Suggestions</p>
+              <p class="label mb-2" data-i18n="editor.suggestions">Suggestions</p>
               <div id="presets" class="space-y-1.5"></div>
             </div>
             <div>
-              <label for="promptInput" class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" data-i18n="editor.brief">Votre brief</label>
+              <label for="promptInput" class="label block mb-2" data-i18n="editor.brief">Votre brief</label>
               <textarea id="promptInput" rows="4" placeholder="Ex. : un header sombre pour une startup SaaS, accent violet en dégradé, CTA « Commencer »…" data-i18n-placeholder="editor.briefPh"
-                class="w-full rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm p-3 placeholder:text-ink-400/70 resize-y select-text"></textarea>
+                class="field w-full h-auto py-2.5 text-sm resize-y select-text"></textarea>
             </div>
             <label id="imagesRow" class="hidden flex items-center gap-2 text-xs text-ink-300">
               <input id="imagesToggle" type="checkbox" class="accent-vio-500"><span data-i18n="studio.imagesToggle">Remplacer les images d'attente par de vraies photos</span>
             </label>
             <div class="flex gap-2">
-              <button id="btnGenerate" class="flex-1 h-11 rounded-xl btn-primary text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-wait">
+              <button id="btnGenerate" class="btn btn-ink flex-1 h-11 text-sm disabled:cursor-wait">
                 <svg id="genIcon" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.7 4.6L18 9l-4.3 1.4L12 15l-1.7-4.6L6 9l4.3-1.4L12 3ZM19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15Z" stroke-linejoin="round"/></svg>
                 <svg id="genSpin" class="h-4 w-4 animate-spin hidden" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.25" stroke-width="3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
                 <span id="genLabel" data-i18n="editor.generate">Générer ce bloc</span>
               </button>
-              <button id="btnStop" class="hidden h-11 px-3 rounded-xl border border-ink-600 hover:bg-ink-800 text-sm" data-i18n="studio.stop">Arrêter</button>
-              <button id="btnVariants" class="h-11 px-3 rounded-xl border border-ink-600 hover:bg-ink-800 text-sm font-medium disabled:opacity-50" title="Trois propositions en parallèle" data-i18n-title="studio.variantsBtnTitle" data-i18n="studio.variantsBtn">3 variantes</button>
+              <button id="btnStop" class="hidden btn h-11" data-i18n="studio.stop">Arrêter</button>
+              <button id="btnVariants" class="btn h-11" title="Trois propositions en parallèle" data-i18n-title="studio.variantsBtnTitle" data-i18n="studio.variantsBtn">3 variantes</button>
             </div>
-            <p id="genMeta" class="text-[11px] font-mono text-ink-400 text-center hidden"></p>
+            <p id="genMeta" class="text-[11px] font-mono tnum text-ink-300 hidden"></p>
 
             <!-- Erreur actionnable (remplace le toast fugace) -->
-            <div id="genError" class="hidden rounded-xl border border-red-500/40 bg-red-500/10 p-3.5" role="alert">
+            <div id="genError" class="hidden border-l-2 border-red-400 pl-3 py-1" role="alert">
               <div class="flex items-start justify-between gap-3">
-                <p id="genErrorTitle" class="text-sm font-semibold text-red-300"></p>
-                <button id="genErrorClose" class="text-red-300/70 hover:text-red-200" aria-label="Fermer" data-i18n-aria-label="studio.close">
+                <p id="genErrorTitle" class="text-sm font-semibold text-red-400"></p>
+                <button id="genErrorClose" class="text-ink-300 hover:text-ink-100" aria-label="Fermer" data-i18n-aria-label="studio.close">
                   <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"/></svg></button>
               </div>
-              <p id="genErrorBody" class="mt-1 text-xs text-red-200/90 leading-relaxed"></p>
-              <p id="genErrorDetail" class="mt-2 text-[10px] font-mono text-red-300/60 break-words select-text"></p>
-              <button id="genErrorRetry" class="mt-3 h-8 px-3 rounded-lg text-xs font-semibold bg-red-500/80 hover:bg-red-500 text-white" data-i18n="studio.retry">Réessayer</button>
+              <p id="genErrorBody" class="mt-1 text-xs text-ink-200 leading-relaxed"></p>
+              <p id="genErrorDetail" class="mt-2 text-[11px] font-mono text-ink-300 break-words select-text"></p>
+              <button id="genErrorRetry" class="btn btn-sm mt-3" data-i18n="studio.retry">Réessayer</button>
             </div>
 
-            <p class="text-[11px] text-ink-400 leading-relaxed" data-i18n="editor.iterHint">Le bloc existant est envoyé comme contexte : écrivez une retouche (« passe le fond en clair ») pour itérer plutôt que repartir de zéro.</p>
+            <p class="text-xs text-ink-300 leading-relaxed" data-i18n="editor.iterHint">Le bloc existant est envoyé comme contexte : écrivez une retouche (« passe le fond en clair ») pour itérer plutôt que repartir de zéro.</p>
           </div>
 
           <!-- Retouche ciblée d'un élément de l'aperçu -->
           <div id="retouch" class="hidden space-y-4">
             <div>
-              <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400" data-i18n="studio.retouchLabel">Retouche ciblée</p>
-              <p class="font-display font-semibold text-lg tracking-tight mt-0.5"><span data-i18n="studio.retouchElement">Élément</span> <code id="retouchTag" class="font-mono text-sm text-vio-400"></code></p>
+              <p class="label" data-i18n="studio.retouchLabel">Retouche ciblée</p>
+              <p class="font-semibold text-base mt-1.5"><span data-i18n="studio.retouchElement">Élément</span> <code id="retouchTag" class="font-mono text-sm text-ink-100"></code></p>
             </div>
             <p id="retouchRootHint" class="hidden text-xs text-amber-400" data-i18n="studio.retouchRoot">C'est le bloc entier : pour le refaire, utilisez plutôt son générateur (quittez le mode retouche).</p>
             <textarea id="retouchInput" rows="3" placeholder="Ex. : bouton plus gros, en couleur d'accent" data-i18n-placeholder="studio.retouchPh"
-              class="w-full rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm p-3 placeholder:text-ink-400/70 resize-y select-text"></textarea>
-            <button id="btnRetouch" class="w-full h-10 rounded-xl btn-primary text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-wait">
+              class="field w-full h-auto py-2.5 text-sm resize-y select-text"></textarea>
+            <button id="btnRetouch" class="btn btn-ink w-full h-10 text-sm disabled:cursor-wait">
               <svg id="retouchSpin" class="h-4 w-4 animate-spin hidden" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.25" stroke-width="3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
               <span data-i18n="studio.retouchGo">Retoucher avec l'IA</span>
             </button>
             <div class="grid grid-cols-2 gap-2">
-              <button id="btnElParent" class="h-9 rounded-lg border border-ink-600 hover:bg-ink-800 text-xs" data-i18n="studio.elParent">Sélectionner le parent</button>
-              <button id="btnElDelete" class="h-9 rounded-lg border border-ink-600 hover:bg-red-500/20 text-red-400 text-xs" data-i18n="studio.elDelete">Supprimer l'élément</button>
-              <button id="btnPickImage" class="hidden col-span-2 h-9 rounded-lg border border-ink-600 hover:bg-ink-800 text-xs" data-i18n="studio.imagesPick">Choisir une photo…</button>
+              <button id="btnElParent" class="btn btn-sm" data-i18n="studio.elParent">Sélectionner le parent</button>
+              <button id="btnElDelete" class="btn btn-sm btn-danger" data-i18n="studio.elDelete">Supprimer l'élément</button>
+              <button id="btnPickImage" class="hidden col-span-2 btn btn-sm" data-i18n="studio.imagesPick">Choisir une photo…</button>
             </div>
-            <p class="text-[11px] text-ink-400 leading-relaxed" data-i18n="studio.retouchHint">Double-cliquez un texte dans l'aperçu pour le corriger directement. Échap désélectionne.</p>
-            <button id="btnElDone" class="w-full h-9 rounded-lg text-xs text-ink-300 hover:text-ink-100 hover:bg-ink-800" data-i18n="studio.retouchOff">Quitter le mode retouche</button>
+            <p class="text-xs text-ink-300 leading-relaxed" data-i18n="studio.retouchHint">Double-cliquez un texte dans l'aperçu pour le corriger directement. Échap désélectionne.</p>
+            <button id="btnElDone" class="btn btn-ghost w-full" data-i18n="studio.retouchOff">Quitter le mode retouche</button>
           </div>
         </section>
 
         <!-- Onglet Code -->
         <section id="tab-code" class="p-4 space-y-3 hidden">
-          <div id="noCode" class="text-sm text-ink-400 border border-dashed border-ink-600 rounded-xl p-4" data-i18n="editor.noCode">Aucun bloc sélectionné.</div>
+          <div id="noCode" class="text-sm text-ink-300" data-i18n="editor.noCode">Aucun bloc sélectionné.</div>
           <div id="codePanel" class="hidden space-y-3">
             <div class="flex items-center justify-between">
-              <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400" data-i18n="editor.blockHtml">HTML du bloc</p>
+              <p class="label" data-i18n="editor.blockHtml">HTML du bloc</p>
               <div class="flex items-center gap-3">
-                <button id="btnExpandCode" class="text-xs font-medium text-ink-300 hover:text-ink-100 flex items-center gap-1">
+                <button id="btnExpandCode" class="btn btn-sm btn-ghost">
                   <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="editor.expand">Agrandir</span>
                 </button>
-                <button id="btnCopyBlock" class="text-xs font-medium text-ink-300 hover:text-ink-100 flex items-center gap-1">
+                <button id="btnCopyBlock" class="btn btn-sm btn-ghost">
                   <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span data-i18n="editor.copy">Copier</span>
                 </button>
               </div>
             </div>
             <!-- Zone de repli tant que Monaco n'est pas chargé (ou si le CDN est indisponible) -->
             <textarea id="codeEditor" rows="18" spellcheck="false"
-              class="w-full rounded-xl bg-ink-850 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none font-mono text-[11px] leading-relaxed p-3 text-ink-200 resize-y select-text"></textarea>
-            <div id="codeMonaco" class="hidden h-[60vh] min-h-[16rem] rounded-xl overflow-hidden border border-ink-600 select-text"></div>
-            <button id="btnApplyCode" class="w-full h-10 rounded-xl border border-ink-600 hover:bg-ink-800 text-sm font-medium" data-i18n="editor.apply">Appliquer à l'aperçu</button>
+              class="field w-full h-auto py-2.5 font-mono text-[12px] leading-relaxed text-ink-200 resize-y select-text"></textarea>
+            <div id="codeMonaco" class="hidden h-[60vh] min-h-[16rem] overflow-hidden border border-ink-700 select-text"></div>
+            <button id="btnApplyCode" class="btn w-full h-10" data-i18n="editor.apply">Appliquer à l'aperçu</button>
           </div>
         </section>
 
         <!-- Onglet Historique -->
         <section id="tab-history" class="p-4 space-y-3 hidden">
-          <p class="text-xs text-ink-400 leading-relaxed" data-i18n="studio.historyHint">Chaque génération, retouche ou édition de code crée une version. Rien n'est perdu : restaurer ajoute simplement un point dans l'historique.</p>
-          <div id="historyList" class="space-y-2"></div>
+          <p class="text-xs text-ink-300 leading-relaxed" data-i18n="studio.historyHint">Chaque génération, retouche ou édition de code crée une version. Rien n'est perdu : restaurer ajoute simplement un point dans l'historique.</p>
+          <div id="historyList" class="border-t border-ink-700"></div>
         </section>
 
         <!-- Onglet Qualité -->
         <section id="tab-quality" class="p-4 space-y-4 hidden">
-          <div class="flex items-center justify-between gap-4 rounded-xl border border-ink-700 bg-ink-850 p-4">
+          <div class="flex items-end justify-between gap-4 pb-4 border-b border-ink-700">
             <div>
-              <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400" data-i18n="studio.qualityLabel">Score qualité</p>
-              <p id="qualitySummary" class="text-xs text-ink-300 mt-1"></p>
+              <p class="label" data-i18n="studio.qualityLabel">Score qualité</p>
+              <p id="qualitySummary" class="text-xs text-ink-300 mt-1.5"></p>
             </div>
-            <p id="qualityScore" class="font-display font-bold text-4xl tracking-tight text-ink-400">—</p>
+            <p id="qualityScore" class="font-display text-5xl leading-none text-ink-300">—</p>
           </div>
-          <button id="btnAudit" class="w-full h-9 rounded-lg border border-ink-600 hover:bg-ink-800 text-xs font-medium" data-i18n="studio.qualityRun">Relancer l'analyse</button>
-          <div id="qualityList" class="space-y-2"></div>
-          <p class="text-[11px] text-ink-400 leading-relaxed" data-i18n="studio.qualityHint">Contrôles automatiques : contrastes (WCAG AA), hiérarchie des titres, textes alternatifs, libellés des champs et des boutons. Un contraste posé sur un dégradé ou une image n'est pas mesurable et n'est donc pas signalé.</p>
+          <button id="btnAudit" class="btn w-full" data-i18n="studio.qualityRun">Relancer l'analyse</button>
+          <div id="qualityList"></div>
+          <p class="text-xs text-ink-300 leading-relaxed" data-i18n="studio.qualityHint">Contrôles automatiques : contrastes (WCAG AA), hiérarchie des titres, textes alternatifs, libellés des champs et des boutons. Un contraste posé sur un dégradé ou une image n'est pas mesurable et n'est donc pas signalé.</p>
         </section>
 
-        <!-- Onglet Traduction : une URL par langue (doc/I18N.md) — HUD dense, tout au clavier -->
-        <section id="tab-i18n" class="hidden p-3 space-y-3 font-mono text-[11px] tabular-nums">
-          <div class="hud relative border border-ink-700 bg-ink-950/60 p-2.5 space-y-2">
-            <div class="flex items-center justify-between text-[9px] uppercase tracking-[0.2em] text-ink-400">
-              <span data-i18n="tr.hudLangs">Langues</span><span class="text-cyan-400/70">i18n://url</span>
-            </div>
+        <!-- Onglet Traduction : une URL par langue (doc/I18N.md) — dense, tout au clavier -->
+        <section id="tab-i18n" class="hidden p-4 space-y-5 text-[13px]">
+          <div class="space-y-2.5">
+            <p class="label" data-i18n="tr.hudLangs">Langues</p>
             <div class="flex flex-wrap items-center gap-1.5">
-              <span class="inline-flex items-center h-6 px-1.5 rounded-sm border border-vio-500/60 bg-vio-500/10 text-vio-300 text-[10px]" title="Langue source — modifiable dans Marque › SEO" data-i18n-title="tr.sourceTitle">
-                <span class="uppercase tracking-wider" id="trSource">FR</span><span class="ml-1.5 text-ink-400 font-sans" id="trSourceName"></span></span>
-              <span class="text-ink-400/70" aria-hidden="true">→</span>
+              <span class="inline-flex items-center h-7 px-2 border border-ink-400 text-ink-100" title="Langue source — modifiable dans Marque › SEO" data-i18n-title="tr.sourceTitle">
+                <span class="font-mono text-[11px] uppercase" id="trSource">FR</span><span class="ml-1.5 text-ink-300 text-xs" id="trSourceName"></span></span>
+              <span class="text-ink-400" aria-hidden="true">→</span>
               <span id="trTargets" class="contents"></span>
               <div class="relative">
-                <button id="trAdd" class="h-6 w-6 rounded-sm border border-dashed border-ink-600 text-ink-300 hover:border-cyan-400/70 hover:text-cyan-200" title="Ajouter une langue" data-i18n-title="tr.addLang" aria-label="Ajouter une langue" data-i18n-aria-label="tr.addLang">+</button>
-                <div id="trPicker" class="hidden absolute left-0 top-7 z-20 w-48 max-h-64 overflow-y-auto scrollbar-thin border border-ink-600 bg-ink-900 shadow-2xl shadow-black/60 p-1"></div>
+                <button id="trAdd" class="btn btn-sm btn-icon" title="Ajouter une langue" data-i18n-title="tr.addLang" aria-label="Ajouter une langue" data-i18n-aria-label="tr.addLang">+</button>
+                <div id="trPicker" class="hidden absolute left-0 top-9 z-20 w-52 max-h-64 overflow-y-auto scrollbar-thin border border-ink-700 bg-ink-900 py-1"></div>
               </div>
             </div>
           </div>
 
-          <p id="trEmpty" class="hidden text-[11px] font-sans text-ink-400 leading-relaxed border border-dashed border-ink-700 p-3" data-i18n="tr.empty">Ajoutez une langue cible : chaque texte de la page devient un segment à traduire, et l'export produit une URL par langue (/en/, /es/…). Régénérer un bloc ne casse rien — seuls les textes nouveaux ou modifiés repassent « à traduire ».</p>
+          <p id="trEmpty" class="hidden text-xs text-ink-300 leading-relaxed" data-i18n="tr.empty">Ajoutez une langue cible : chaque texte de la page devient un segment à traduire, et l'export produit une URL par langue (/en/, /es/…). Régénérer un bloc ne casse rien — seuls les textes nouveaux ou modifiés repassent « à traduire ».</p>
 
-          <div id="trBody" class="hidden space-y-3">
-            <div class="hud relative border border-ink-700 bg-ink-950/60 py-1">
-              <div class="flex items-center justify-between px-2 pb-1 text-[9px] uppercase tracking-[0.2em] text-ink-400">
-                <span data-i18n="tr.hudProgress">Progression</span>
-                <span class="flex items-center gap-2 normal-case tracking-normal">
+          <div id="trBody" class="hidden space-y-5">
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <p class="label" data-i18n="tr.hudProgress">Progression</p>
+                <span class="flex items-center gap-3 text-[11px] text-ink-300">
                   <span class="flex items-center gap-1"><i class="h-1.5 w-1.5 rounded-full bg-emerald-400"></i><span data-i18n="tr.legendHuman">validé</span></span>
                   <span class="flex items-center gap-1"><i class="h-1.5 w-1.5 rounded-full bg-amber-400"></i><span data-i18n="tr.legendMachine">machine</span></span>
-                  <span class="flex items-center gap-1"><i class="h-1.5 w-1.5 rounded-full bg-red-400/80"></i><span data-i18n="tr.legendMissing">manquant</span></span>
+                  <span class="flex items-center gap-1"><i class="h-1.5 w-1.5 rounded-full bg-red-400"></i><span data-i18n="tr.legendMissing">manquant</span></span>
                 </span>
               </div>
-              <div id="trStats"></div>
+              <div id="trStats" class="border-t border-ink-700"></div>
             </div>
 
-            <div class="flex items-center gap-2 text-[10px]">
-              <div class="flex border border-ink-700" role="group" aria-label="Portée" data-i18n-aria-label="tr.scope">
-                <button data-tr-scope="block" aria-pressed="false" class="px-2 h-6 uppercase tracking-wider text-ink-400 hover:text-ink-100 aria-pressed:bg-cyan-400/10 aria-pressed:text-cyan-200" data-i18n="tr.scopeBlock">Bloc</button>
-                <button data-tr-scope="page" aria-pressed="true" class="px-2 h-6 uppercase tracking-wider text-ink-400 hover:text-ink-100 border-l border-ink-700 aria-pressed:bg-cyan-400/10 aria-pressed:text-cyan-200" data-i18n="tr.scopePage">Page</button>
+            <div class="flex flex-wrap items-center gap-2">
+              <div class="seg" role="group" aria-label="Portée" data-i18n-aria-label="tr.scope">
+                <button data-tr-scope="block" aria-pressed="false" data-i18n="tr.scopeBlock">Bloc</button>
+                <button data-tr-scope="page" aria-pressed="true" data-i18n="tr.scopePage">Page</button>
               </div>
-              <div class="flex border border-ink-700" role="group" aria-label="Filtre" data-i18n-aria-label="tr.filter">
-                <button data-tr-filter="all" aria-pressed="true" class="px-1.5 h-6 text-ink-400 hover:text-ink-100 aria-pressed:bg-ink-700 aria-pressed:text-ink-100" data-i18n="tr.fAll">tout</button>
-                <button data-tr-filter="missing" aria-pressed="false" class="px-1.5 h-6 border-l border-ink-700 text-ink-400 hover:text-ink-100 aria-pressed:bg-red-400/10 aria-pressed:text-red-300" data-i18n="tr.fMissing">manq.</button>
-                <button data-tr-filter="machine" aria-pressed="false" class="px-1.5 h-6 border-l border-ink-700 text-ink-400 hover:text-ink-100 aria-pressed:bg-amber-400/10 aria-pressed:text-amber-200" data-i18n="tr.fMachine">auto</button>
-                <button data-tr-filter="human" aria-pressed="false" class="px-1.5 h-6 border-l border-ink-700 text-ink-400 hover:text-ink-100 aria-pressed:bg-emerald-400/10 aria-pressed:text-emerald-200" data-i18n="tr.fHuman">ok</button>
+              <div class="seg" role="group" aria-label="Filtre" data-i18n-aria-label="tr.filter">
+                <button data-tr-filter="all" aria-pressed="true" data-i18n="tr.fAll">tout</button>
+                <button data-tr-filter="missing" aria-pressed="false" data-i18n="tr.fMissing">manq.</button>
+                <button data-tr-filter="machine" aria-pressed="false" data-i18n="tr.fMachine">auto</button>
+                <button data-tr-filter="human" aria-pressed="false" data-i18n="tr.fHuman">ok</button>
               </div>
-              <span id="trCount" class="ml-auto text-cyan-300/80">000</span>
+              <span id="trCount" class="ml-auto text-xs tnum text-ink-300"></span>
             </div>
 
-            <div id="trList" class="hud relative border border-ink-700 bg-ink-950/60 divide-y divide-ink-800"></div>
+            <div id="trList" class="border-y border-ink-700 py-1"></div>
 
-            <p class="flex flex-wrap gap-x-3 gap-y-1 text-[9px] uppercase tracking-[0.15em] text-ink-400/70">
-              <span><kbd class="text-ink-300">↑↓</kbd> <span data-i18n="tr.kNav">segment</span></span>
-              <span><kbd class="text-ink-300">⏎</kbd> <span data-i18n="tr.kSave">enregistre</span></span>
-              <span><kbd class="text-ink-300">⇧⏎</kbd> <span data-i18n="tr.kNewline">ligne</span></span>
-              <span><kbd class="text-ink-300">⌘⏎</kbd> <span data-i18n="tr.kValidate">valide</span></span>
-              <span><kbd class="text-ink-300">esc</kbd> <span data-i18n="tr.kRevert">annule</span></span>
+            <p class="flex flex-wrap gap-x-3 gap-y-1.5 text-[11px] text-ink-300">
+              <span><kbd>↑↓</kbd> <span data-i18n="tr.kNav">segment</span></span>
+              <span><kbd>⏎</kbd> <span data-i18n="tr.kSave">enregistre</span></span>
+              <span><kbd>⇧⏎</kbd> <span data-i18n="tr.kNewline">ligne</span></span>
+              <span><kbd>⌘⏎</kbd> <span data-i18n="tr.kValidate">valide</span></span>
+              <span><kbd>esc</kbd> <span data-i18n="tr.kRevert">annule</span></span>
             </p>
           </div>
         </section>
@@ -331,81 +319,81 @@
         <!-- Onglet Marque : projet, marque, design system, SEO -->
         <section id="tab-brand" class="p-4 space-y-6 hidden">
           <div>
-            <label class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" for="projectName" data-i18n="studio.projectName">Nom du projet</label>
-            <input id="projectName" maxlength="120" class="w-full h-10 rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm px-3 select-text">
+            <label class="label block mb-2" for="projectName" data-i18n="studio.projectName">Nom du projet</label>
+            <input id="projectName" maxlength="120" class="field w-full h-10 text-sm select-text">
           </div>
 
           <div class="space-y-4">
-            <p class="text-xs text-ink-400 leading-relaxed" data-i18n="editor.brandHint">Ce contexte est transmis à chaque génération pour garder la page cohérente.</p>
+            <p class="text-xs text-ink-300 leading-relaxed" data-i18n="editor.brandHint">Ce contexte est transmis à chaque génération pour garder la page cohérente.</p>
             <div>
-              <label class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" for="brandName" data-i18n="editor.brandName">Nom du produit</label>
-              <input id="brandName" placeholder="Ex. : Nébula" data-i18n-placeholder="editor.brandNamePh" class="w-full h-10 rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm px-3 select-text">
+              <label class="label block mb-2" for="brandName" data-i18n="editor.brandName">Nom du produit</label>
+              <input id="brandName" placeholder="Ex. : Nébula" data-i18n-placeholder="editor.brandNamePh" class="field w-full h-10 text-sm select-text">
             </div>
             <div>
-              <label class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" for="brandColors" data-i18n="editor.brandColors">Palette</label>
-              <input id="brandColors" placeholder="Ex. : fond sombre #0B0D12, accent violet #8B5CF6" data-i18n-placeholder="editor.brandColorsPh" class="w-full h-10 rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm px-3 select-text">
+              <label class="label block mb-2" for="brandColors" data-i18n="editor.brandColors">Palette</label>
+              <input id="brandColors" placeholder="Ex. : fond sombre #0B0D12, accent violet #8B5CF6" data-i18n-placeholder="editor.brandColorsPh" class="field w-full h-10 text-sm select-text">
             </div>
             <div>
-              <label class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" for="brandTone" data-i18n="editor.brandTone">Ton & secteur</label>
-              <input id="brandTone" placeholder="Ex. : SaaS B2B, moderne, direct" data-i18n-placeholder="editor.brandTonePh" class="w-full h-10 rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm px-3 select-text">
+              <label class="label block mb-2" for="brandTone" data-i18n="editor.brandTone">Ton & secteur</label>
+              <input id="brandTone" placeholder="Ex. : SaaS B2B, moderne, direct" data-i18n-placeholder="editor.brandTonePh" class="field w-full h-10 text-sm select-text">
             </div>
           </div>
 
           <!-- Design system -->
-          <div class="rounded-xl border border-ink-700 bg-ink-850 p-4 space-y-4">
+          <div class="border-t border-ink-700 pt-5 space-y-4">
             <label class="flex items-start gap-3 cursor-pointer">
               <input id="themeEnabled" type="checkbox" class="mt-1 accent-vio-500">
               <span><span class="block text-sm font-semibold" data-i18n="studio.themeTitle">Design system</span>
-                <span class="block text-[11px] text-ink-400 leading-relaxed mt-0.5" data-i18n="studio.themeHint">Couleurs, polices et arrondis deviennent des jetons partagés par tous les blocs : changer le thème met la page à jour instantanément. Il remplace la palette libre ci-dessus.</span></span>
+                <span class="block text-xs text-ink-300 leading-relaxed mt-0.5" data-i18n="studio.themeHint">Couleurs, polices et arrondis deviennent des jetons partagés par tous les blocs : changer le thème met la page à jour instantanément. Il remplace la palette libre ci-dessus.</span></span>
             </label>
             <div id="themeFields" class="space-y-4">
               <div class="grid grid-cols-2 gap-3">
-                <div><label class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" for="themePrimary" data-i18n="studio.themePrimary">Couleur principale</label>
-                  <input id="themePrimary" type="color" class="w-full h-10 rounded-xl bg-ink-800 border border-ink-600 p-1 cursor-pointer"></div>
-                <div><label class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" for="themeAccent" data-i18n="studio.themeAccent">Couleur d'accent</label>
-                  <input id="themeAccent" type="color" class="w-full h-10 rounded-xl bg-ink-800 border border-ink-600 p-1 cursor-pointer"></div>
+                <div><label class="label block mb-2" for="themePrimary" data-i18n="studio.themePrimary">Couleur principale</label>
+                  <input id="themePrimary" type="color" class="w-full h-10 bg-ink-850 border border-ink-700 p-1 cursor-pointer"></div>
+                <div><label class="label block mb-2" for="themeAccent" data-i18n="studio.themeAccent">Couleur d'accent</label>
+                  <input id="themeAccent" type="color" class="w-full h-10 bg-ink-850 border border-ink-700 p-1 cursor-pointer"></div>
               </div>
               <div id="themeSwatches" class="space-y-1"></div>
               <div id="themeFontsRow" class="grid grid-cols-2 gap-3">
-                <div><label class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" for="themeDisplay" data-i18n="studio.themeDisplay">Police des titres</label>
-                  <select id="themeDisplay" class="w-full h-10 rounded-xl bg-ink-800 border border-ink-600 text-sm px-2 outline-none focus:border-vio-500"></select></div>
-                <div><label class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" for="themeSans" data-i18n="studio.themeSans">Police du texte</label>
-                  <select id="themeSans" class="w-full h-10 rounded-xl bg-ink-800 border border-ink-600 text-sm px-2 outline-none focus:border-vio-500"></select></div>
+                <div><label class="label block mb-2" for="themeDisplay" data-i18n="studio.themeDisplay">Police des titres</label>
+                  <select id="themeDisplay" class="field w-full h-10 text-sm px-2"></select></div>
+                <div><label class="label block mb-2" for="themeSans" data-i18n="studio.themeSans">Police du texte</label>
+                  <select id="themeSans" class="field w-full h-10 text-sm px-2"></select></div>
               </div>
               <div class="grid grid-cols-2 gap-3">
-                <div><label class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" for="themeRadius" data-i18n="studio.themeRadius">Arrondis</label>
-                  <select id="themeRadius" class="w-full h-10 rounded-xl bg-ink-800 border border-ink-600 text-sm px-2 outline-none focus:border-vio-500">
+                <div><label class="label block mb-2" for="themeRadius" data-i18n="studio.themeRadius">Arrondis</label>
+                  <select id="themeRadius" class="field w-full h-10 text-sm px-2">
                     <option value="none" data-i18n="studio.radiusNone">Angles vifs</option><option value="sm" data-i18n="studio.radiusSm">Très légers</option>
                     <option value="md" data-i18n="studio.radiusMd">Modérés</option><option value="lg" data-i18n="studio.radiusLg">Généreux</option>
                     <option value="xl" data-i18n="studio.radiusXl">Très arrondis</option><option value="full" data-i18n="studio.radiusFull">Pilule</option>
                   </select></div>
-                <div><label class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" for="themeMode" data-i18n="studio.themeMode">Ambiance</label>
-                  <select id="themeMode" class="w-full h-10 rounded-xl bg-ink-800 border border-ink-600 text-sm px-2 outline-none focus:border-vio-500">
+                <div><label class="label block mb-2" for="themeMode" data-i18n="studio.themeMode">Ambiance</label>
+                  <select id="themeMode" class="field w-full h-10 text-sm px-2">
                     <option value="" data-i18n="studio.modeAuto">Selon le brief</option><option value="light" data-i18n="studio.modeLight">Claire</option><option value="dark" data-i18n="studio.modeDark">Sombre</option>
                   </select></div>
               </div>
-              <div><label class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" for="themeStyle" data-i18n="studio.themeStyle">Direction artistique</label>
-                <input id="themeStyle" maxlength="200" placeholder="Ex. : minimal et éditorial, beaucoup de blanc" data-i18n-placeholder="studio.themeStylePh" class="w-full h-10 rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm px-3 select-text"></div>
-              <button id="btnRetheme" class="w-full h-10 rounded-xl border border-vio-500/60 text-vio-400 hover:bg-vio-500/10 text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed" data-i18n="studio.rethemeBtn">Convertir la page au thème (IA)</button>
-              <p class="text-[11px] text-ink-400 leading-relaxed" data-i18n="studio.rethemeWhy">À faire une fois pour les blocs générés avant l'activation du thème : l'IA remplace leurs couleurs codées en dur par les jetons, sans toucher aux textes.</p>
+              <div><label class="label block mb-2" for="themeStyle" data-i18n="studio.themeStyle">Direction artistique</label>
+                <input id="themeStyle" maxlength="200" placeholder="Ex. : minimal et éditorial, beaucoup de blanc" data-i18n-placeholder="studio.themeStylePh" class="field w-full h-10 text-sm select-text"></div>
+              <button id="btnRetheme" class="btn w-full h-10" data-i18n="studio.rethemeBtn">Convertir la page au thème (IA)</button>
+              <p class="text-xs text-ink-300 leading-relaxed" data-i18n="studio.rethemeWhy">À faire une fois pour les blocs générés avant l'activation du thème : l'IA remplace leurs couleurs codées en dur par les jetons, sans toucher aux textes.</p>
             </div>
           </div>
 
           <!-- SEO -->
-          <div class="space-y-4">
+          <div class="border-t border-ink-700 pt-5 space-y-4">
             <div><p class="text-sm font-semibold" data-i18n="studio.seoTitle">Référencement & partage</p>
-              <p class="text-[11px] text-ink-400 leading-relaxed mt-0.5" data-i18n="studio.seoHint">Laissés vides, le titre et la description sont déduits de la marque et du hero à l'export.</p></div>
-            <div><label class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" for="seoTitle" data-i18n="studio.seoPageTitle">Titre de la page</label>
-              <input id="seoTitle" maxlength="70" class="w-full h-10 rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm px-3 select-text"></div>
-            <div><label class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" for="seoDescription" data-i18n="studio.seoDescription">Description</label>
-              <textarea id="seoDescription" rows="3" maxlength="160" class="w-full rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm p-3 resize-y select-text"></textarea></div>
-            <div><label class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" for="seoImage" data-i18n="studio.seoImage">Image de partage (URL)</label>
-              <input id="seoImage" type="url" placeholder="https://…" class="w-full h-10 rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm px-3 select-text"></div>
+              <p class="text-xs text-ink-300 leading-relaxed mt-0.5" data-i18n="studio.seoHint">Laissés vides, le titre et la description sont déduits de la marque et du hero à l'export.</p></div>
+            <div><label class="label block mb-2" for="seoTitle" data-i18n="studio.seoPageTitle">Titre de la page</label>
+              <input id="seoTitle" maxlength="70" class="field w-full h-10 text-sm select-text"></div>
+            <div><label class="label block mb-2" for="seoDescription" data-i18n="studio.seoDescription">Description</label>
+              <textarea id="seoDescription" rows="3" maxlength="160" class="field w-full h-auto py-2.5 text-sm resize-y select-text"></textarea></div>
+            <div><label class="label block mb-2" for="seoImage" data-i18n="studio.seoImage">Image de partage (URL)</label>
+              <input id="seoImage" type="url" placeholder="https://…" class="field w-full h-10 text-sm select-text"></div>
             <div class="grid grid-cols-3 gap-3">
-              <div class="col-span-2"><label class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" for="seoUrl" data-i18n="studio.seoUrl">Adresse du site</label>
-                <input id="seoUrl" type="url" placeholder="https://exemple.fr" class="w-full h-10 rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm px-3 select-text"></div>
-              <div><label class="text-[10px] font-mono uppercase tracking-[0.15em] text-ink-400 block mb-2" for="seoLang" data-i18n="studio.seoLang">Langue</label>
-                <input id="seoLang" maxlength="5" placeholder="fr" class="w-full h-10 rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm px-3 select-text"></div>
+              <div class="col-span-2"><label class="label block mb-2" for="seoUrl" data-i18n="studio.seoUrl">Adresse du site</label>
+                <input id="seoUrl" type="url" placeholder="https://exemple.fr" class="field w-full h-10 text-sm select-text"></div>
+              <div><label class="label block mb-2" for="seoLang" data-i18n="studio.seoLang">Langue</label>
+                <input id="seoLang" maxlength="5" placeholder="fr" class="field w-full h-10 text-sm select-text"></div>
             </div>
           </div>
         </section>
@@ -416,7 +404,7 @@
 
 <!-- Toast (annoncé aux lecteurs d'écran) -->
 <div id="toast" role="status" aria-live="polite" class="fixed bottom-5 left-1/2 -translate-x-1/2 translate-y-16 opacity-0 transition-all duration-300 z-50 pointer-events-none">
-  <div class="px-4 py-2.5 rounded-xl bg-ink-800 border border-ink-600 text-sm shadow-2xl flex items-center gap-2 max-w-[90vw]">
+  <div class="px-4 py-2.5 bg-ink-800 border border-ink-600 text-sm flex items-center gap-2 max-w-[90vw]">
     <span id="toastDot" class="h-2 w-2 rounded-full shrink-0 bg-emerald-400"></span><span id="toastMsg"></span>
   </div>
 </div>

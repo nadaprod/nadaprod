@@ -23,7 +23,7 @@ function status(state) {
   if (!el) return;
   el.dataset.state = state;
   el.textContent = t('studio.save_' + state);
-  el.className = 'text-[11px] font-mono ' + ({ saved: 'text-ink-400', saving: 'text-ink-300', offline: 'text-amber-400', conflict: 'text-red-400' }[state] || 'text-ink-400');
+  el.className = 'text-xs ' + ({ saved: 'text-ink-300', saving: 'text-ink-300', offline: 'text-amber-400', conflict: 'text-red-400' }[state] || 'text-ink-300');
 }
 
 /* ───────── Chargement ───────── */
@@ -189,7 +189,7 @@ function conflict() {
   const m = openModal({
     title: t('studio.conflictTitle'), size: 'sm',
     body: `<p class="text-sm text-ink-200 leading-relaxed">${esc(t('studio.conflictBody'))}</p>
-      <div class="mt-5 flex justify-end"><button data-reload autofocus class="h-9 px-4 rounded-lg text-sm font-semibold btn-primary">${esc(t('studio.reload'))}</button></div>`,
+      <div class="mt-5 flex justify-end"><button data-reload autofocus class="btn-primary h-9 px-4">${esc(t('studio.reload'))}</button></div>`,
   });
   m.el.querySelector('[data-reload]').onclick = () => location.reload();
 }

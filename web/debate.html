@@ -15,104 +15,101 @@
     <script src="/static/brand.js"></script>
 
     <style>
-        .page { max-width: 1240px; margin: 0 auto; padding: 9vh 1.5rem 8rem; animation: fadeUp .7s var(--ease) both; }
-        .block { margin-top: 6rem; }
-        .block > h2 { font-size: clamp(2.6rem, 6vw, 4.6rem); margin-bottom: 1.25rem; }
+        /* Un débat, des faits : des chiffres posés sur des filets, deux colonnes
+           face à face, un seul surligneur — sur le résultat qui compte. */
+        .page { max-width: 1240px; margin: 0 auto; padding: 8vh 1.5rem 8rem; animation: fadeUp .5s var(--ease) both; }
+        .block { margin-top: 7rem; }
+        .block > h2 { font-size: clamp(2rem, 4.6vw, 3.6rem); margin-bottom: 1.25rem; }
         .block > h2 .accent { font-size: .8em; }
-        .block > .lead { max-width: 44rem; margin-bottom: 2.25rem; }
+        .block > .lead { max-width: 44rem; margin-bottom: 2.5rem; }
 
-        /* État de la mesure */
-        .status { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; align-items: center; font: 500 .74rem/1.4 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--text-secondary); }
-        .status .live { display: inline-flex; align-items: center; gap: .5rem; color: var(--text-main); }
-        .status .live::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 1.5px var(--text-main); animation: pulse 2s ease-in-out infinite; }
-        .status.off .live::before { background: #ff5a36; animation: none; }
-        @keyframes pulse { 50% { opacity: .35; } }
-        .early { margin-top: 1.5rem; border: 2px dashed var(--text-main); padding: 1rem 1.25rem; max-width: 46rem; font-size: .98rem; color: var(--text-main); }
+        /* État de la mesure : une pastille fixe, du texte. */
+        .status { display: flex; flex-wrap: wrap; gap: .4rem 1.5rem; align-items: center; font-size: .9rem; color: var(--text-secondary); }
+        .status .live { display: inline-flex; align-items: center; gap: .55rem; color: var(--text-main); font-weight: 600; }
+        .status .live::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 1px var(--text-main); }
+        .status.off .live::before { background: rgb(var(--err)); box-shadow: none; }
+        .early { margin-top: 1.75rem; padding-left: 1rem; border-left: 2px solid var(--text-main); max-width: 44rem; font-size: .98rem; color: var(--text-main); }
 
-        /* Face à face */
-        .versus { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: stretch; gap: 0; border: 2px solid var(--text-main); background: var(--surface); }
-        .side { padding: 2.25rem; display: flex; flex-direction: column; gap: 1.5rem; min-width: 0; }
-        .side h3 { font-size: clamp(2rem, 3.4vw, 2.8rem); }
-        .side h3 .accent { font-size: .8em; }
-        .side .grid-tag { margin-bottom: -.5rem; }
-        .vs { display: grid; place-items: center; border-inline: 2px solid var(--text-main); background: var(--accent); color: #000; font: 900 2rem/1 var(--font-display); padding: 0 .9rem; writing-mode: vertical-rl; text-orientation: upright; letter-spacing: -.05em; }
-        .figs { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem 1.25rem; }
-        .fig { border-top: 2px solid var(--text-main); padding-top: .8rem; min-width: 0; }
-        .fig b { display: block; font: 900 clamp(2.4rem, 4.4vw, 3.6rem)/.9 var(--font-display); font-variant-numeric: tabular-nums; color: var(--text-main); overflow-wrap: anywhere; }
-        .fig b small { font: 600 .9rem var(--font-mono); letter-spacing: .02em; margin-left: .3rem; color: var(--text-secondary); }
-        .fig span { display: block; margin-top: .5rem; font: .72rem/1.45 var(--font-mono); letter-spacing: .07em; text-transform: uppercase; color: var(--text-secondary); }
-        .fig.est b { font-style: normal; }
-        .fig.est span::after { content: " *"; color: var(--text-dim); }
-        .note { font: .72rem/1.5 var(--font-mono); color: var(--text-dim); }
+        /* Chiffres : Big Shoulders sur filet, légende en Archivo. */
+        .fig { border-top: 1px solid var(--border); padding-top: .9rem; min-width: 0; }
+        .fig b { display: block; font: 400 clamp(2rem, 3.6vw, 3rem)/1.05 var(--font-display); font-synthesis: none; font-variant-numeric: tabular-nums; color: var(--text-main); overflow-wrap: anywhere; }
+        .fig b small { font: 500 .9rem var(--font-mono); margin-left: .3rem; color: var(--text-secondary); }
+        .fig span { display: block; margin-top: .5rem; font-size: .88rem; line-height: 1.4; color: var(--text-secondary); }
+        .fig.est span::after { content: " *"; color: var(--text-secondary); }
+        .note { font-size: .82rem; line-height: 1.5; color: var(--text-secondary); }
+
+        /* Face à face : deux colonnes, un filet entre elles. */
+        .versus { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); border-top: 1px solid var(--text-main); }
+        .side { padding: 1.75rem 2.5rem 0 0; display: grid; gap: 1.5rem; align-content: start; min-width: 0; }
+        .side + .side { padding: 1.75rem 0 0 2.5rem; border-left: 1px solid var(--border); }
+        .figs { display: grid; grid-template-columns: 1fr 1fr; gap: 1.75rem 1.5rem; }
 
         /* L'outil en chiffres */
-        .facts { display: grid; grid-template-columns: repeat(5, 1fr); border-top: 2px solid var(--text-main); }
-        .facts div { padding: 1.1rem 1rem 1.2rem 0; border-bottom: 1px solid var(--border); }
-        .facts b { display: block; font: 800 2.2rem/.95 var(--font-display); font-variant-numeric: tabular-nums; color: var(--text-main); }
-        .facts span { display: block; margin-top: .45rem; font: .7rem/1.4 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--text-secondary); }
+        .facts { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1.75rem 1.5rem; }
+        .facts b { font-size: clamp(1.7rem, 2.6vw, 2.3rem); }
 
-        /* Graphiques 30 jours */
-        .charts { display: grid; gap: 1.25rem; }
-        .chart { border: 2px solid var(--text-main); background: var(--bg); padding: 1.25rem 1.25rem .75rem; }
-        .chart-head { margin: 0 0 .75rem; display: flex; justify-content: space-between; align-items: baseline; font: 600 .72rem/1 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--text-secondary); }
-        .chart-head b { color: var(--text-main); font-weight: 600; }
+        /* 30 jours : des barres, un axe fin. */
+        .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; }
+        .chart { margin: 0; }
+        .chart-head { margin: 0 0 .9rem; display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+        .chart-head b { font-weight: 600; font-size: .95rem; color: var(--text-main); }
+        .chart-head span { font: .78rem var(--font-mono); color: var(--text-secondary); }
         .chart svg { display: block; width: 100%; height: 120px; }
-        .chart .bar-ai { fill: var(--accent); stroke: var(--text-main); stroke-width: 1; }
-        .chart .bar-st { fill: var(--text-main); }
-        .chart .axis { fill: var(--text-dim); font: 10px var(--font-mono); }
-        .chart .base { stroke: var(--text-main); stroke-width: 1.5; }
-        details.table { margin-top: .75rem; font: .78rem/1.5 var(--font-mono); color: var(--text-secondary); }
-        details.table summary { cursor: pointer; color: var(--text-main); }
-        details.table table { margin-top: .75rem; border-collapse: collapse; width: 100%; max-width: 32rem; }
-        details.table th, details.table td { text-align: right; padding: .25rem .6rem; border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums; }
-        details.table th:first-child, details.table td:first-child { text-align: left; }
+        .chart .bar-ai, .chart .bar-st { fill: var(--text-main); }
+        .chart .axis { fill: var(--text-secondary); font: 10px var(--font-mono); }
+        .chart .base { stroke: var(--text-dim); stroke-width: 1; }
+        details.table { margin-top: 1.75rem; font: .8rem/1.5 var(--font-mono); color: var(--text-secondary); }
+        details.table summary { cursor: pointer; font: 600 .9rem var(--font-body); color: var(--text-main); }
+        details.table table { margin-top: .9rem; border-collapse: collapse; width: 100%; max-width: 32rem; }
+        details.table th, details.table td { text-align: right; padding: .3rem .6rem; border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums; font-weight: 400; }
+        details.table th { font: 600 .8rem var(--font-body); color: var(--text-main); }
+        details.table th:first-child, details.table td:first-child { text-align: left; padding-left: 0; }
 
-        /* Bilan */
-        .balance { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); border: 2px solid var(--text-main); box-shadow: var(--shadow-hard); }
-        .hyps { padding: 2rem; background: var(--surface); display: flex; flex-direction: column; gap: 1.4rem; border-right: 2px solid var(--text-main); }
+        /* Bilan : les hypothèses à gauche, le résultat à droite — le surligneur sur l'équilibre. */
+        .balance { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); border-top: 1px solid var(--text-main); }
+        .hyps { padding: 1.75rem 2.5rem 0 0; display: grid; gap: 1.6rem; align-content: start; }
+        .hyp label { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; font-weight: 600; font-size: .95rem; color: var(--text-main); }
         .hyp label > span { min-width: 0; }
-        .hyp label { display: flex; justify-content: space-between; gap: 1rem; font: 600 .74rem/1.3 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--text-main); }
-        .hyp output { font-variant-numeric: tabular-nums; white-space: nowrap; }
-        .hyp small { display: block; margin-top: .35rem; font: .7rem/1.45 var(--font-mono); color: var(--text-dim); text-transform: none; letter-spacing: 0; }
-        .hyp input[type=range] { width: 100%; margin-top: .55rem; accent-color: var(--text-main); }
-        .hyp.measured { border: 1.5px dashed var(--border); padding: .7rem .8rem; }
-        .result { padding: 2rem; display: flex; flex-direction: column; gap: 1.2rem; background: var(--bg); }
-        .result .row { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; border-bottom: 1px solid var(--border); padding-bottom: .7rem; }
-        .result .row span { font: .74rem/1.4 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--text-secondary); }
-        .result .row b { font: 900 2rem/1 var(--font-display); font-variant-numeric: tabular-nums; color: var(--text-main); text-align: right; }
-        .breakeven { background: var(--accent); color: #000; border: 2px solid #000; padding: 1.1rem 1.2rem; }
-        .breakeven b { display: block; font: 900 clamp(2rem, 4vw, 3.2rem)/.92 var(--font-display); text-transform: uppercase; }
-        .breakeven span { display: block; margin-top: .4rem; font: .74rem/1.4 var(--font-mono); letter-spacing: .04em; }
+        .hyp output { font: 500 .85rem var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--text-main); }
+        .hyp small { display: block; margin-top: .4rem; font-size: .82rem; line-height: 1.45; color: var(--text-secondary); }
+        .hyp input[type=range] { width: 100%; margin-top: .6rem; accent-color: var(--text-main); }
+        .hyp.measured { border-top: 1px solid var(--border); padding-top: 1.2rem; }
+        .result { padding: 1.75rem 0 0 2.5rem; border-left: 1px solid var(--border); display: grid; gap: 1.25rem; align-content: start; }
+        .result .row { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; border-bottom: 1px solid var(--border); padding-bottom: .75rem; }
+        .result .row span { font-size: .92rem; color: var(--text-secondary); }
+        .result .row b { font: 400 1.7rem/1.05 var(--font-display); font-synthesis: none; font-variant-numeric: tabular-nums; color: var(--text-main); text-align: right; }
+        .breakeven { padding: .5rem 0 .25rem; }
+        .breakeven b { display: inline; font: 400 clamp(2rem, 3.8vw, 3.1rem)/1.2 var(--font-display); font-synthesis: none; color: #000;
+            background: linear-gradient(transparent 18%, var(--accent) 18%, var(--accent) 88%, transparent 88%);
+            box-decoration-break: clone; -webkit-box-decoration-break: clone; padding: 0 .12em; }
+        .breakeven b.none { background: none; color: var(--text-dim); padding: 0; } /* rien à surligner tant qu'il n'y a pas de résultat */
+        .breakeven span { display: block; margin-top: .6rem; font-size: .92rem; color: var(--text-secondary); }
         .verdict { font-size: 1.05rem; line-height: 1.5; color: var(--text-main); }
-        .formula { font: .74rem/1.75 var(--font-mono); background: #0b0b0a; color: #e9e9e2; padding: .9rem 1rem; overflow-x: auto; white-space: pre; border: 2px solid #0b0b0a; }
-        .formula .k { color: #ccff00; }
+        .formula { font: .8rem/1.8 var(--font-mono); color: var(--text-secondary); padding: .2rem 0 .2rem 1rem; border-left: 1px solid var(--border); overflow-x: auto; white-space: pre; }
+        .formula .k { color: var(--text-main); font-weight: 500; }
 
-        /* Méthode */
-        .method { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
-        .method .grid-item { min-height: 0; grid-column: auto; }
-        .method ul { list-style: none; display: grid; gap: .55rem; font: .82rem/1.5 var(--font-mono); color: var(--text-main); }
-        .method li::before { content: "→ "; color: var(--text-dim); }
-        .method a { color: var(--text-main); text-decoration-color: var(--accent); text-decoration-thickness: 3px; }
+        /* Méthode : trois colonnes, des listes à filets. */
+        .method { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--text-main); }
+        .method > div { padding: 1.5rem 2rem 0 0; display: grid; gap: .9rem; align-content: start; }
+        .method > div + div { padding-left: 2rem; border-left: 1px solid var(--border); }
+        .method a { color: var(--text-main); text-decoration-thickness: 1px; text-underline-offset: .2em; }
+        .method a:hover { text-decoration-thickness: 2px; text-decoration-color: rgb(var(--acc-fg)); }
 
-        .back { margin-top: 6rem; display: flex; gap: 1.25rem; flex-wrap: wrap; align-items: center; }
+        .back { margin-top: 7rem; display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: center; }
 
         @media (max-width: 900px) {
-            .page { padding: 5vh 1.1rem 6rem; }
-            .block { margin-top: 4rem; }
-            .versus { grid-template-columns: minmax(0, 1fr); }
-            .vs { writing-mode: horizontal-tb; border-inline: 0; border-block: 2px solid var(--text-main); padding: .6rem; }
-            .side { padding: 1.5rem; }
+            .page { padding: 6vh 1.1rem 6rem; }
+            .block { margin-top: 4.5rem; }
+            .versus, .balance, .method, .charts { grid-template-columns: minmax(0, 1fr); }
+            .side, .side + .side, .hyps, .result, .method > div, .method > div + div { padding: 1.5rem 0 0; border-left: 0; }
+            .side + .side, .result, .method > div + div { margin-top: 1.5rem; border-top: 1px solid var(--border); }
             .facts { grid-template-columns: 1fr 1fr; }
-            .balance { grid-template-columns: minmax(0, 1fr); }
-            .hyps { border-right: 0; border-bottom: 2px solid var(--text-main); padding: 1.5rem; }
-            .result { padding: 1.5rem; }
-            .method { grid-template-columns: 1fr; }
+            .charts { gap: 2rem; }
         }
         @media (max-width: 420px) { .figs { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
-    <div class="texture-overlay" aria-hidden="true"></div>
 
     <header>
         <a href="/" class="header-logo" aria-label="NADAPROD — accueil" data-i18n-aria-label="debate.homeLink">
@@ -132,7 +129,6 @@
       <div class="page">
 
         <!-- Le débat -->
-        <p class="kicker" data-i18n="debate.kicker">Un débat, des faits</p>
         <h1 class="display-text" data-i18n="debate.title">Un débat, <span class="accent">des faits</span></h1>
         <p class="section-intro" data-i18n="debate.intro">On utilise l'IA pour créer, et le statique pour publier. L'une consomme, l'autre économise. Voici nos chiffres réels, mis à jour en continu, et les hypothèses pour les lire. À vous de juger.</p>
         <p class="status" id="status" role="status">
@@ -147,7 +143,6 @@
             <h2 id="vsTitle" data-i18n="debate.vsTitle">Face <span class="accent">à face</span></h2>
             <div class="versus">
                 <div class="side">
-                    <p class="grid-tag"><b data-i18n="debate.aiTag">Côté IA</b><span data-i18n="debate.aiMeta">création</span></p>
                     <h3 data-i18n="debate.aiTitle">Ce que l'IA <span class="accent">consomme</span></h3>
                     <div class="figs">
                         <div class="fig"><b data-v="ai.requests">—</b><span data-i18n="debate.aiRequests">requêtes à l'IA</span></div>
@@ -157,9 +152,7 @@
                     </div>
                     <p class="note" data-i18n="debate.estNote">* estimation : mesure × hypothèse, réglable dans le bilan.</p>
                 </div>
-                <div class="vs" aria-hidden="true">VS</div>
                 <div class="side">
-                    <p class="grid-tag"><b data-i18n="debate.stTag">Côté statique</b><span data-i18n="debate.stMeta">publication</span></p>
                     <h3 data-i18n="debate.stTitle">Ce que le statique <span class="accent">économise</span></h3>
                     <div class="figs">
                         <div class="fig"><b data-v="static.pages">—</b><span data-i18n="debate.stPages">pages servies</span></div>
@@ -244,30 +237,30 @@
         <section class="block" aria-labelledby="mTitle">
             <h2 id="mTitle" data-i18n="debate.mTitle">La <span class="accent">méthode</span></h2>
             <div class="method">
-                <article class="grid-item" style="--i:0">
-                    <p class="grid-tag"><b data-i18n="debate.mMeasured">Mesuré</b></p>
-                    <ul>
+                <div>
+                    <span class="label" data-i18n="debate.mMeasured">Mesuré</span>
+                    <ul class="list">
                         <li data-i18n="debate.m1">Chaque requête à l'IA : nature, tokens, durée, échec</li>
                         <li data-i18n="debate.m2">Chaque requête servie à un site publié : page ou fichier, taille, temps de service</li>
                         <li data-i18n="debate.m3">L'état de l'outil : projets, blocs, traductions, sites</li>
                     </ul>
-                </article>
-                <article class="grid-item" style="--i:1">
-                    <p class="grid-tag"><b data-i18n="debate.mAssumed">Supposé</b></p>
-                    <ul>
+                </div>
+                <div>
+                    <span class="label" data-i18n="debate.mAssumed">Supposé</span>
+                    <ul class="list">
                         <li><span data-i18n="debate.m4">L'énergie d'une requête IA</span> — <a href="https://cloud.google.com/blog/products/infrastructure/measuring-the-environmental-impact-of-ai-inference" target="_blank" rel="noopener" data-i18n="debate.m4src">source Google, août 2025</a></li>
                         <li data-i18n="debate.m5">Le temps de calcul d'une page WordPress sans cache</li>
                         <li data-i18n="debate.m6">La puissance d'un cœur de serveur, l'intensité carbone</li>
                     </ul>
-                </article>
-                <article class="grid-item" style="--i:2">
-                    <p class="grid-tag"><b data-i18n="debate.mPrivacy">Vie privée</b></p>
-                    <ul>
+                </div>
+                <div>
+                    <span class="label" data-i18n="debate.mPrivacy">Vie privée</span>
+                    <ul class="list">
                         <li data-i18n="debate.m7">Des totaux par jour, rien de plus</li>
                         <li data-i18n="debate.m8">Aucune IP, aucun cookie, aucun user-agent conservé</li>
                         <li data-i18n="debate.m9">Les robots sont reconnus à la volée et comptés à part</li>
                     </ul>
-                </article>
+                </div>
             </div>
         </section>
 
@@ -275,16 +268,16 @@
         <section class="block" aria-labelledby="fTitle">
             <h2 id="fTitle" data-i18n="debate.fTitle">L'outil, <span class="accent">en chiffres</span></h2>
             <div class="facts">
-                <div><b data-v="app.projects">—</b><span data-i18n="debate.fProjects">projets</span></div>
-                <div><b data-v="app.blocks">—</b><span data-i18n="debate.fBlocks">blocs</span></div>
-                <div><b data-v="app.versions.generate">—</b><span data-i18n="debate.fGenerate">blocs générés</span></div>
-                <div><b data-v="app.versions.variant">—</b><span data-i18n="debate.fVariant">variantes</span></div>
-                <div><b data-v="app.versions.retheme">—</b><span data-i18n="debate.fRetheme">re-thèmes</span></div>
-                <div><b data-v="app.translations.machine">—</b><span data-i18n="debate.fMachine">traductions par l'IA</span></div>
-                <div><b data-v="app.translations.human">—</b><span data-i18n="debate.fHuman">traductions relues</span></div>
-                <div><b data-v="app.sites">—</b><span data-i18n="debate.fSites">sites</span></div>
-                <div><b data-v="app.live_sites">—</b><span data-i18n="debate.fLive">sites en ligne</span></div>
-                <div><b data-v="app.pages">—</b><span data-i18n="debate.fPages">pages</span></div>
+                <div class="fig"><b data-v="app.projects">—</b><span data-i18n="debate.fProjects">projets</span></div>
+                <div class="fig"><b data-v="app.blocks">—</b><span data-i18n="debate.fBlocks">blocs</span></div>
+                <div class="fig"><b data-v="app.versions.generate">—</b><span data-i18n="debate.fGenerate">blocs générés</span></div>
+                <div class="fig"><b data-v="app.versions.variant">—</b><span data-i18n="debate.fVariant">variantes</span></div>
+                <div class="fig"><b data-v="app.versions.retheme">—</b><span data-i18n="debate.fRetheme">re-thèmes</span></div>
+                <div class="fig"><b data-v="app.translations.machine">—</b><span data-i18n="debate.fMachine">traductions par l'IA</span></div>
+                <div class="fig"><b data-v="app.translations.human">—</b><span data-i18n="debate.fHuman">traductions relues</span></div>
+                <div class="fig"><b data-v="app.sites">—</b><span data-i18n="debate.fSites">sites</span></div>
+                <div class="fig"><b data-v="app.live_sites">—</b><span data-i18n="debate.fLive">sites en ligne</span></div>
+                <div class="fig"><b data-v="app.pages">—</b><span data-i18n="debate.fPages">pages</span></div>
             </div>
         </section>
 
@@ -368,6 +361,7 @@
         $('rSaved').textContent = energy(c.savedWh);
         $('rPerPage').textContent = c.perPage == null ? '—' : energy(c.perPage);
         $('rBreak').textContent = c.breakEven == null ? '—' : t('debate.breakEven', { n: big(Math.ceil(c.breakEven)) });
+        $('rBreak').classList.toggle('none', c.breakEven == null);
 
         // Verdict : honnête dans les deux sens, et prudent tant que la mesure est jeune.
         let v;

@@ -101,12 +101,12 @@ export function openModal({ title, body, size = 'md', onClose }) {
   closeModal();
   const widths = { sm: 'max-w-md', md: 'max-w-2xl', lg: 'max-w-5xl', xl: 'max-w-[92rem]' };
   const host = document.createElement('div');
-  host.className = 'fixed inset-0 z-40 grid place-items-center p-4 bg-black/70 backdrop-blur-sm';
+  host.className = 'fixed inset-0 z-40 grid place-items-center p-4 bg-black/60';
   host.innerHTML = `
-    <div role="dialog" aria-modal="true" aria-label="${esc(title)}" class="w-full ${widths[size] || widths.md} max-h-[90vh] flex flex-col rounded-2xl border border-ink-600 bg-ink-900 shadow-2xl">
+    <div role="dialog" aria-modal="true" aria-label="${esc(title)}" class="w-full ${widths[size] || widths.md} max-h-[90vh] flex flex-col border border-ink-700 bg-ink-900">
       <div class="shrink-0 flex items-center justify-between gap-4 px-5 h-14 border-b border-ink-700">
-        <h2 class="font-display font-semibold tracking-tight truncate">${esc(title)}</h2>
-        <button data-close class="p-1.5 rounded-lg text-ink-300 hover:text-ink-100 hover:bg-ink-800" aria-label="${esc(t('studio.close'))}">
+        <h2 class="font-semibold text-base truncate">${esc(title)}</h2>
+        <button data-close class="btn btn-sm btn-icon btn-ghost" aria-label="${esc(t('studio.close'))}">
           <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"/></svg>
         </button>
       </div>
@@ -138,8 +138,8 @@ export function confirmBox(message, okLabel) {
       title: t('studio.confirm'), size: 'sm', onClose: () => resolve(answer),
       body: `<p class="text-sm text-ink-200 leading-relaxed">${esc(message)}</p>
         <div class="mt-5 flex justify-end gap-2">
-          <button data-no class="h-9 px-4 rounded-lg text-sm border border-ink-600 hover:bg-ink-800">${esc(t('studio.cancel'))}</button>
-          <button data-yes autofocus class="h-9 px-4 rounded-lg text-sm font-semibold bg-red-500/90 hover:bg-red-500 text-white">${esc(okLabel)}</button>
+          <button data-no class="btn">${esc(t('studio.cancel'))}</button>
+          <button data-yes autofocus class="btn btn-danger font-semibold">${esc(okLabel)}</button>
         </div>`,
     });
     m.el.querySelector('[data-no]').onclick = m.close;

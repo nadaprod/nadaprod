@@ -18,114 +18,120 @@
     <script src="/static/brand.js"></script>
 
     <style>
-        /* ── Cadre (onglets) ─────────────────────────────── */
-
+        /* Quatre onglets, quatre constructions : le héros seul, des rangées,
+           des colonnes, un index. Un seul geste fort par écran. */
         section {
             display: none;
             min-height: 100%;
-            padding: 9vh 1.5rem 10rem;
+            padding: 8vh 1.5rem 11rem;
             max-width: 1240px;
             margin: 0 auto;
-            animation: fadeUp .7s var(--ease) both;
+            animation: fadeUp .5s var(--ease) both;
         }
         section.active { display: block; }
 
-        #hero-title { min-height: 1.8em; transition: opacity .5s var(--ease), transform .5s var(--ease); }
-        .cta-row { display: flex; gap: 1.25rem; flex-wrap: wrap; align-items: center; }
-        .cta-row .link { font: .85rem var(--font-mono); color: var(--text-main); opacity: .75; }
-        .cta-row .link:hover { opacity: 1; }
+        /* Accueil : le titre, la phrase, l'action, quatre chiffres. */
+        .cta-row { display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: center; }
+        .cta-row .text-link { font-size: .95rem; }
+        /* NADA PROD : la phrase qui annonce les chiffres juste dessous. */
+        .nada { margin-top: 4.5rem; font: 400 clamp(1.6rem, 3.2vw, 2.6rem)/1.1 var(--font-display); font-synthesis: none; color: var(--text-main); }
+        .proof { margin-top: 1.25rem; display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--text-main); }
+        .proof div { padding: 1.25rem 1.5rem 0 0; }
+        .proof div + div { padding-left: 1.5rem; border-left: 1px solid var(--border); }
+        .proof b { display: block; font: 400 clamp(2.6rem, 5vw, 4.2rem)/1 var(--font-display); font-synthesis: none; color: var(--text-main); font-variant-numeric: tabular-nums; }
+        .proof span { display: block; margin-top: .6rem; font-size: .9rem; line-height: 1.4; color: var(--text-secondary); max-width: 13rem; }
 
-        /* Preuves chiffrées */
-        .proof { margin-top: 5.5rem; display: grid; grid-template-columns: repeat(4, 1fr); border-top: 2px solid var(--text-main); }
-        .proof div { padding: 1.4rem 1.25rem 0 0; border-right: 1px solid var(--border); margin-right: 1.25rem; }
-        .proof div:last-child { border-right: 0; }
-        .proof b { display: block; font: 900 clamp(3rem, 6vw, 5rem)/.9 var(--font-display); color: var(--text-main); font-variant-numeric: tabular-nums; }
-        .proof span { display: block; margin-top: .6rem; font: .72rem/1.45 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--text-secondary); }
+        /* L'outil : des rangées — l'étiquette et le titre à gauche, le texte à droite. */
+        .rows { list-style: none; border-bottom: 1px solid var(--border); }
+        .row { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 1rem 3rem; padding: 2.75rem 0; border-top: 1px solid var(--border); }
+        .row h3 { margin-top: .7rem; }
+        .row > div:last-child { display: grid; gap: 1.25rem; align-content: start; }
+        .row > div:last-child > p { max-width: 40rem; }
 
-        /* Visuels : du vrai produit, pas de photo d'illustration */
-        .chips { display: flex; flex-wrap: wrap; gap: .4rem; }
-        .chips span { font: 500 .74rem/1 var(--font-mono); padding: .45rem .6rem; border: 1.5px solid var(--border); background: var(--bg); color: var(--text-main); }
-        .chips span:last-child { border-style: dashed; }
-        .chips.out span { font-size: .85rem; padding: .6rem .8rem; border-color: var(--text-main); }
-        .chips.out span:last-child { background: var(--accent); color: #000; border-style: solid; border-color: #000; }
+        /* Les deux visuels qui montrent le vrai produit : une console, un éditeur. */
+        .term, .ide { font: .8rem/1.75 var(--font-mono); color: var(--text-secondary); border: 1px solid var(--border); max-width: 34rem; }
+        .term { padding: .9rem 1.1rem; white-space: pre; overflow-x: auto; }
+        .term b { color: var(--text-main); font-weight: 500; }
+        .term .warn { color: rgb(var(--warn)); }
+        .ide { display: grid; grid-template-columns: 9rem 1fr; }
+        .ide .tree { border-right: 1px solid var(--border); padding: .7rem .8rem; white-space: pre; }
+        .ide .tree .on { color: var(--text-main); box-shadow: inset 2px 0 var(--accent); padding-left: .4rem; }
+        .ide .code { padding: .7rem 1rem; white-space: pre; overflow: hidden; }
+        .ide .code b { color: var(--text-main); font-weight: 500; }
+        .ide .code i { color: var(--text-dim); font-style: normal; }
 
-        .term { font: .8rem/1.75 var(--font-mono); background: #0b0b0a; color: #e9e9e2; border: 2px solid #0b0b0a; padding: 1rem 1.1rem; overflow-x: auto; white-space: pre; }
-        .term .dim { color: #75756d; } .term .ok { color: #ccff00; } .term .warn { color: #f7b733; }
-
-        .tokens { display: flex; align-items: stretch; gap: .5rem; flex-wrap: wrap; }
-        .swatches { display: flex; border: 2px solid var(--text-main); }
-        .swatches i { width: 30px; height: 46px; }
-        .tok { border: 2px solid var(--border); background: var(--bg); padding: .35rem .7rem; display: grid; place-items: center; font: 900 1.6rem/1 var(--font-display); color: var(--text-main); }
-        .tok.serif { font: italic 300 1.6rem/1 var(--font-accent); }
-        .tok.radius { width: 46px; border-radius: 14px 2px; border-color: var(--text-main); }
-
-        .ide { border: 2px solid var(--text-main); background: #0b0b0a; color: #cfcfc6; font: .76rem/1.7 var(--font-mono); display: grid; grid-template-columns: 9.5rem 1fr; min-height: 9.5rem; }
-        .ide .tree { border-right: 1px solid #2c2c29; padding: .6rem .7rem; color: #a3a39b; white-space: pre; }
-        .ide .tree .on { color: #fff; background: rgba(204,255,0,.12); box-shadow: inset 2px 0 #ccff00; }
-        .ide .code { padding: .6rem .9rem; white-space: pre; overflow: hidden; }
-        .ide .code .k { color: #ccff00; } .ide .code .s { color: #f7b733; } .ide .code .c { color: #75756d; }
-
-        .pipe { display: grid; grid-template-columns: repeat(6, 1fr); border: 2px solid var(--text-main); margin-bottom: 1.25rem; animation: fadeUp .7s var(--ease) both; }
-        .pipe div { padding: 1.1rem 1rem; border-right: 1px solid var(--border); background: var(--bg); position: relative; }
-        .pipe div:last-child { border-right: 0; background: var(--accent); color: #000; }
-        .pipe b { display: block; font: 600 .68rem/1 var(--font-mono); letter-spacing: .12em; color: var(--text-dim); margin-bottom: .55rem; }
-        .pipe div:last-child b { color: #000; opacity: .6; }
-        .pipe span { font: 800 1.25rem/1 var(--font-display); text-transform: uppercase; }
-
-        .marquee-wrapper { width: 100vw; margin: 0 0 3.5rem calc(-50vw + 50%); border-block: 2px solid var(--text-main); background: var(--accent); overflow: hidden; transform: rotate(-1deg) scale(1.02); }
+        /* Le statique : le bandeau (le geste punk du site), l'enchaînement, trois arguments en colonnes. */
+        .marquee-wrapper { width: 100vw; margin: 0 0 4rem calc(-50vw + 50%); border-block: 2px solid var(--text-main); background: var(--accent); overflow: hidden; transform: rotate(-1deg) scale(1.02); }
         .marquee-track { display: flex; width: max-content; animation: scroll 30s linear infinite; }
-        .marquee-content { white-space: nowrap; padding: .9rem 2rem .9rem 0; font: 900 2rem/1 var(--font-display); color: #000; text-transform: uppercase; }
+        .marquee-content { white-space: nowrap; padding: .9rem 2rem .9rem 0; font: 400 1.75rem/1.1 var(--font-display); font-synthesis: none; color: #000; }
         @keyframes scroll { to { transform: translateX(-50%); } }
 
-        .debate-link { text-decoration: none; color: inherit; border-color: var(--text-main); }
-        .debate-link:hover { background: var(--accent); color: #000; }
-        .debate-link:hover h3, .debate-link:hover p, .debate-link:hover .grid-tag, .debate-link:hover .grid-tag b, .debate-link:hover .accent { color: #000; }
-        .debate-cta { font: 800 1.4rem/1 var(--font-display); text-transform: uppercase; letter-spacing: .02em; }
+        .pipe { display: flex; flex-wrap: wrap; gap: .35rem .9rem; align-items: baseline; font: .85rem/1.6 var(--font-mono); color: var(--text-secondary); margin-bottom: 5rem; }
+        .pipe span:last-child { color: var(--text-main); font-weight: 500; }
+        .pipe i { font-style: normal; color: var(--text-dim); }
 
-        /* Navigation flottante */
+        .args { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--text-main); }
+        .args article { padding: 1.5rem 2rem 0 0; display: grid; gap: 1rem; align-content: start; }
+        .args article + article { padding-left: 2rem; border-left: 1px solid var(--border); }
+        .args h3 { font-size: clamp(1.3rem, 1.9vw, 1.6rem); }
+        .args p { font-size: .98rem; }
+
+        .debate-link { margin-top: 5rem; display: flex; justify-content: space-between; align-items: flex-end; gap: 2rem; padding: 2rem 0; border-block: 1px solid var(--text-main); text-decoration: none; color: inherit; }
+        .debate-link h3 { margin: .7rem 0 .5rem; }
+        .debate-link p { max-width: 36rem; }
+        .debate-cta { flex: none; font-weight: 600; color: var(--text-main); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .25em; }
+        .debate-link:hover .debate-cta { text-decoration-thickness: 2px; text-decoration-color: rgb(var(--acc-fg)); }
+
+        /* Open source : deux colonnes, puis l'index des sites publiés. */
+        .duo { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 3rem; border-top: 1px solid var(--border); padding-top: 2rem; }
+        .duo > div { display: grid; gap: 1rem; align-content: start; }
+        .signal-form { display: flex; border-bottom: 1px solid var(--text-main); margin-top: .5rem; }
+        .signal-form input { flex: 1; min-width: 0; border: 0; background: transparent; padding: .9rem 0; font: 1.1rem var(--font-body); color: var(--text-main); outline: none; }
+        .signal-form input::placeholder { color: var(--text-secondary); }
+        .signal-form button { background: transparent; border: 0; color: var(--text-main); font: 600 1rem var(--font-body); cursor: pointer; padding: 0 .25rem 0 1rem; }
+        .signal-form button:hover { text-decoration: underline; text-decoration-color: rgb(var(--acc-fg)); text-decoration-thickness: 2px; }
+        .mail { font: 600 clamp(1.3rem, 2.2vw, 1.75rem)/1.2 var(--font-body); letter-spacing: -.02em; color: var(--text-main); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .2em; overflow-wrap: anywhere; }
+        .mail:hover { text-decoration-thickness: 2px; text-decoration-color: rgb(var(--acc-fg)); }
+
+        .link-list { list-style: none; margin-top: 5rem; border-top: 1px solid var(--text-main); }
+        .link-list li { border-bottom: 1px solid var(--border); }
+        .link-list a { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: 1.15rem 0; text-decoration: none; color: var(--text-main); font: 600 clamp(1.25rem, 2.4vw, 1.75rem)/1.1 var(--font-body); letter-spacing: -.02em; }
+        .link-list a span { font: 400 .9rem var(--font-body); letter-spacing: 0; color: var(--text-secondary); }
+        .link-list a:hover { text-decoration: underline; text-decoration-thickness: 2px; text-decoration-color: rgb(var(--acc-fg)); text-underline-offset: .2em; }
+
+        /* Barre flottante : filet épais + ombre franche ; l'onglet courant au surligneur. */
         nav {
             position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); z-index: 1000;
-            background: var(--bg); padding: 6px; display: flex; gap: 6px;
-            border: 2px solid var(--text-main); box-shadow: var(--shadow-hard);
+            background: var(--bg); padding: 5px; display: flex; gap: 4px;
+            border: 2px solid var(--text-main); box-shadow: 4px 4px 0 var(--text-main);
         }
         .nav-item {
             background: transparent; border: none; cursor: pointer;
-            color: var(--text-secondary); padding: .9rem 1.4rem;
-            font: 800 1.15rem/1 var(--font-display); letter-spacing: .04em; text-transform: uppercase;
-            transition: background .2s, color .2s;
+            color: var(--text-secondary); padding: .75rem 1.15rem;
+            font: 600 .95rem/1 var(--font-body); letter-spacing: -.005em;
+            transition: color .15s, background .15s;
         }
-        .nav-item.active { background: var(--text-main); color: var(--bg); }
-        .nav-item:hover:not(.active), .nav-item:focus-visible { color: var(--text-main); background: var(--surface); outline: none; }
-
-        .link-list { list-style: none; margin-top: 2.5rem; border-top: 2px solid var(--text-main); }
-        .link-list li { border-bottom: 1px solid var(--border); }
-        .link-list a { display: flex; justify-content: space-between; align-items: baseline; padding: 1.5rem .75rem; text-decoration: none; color: var(--text-main); font: 800 clamp(1.8rem, 3.4vw, 2.6rem)/1 var(--font-display); text-transform: uppercase; transition: background .3s var(--ease), color .3s, padding .3s var(--ease); }
-        .link-list a:hover { background: var(--text-main); color: var(--bg); padding-inline: 1.75rem; }
-        .link-list a .hidden { font: 600 .74rem var(--font-mono); letter-spacing: .1em; color: var(--text-dim); transition: color .3s; }
-        .link-list a:hover .hidden { color: var(--accent); }
-
-        .signal-form { margin-top: auto; display: flex; border-bottom: 2px solid var(--text-main); }
-        .signal-form input { flex: 1; border: 0; background: transparent; padding: 1rem 0; font: 1.15rem var(--font-body); color: var(--text-main); outline: none; }
-        .signal-form button { background: transparent; border: 0; color: var(--text-main); font: 900 2rem var(--font-display); cursor: pointer; padding: 0 1rem; }
-        .mail { font: 900 clamp(2rem, 3.4vw, 2.8rem)/.9 var(--font-display); color: var(--text-main); text-decoration: none; margin-top: auto; }
-        .mail:hover { color: var(--text-main); text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 6px; }
-
+        .nav-item.active { background: var(--accent); color: #000; }
+        .nav-item:hover:not(.active) { color: var(--text-main); }
 
         @media (max-width: 900px) {
-            section { padding: 5vh 1.1rem 8rem; }
-            .proof { grid-template-columns: 1fr 1fr; row-gap: 1.5rem; margin-top: 3.5rem; }
-            .proof div:nth-child(2) { border-right: 0; }
-            .pipe { grid-template-columns: 1fr 1fr; }
-            .pipe div { border-bottom: 1px solid var(--border); }
+            section { padding: 6vh 1.1rem 8rem; }
+            .proof { grid-template-columns: 1fr 1fr; margin-top: 4.5rem; border-top: 0; }
+            .proof div, .proof div + div { padding: 1rem 0 1.25rem; border-left: 0; border-top: 1px solid var(--text-main); }
+            .proof div:nth-child(even) { padding-left: 1rem; border-left: 1px solid var(--border); }
+            .row, .duo { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+            .row h3 { margin-top: .5rem; }
+            .args { grid-template-columns: minmax(0, 1fr); }
+            .args article, .args article + article { padding: 1.5rem 0; border-left: 0; }
+            .args article + article { border-top: 1px solid var(--border); }
+            .debate-link { flex-direction: column; align-items: flex-start; gap: 1rem; }
             .ide { grid-template-columns: 1fr; } .ide .tree { display: none; }
-            nav { width: calc(100% - 1.5rem); justify-content: space-between; bottom: 1rem; padding: 5px; }
-            .nav-item { padding: .8rem .35rem; font-size: 1rem; flex: 1; }
+            nav { width: calc(100% - 1.5rem); justify-content: space-between; bottom: 1rem; }
+            .nav-item { padding: .8rem .3rem; font-size: .88rem; flex: 1; }
         }
     </style>
 </head>
 <body>
-
-    <div class="texture-overlay" aria-hidden="true"></div>
 
     <header>
         <a href="#" class="header-logo" onclick="switchTab('home'); return false;">
@@ -133,7 +139,7 @@
         </a>
         <div class="header-controls">
             <a href="/login" id="auth-btn" class="icon-btn" aria-label="Connexion" data-i18n-aria-label="home.nav_login">
-                <svg class="auth-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                <svg class="auth-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
                 <span class="auth-label" data-i18n="home.nav_login">Connexion</span>
             </a>
             <button class="icon-btn" onclick="toggleLanguage()" id="lang-btn" aria-label="Langue / Language">FR</button>
@@ -143,15 +149,15 @@
 
     <main id="app">
 
-        <!-- 1. MANIFESTE -->
+        <!-- 1. ACCUEIL : le titre seul -->
         <section id="tab-home" class="active">
-            <p class="kicker" data-i18n="home.kicker">Publication statique · logiciel libre</p>
-            <h1 class="display-text" id="hero-title"><span class="accent">Chaque page,</span><br>UNE ŒUVRE AUTONOME.</h1>
+            <h1 class="display-text" id="hero-title"><span class="accent">Chaque page,</span><br>une œuvre autonome.</h1>
             <p class="section-intro" data-i18n="home.home_intro">Un site WordPress, c'est un serveur, une base de données, des plugins à mettre à jour et des failles à surveiller. NADAPROD publie des pages statiques : <em>rien à pirater, rien à maintenir</em>. Vous créez avec l'IA, vous traduisez, vous publiez.</p>
             <div class="cta-row">
                 <a href="/waiting-list" class="icon-btn primary" data-i18n="home.cta_waitlist">Rejoindre la liste d'attente</a>
-                <a href="/login" class="link" data-i18n="home.cta_login">Déjà un compte ? Se connecter</a>
+                <a href="/login" class="text-link" data-i18n="home.cta_login">Déjà un compte ? Se connecter</a>
             </div>
+            <p class="nada" data-i18n="home.nada">Rien en production que vos pages.</p>
             <div class="proof">
                 <div><b>15</b><span data-i18n="home.proof1">IA spécialisées, une par type de bloc</span></div>
                 <div><b>1</b><span data-i18n="home.proof2">adresse par langue (/en/, /es/…)</span></div>
@@ -160,76 +166,67 @@
             </div>
         </section>
 
-        <!-- 2. L'OUTIL -->
+        <!-- 2. L'OUTIL : des rangées -->
         <section id="tab-app">
-            <p class="kicker" data-i18n="home.app_kicker">De l'idée à la mise en ligne</p>
             <h2 class="display-text" data-i18n="home.app_main_title">Tout pour <span class="accent">publier</span></h2>
             <p class="section-intro" data-i18n="home.app_intro">Créez une page avec l'IA ou importez un site existant. Modifiez-la à la souris ou dans le code, traduisez-la, publiez-la. Un seul outil, du premier mot à l'adresse en ligne.</p>
 
-            <div class="grid-container">
-                <article class="grid-item" style="--span:7; --i:0">
-                    <p class="grid-tag"><b data-i18n="home.feat1_tag">01 · Le studio</b><span data-i18n="home.feat1_meta">la page s'écrit en direct</span></p>
-                    <h3 data-i18n="home.feat1_title">Une IA <span class="accent">par bloc</span></h3>
-                    <p data-i18n="home.feat1_desc">Chaque type de bloc (en-tête, tarifs, FAQ…) a sa propre IA. Vous décrivez ce que vous voulez, la page s'écrit sous vos yeux, vous comparez trois versions et gardez la meilleure.</p>
-                    <div class="chips" aria-hidden="true">
-                        <span>header</span><span>hero</span><span>features</span><span>pricing</span><span>testimonials</span><span>faq</span><span>cta</span><span>footer</span><span>stats</span><span>logos</span><span>blog</span><span>team</span><span>contact</span><span>banner</span><span>section libre</span>
+            <ol class="rows">
+                <li class="row">
+                    <div><span class="label" data-i18n="home.feat1_tag">Le studio</span><h3 data-i18n="home.feat1_title">Une IA <span class="accent">par bloc</span></h3></div>
+                    <div>
+                        <p data-i18n="home.feat1_desc">Chaque type de bloc (en-tête, tarifs, FAQ…) a sa propre IA. Vous décrivez ce que vous voulez, la page s'écrit sous vos yeux, vous comparez trois versions et gardez la meilleure.</p>
+                        <p class="mono-line" aria-hidden="true">header · hero · features · pricing · testimonials · faq · cta · footer · stats · logos · blog · team · contact · banner · section</p>
+                        <ul class="list two">
+                            <li data-i18n="home.feat1_d1">Trois versions au choix</li>
+                            <li data-i18n="home.feat1_d2">Annuler / rétablir, bloc par bloc</li>
+                            <li data-i18n="home.feat1_d3">Note de qualité (accessibilité, SEO)</li>
+                            <li data-i18n="home.feat1_d4">Photos libres de droits</li>
+                        </ul>
                     </div>
-                    <div class="service-details">
-                        <span data-i18n="home.feat1_d1">Trois versions au choix</span>
-                        <span data-i18n="home.feat1_d2">Annuler / rétablir, bloc par bloc</span>
-                        <span data-i18n="home.feat1_d3">Note de qualité (accessibilité, SEO)</span>
-                        <span data-i18n="home.feat1_d4">Photos libres de droits</span>
+                </li>
+                <li class="row">
+                    <div><span class="label" data-i18n="home.feat2_tag">Votre style</span><h3 data-i18n="home.feat2_title">Le même style, <span class="accent">partout</span></h3></div>
+                    <div><p data-i18n="home.feat2_desc">Choisissez vos couleurs, vos polices et vos arrondis : tous les blocs les suivent. Changez-les, et toute la page se met à jour sans toucher aux textes.</p></div>
+                </li>
+                <li class="row">
+                    <div><span class="label" data-i18n="home.feat3_tag">Les langues</span><h3 data-i18n="home.feat3_title">Une adresse <span class="accent">par langue</span></h3></div>
+                    <div>
+                        <p data-i18n="home.feat3_desc">L'IA traduit la page, vous relisez. Si vous régénérez un bloc, les traductions restent : seuls les textes modifiés sont à retraduire.</p>
+<pre class="term" aria-hidden="true">votre-site.fr/      fr  <b>source</b>
+votre-site.fr/en/   en  <b>42 / 42</b>
+votre-site.fr/es/   es  <span class="warn">3 à relire</span></pre>
                     </div>
-                </article>
-
-                <article class="grid-item" style="--span:5; --i:1">
-                    <p class="grid-tag"><b data-i18n="home.feat2_tag">02 · Votre style</b><span data-i18n="home.feat2_meta">couleurs, polices, arrondis</span></p>
-                    <h3 data-i18n="home.feat2_title">Le même style, <span class="accent">partout</span></h3>
-                    <p data-i18n="home.feat2_desc">Choisissez vos couleurs, vos polices et vos arrondis : tous les blocs les suivent. Changez-les, et toute la page se met à jour sans toucher aux textes.</p>
-                    <div class="tokens" aria-hidden="true">
-                        <span class="swatches"><i style="background:#ecfccb"></i><i style="background:#bef264"></i><i style="background:#84cc16"></i><i style="background:#4d7c0f"></i><i style="background:#1a2e05"></i></span>
-                        <span class="tok">Aa</span><span class="tok serif">Aa</span><span class="tok radius"></span>
-                    </div>
-                </article>
-
-                <article class="grid-item" style="--span:5; --i:2">
-                    <p class="grid-tag"><b data-i18n="home.feat3_tag">03 · Les langues</b><span class="badge-new" data-i18n="home.badge_new">Nouveau</span></p>
-                    <h3 data-i18n="home.feat3_title">Une adresse <span class="accent">par langue</span></h3>
-                    <p data-i18n="home.feat3_desc">L'IA traduit la page, vous relisez. Si vous régénérez un bloc, les traductions restent : seuls les textes modifiés sont à retraduire.</p>
-<pre class="term" aria-hidden="true"><span class="dim">votre-site.fr/</span>      fr  <span class="ok">● source</span>
-<span class="dim">votre-site.fr/</span>en/   en  <span class="ok">● 42/42</span>
-<span class="dim">votre-site.fr/</span>es/   es  <span class="warn">◐ 3 à relire</span></pre>
-                </article>
-
-                <article class="grid-item" style="--span:7; --i:3">
-                    <p class="grid-tag"><b data-i18n="home.feat4_tag">04 · L'éditeur</b><span data-i18n="home.feat4_meta">à la souris ou en code</span></p>
-                    <h3 data-i18n="home.feat4_title">Importez, <span class="accent">modifiez</span></h3>
-                    <p data-i18n="home.feat4_desc">Envoyez le .zip d'un site existant — l'export statique de votre WordPress, par exemple. Cliquez sur un élément pour le choisir, double-cliquez pour changer son texte, ou demandez à l'IA de le modifier. Vous préférez le code ? Il y a un vrai éditeur, avec la liste des fichiers et l'aperçu en direct.</p>
-                    <div class="ide" aria-hidden="true">
-<div class="tree">▾ css
-  <span class="on">  site.css</span>
-▸ fr
-  index.html
-  contact.html</div>
-<div class="code"><span class="c">/* appliqué à la frappe */</span>
-<span class="k">.hero</span> {
-  color: <span class="s">#ccff00</span>;
+                </li>
+                <li class="row">
+                    <div><span class="label" data-i18n="home.feat4_tag">L'éditeur</span><h3 data-i18n="home.feat4_title">Importez, <span class="accent">modifiez</span></h3></div>
+                    <div>
+                        <p data-i18n="home.feat4_desc">Envoyez le .zip d'un site existant — l'export statique de votre WordPress, par exemple. Cliquez sur un élément pour le choisir, double-cliquez pour changer son texte, ou demandez à l'IA de le modifier. Vous préférez le code ? Il y a un vrai éditeur, avec la liste des fichiers et l'aperçu en direct.</p>
+                        <div class="ide" aria-hidden="true">
+<div class="tree">css/
+  <span class="on">site.css</span>
+fr/
+index.html
+contact.html</div>
+<div class="code"><i>/* appliqué à la frappe */</i>
+<b>.hero</b> {
+  color: #0b0b0a;
 }</div>
+                        </div>
                     </div>
-                </article>
-
-                <article class="grid-item" style="--span:12; --i:4; min-height:0">
-                    <p class="grid-tag"><b data-i18n="home.feat5_tag">05 · La publication</b><span data-i18n="home.feat5_meta">sept façons de sortir</span></p>
-                    <h3 data-i18n="home.feat5_title">Publiez <span class="accent">où vous voulez</span></h3>
-                    <p data-i18n="home.feat5_desc">Téléchargez un fichier HTML, un site en .zip ou des composants React et Vue. Ou publiez sur Netlify, Cloudflare ou votre propre serveur : chaque enregistrement est en ligne tout de suite.</p>
-                    <div class="chips out" aria-hidden="true"><span>HTML</span><span>ZIP</span><span>React · JSX</span><span>Vue</span><span>Netlify</span><span>Cloudflare Pages</span><span data-i18n="home.feat5_domain">Votre domaine</span></div>
-                </article>
-            </div>
+                </li>
+                <li class="row">
+                    <div><span class="label" data-i18n="home.feat5_tag">La publication</span><h3 data-i18n="home.feat5_title">Publiez <span class="accent">où vous voulez</span></h3></div>
+                    <div>
+                        <p data-i18n="home.feat5_desc">Téléchargez un fichier HTML, un site en .zip ou des composants React et Vue. Ou publiez sur Netlify, Cloudflare ou votre propre serveur : chaque enregistrement est en ligne tout de suite.</p>
+                        <p class="mono-line">HTML · ZIP · React · Vue · Netlify · Cloudflare Pages · <span data-i18n="home.feat5_domain">Votre domaine</span></p>
+                    </div>
+                </li>
+            </ol>
         </section>
 
-        <!-- 3. L'ŒUVRE -->
+        <!-- 3. LE STATIQUE : le bandeau, l'enchaînement, trois colonnes -->
         <section id="tab-services">
-            <p class="kicker" data-i18n="home.services_kicker">Pourquoi le statique</p>
             <h2 class="display-text" data-i18n="home.services_title">Retour <span class="accent">au statique</span></h2>
             <p class="section-intro" data-i18n="home.services_subtitle">Un CMS recalcule chaque page à chaque visite, avec une base de données, des plugins et leurs failles. Un site statique, ce sont des fichiers prêts à servir. C'est la meilleure défense, et la façon la plus sobre de publier.</p>
 
@@ -241,80 +238,83 @@
                 </div>
             </div>
 
-            <div class="pipe" role="list" aria-label="Ce qui se passe à chaque enregistrement" data-i18n-aria-label="home.pipe_label">
-                <div role="listitem"><b>00</b><span data-i18n="home.pipe0">Votre page</span></div>
-                <div role="listitem"><b>01</b><span data-i18n="home.pipe1">CSS compilé</span></div>
-                <div role="listitem"><b>02</b><span data-i18n="home.pipe2">Polices copiées</span></div>
-                <div role="listitem"><b>03</b><span data-i18n="home.pipe3">Marche hors ligne</span></div>
-                <div role="listitem"><b>04</b><span data-i18n="home.pipe4">Aucun traceur</span></div>
-                <div role="listitem"><b>→</b><span data-i18n="home.pipe5">En ligne</span></div>
-            </div>
+            <p class="pipe" role="list" aria-label="Ce qui se passe à chaque enregistrement" data-i18n-aria-label="home.pipe_label">
+                <span role="listitem" data-i18n="home.pipe0">Votre page</span><i aria-hidden="true">→</i>
+                <span role="listitem" data-i18n="home.pipe1">CSS compilé</span><i aria-hidden="true">→</i>
+                <span role="listitem" data-i18n="home.pipe2">Polices copiées</span><i aria-hidden="true">→</i>
+                <span role="listitem" data-i18n="home.pipe3">Marche hors ligne</span><i aria-hidden="true">→</i>
+                <span role="listitem" data-i18n="home.pipe4">Aucun traceur</span><i aria-hidden="true">→</i>
+                <span role="listitem" data-i18n="home.pipe5">En ligne</span>
+            </p>
 
-            <div class="grid-container">
-                <article class="grid-item" style="--span:7; --i:0">
-                    <p class="grid-tag"><b data-i18n="home.svc_irl_tag">Sécurité</b></p>
+            <div class="args">
+                <article>
+                    <span class="label" data-i18n="home.svc_irl_tag">Sécurité</span>
                     <h3 data-i18n="home.svc_prod_title">Rien <span class="accent">à pirater</span></h3>
                     <p data-i18n="home.svc_prod_desc">Pas de base de données, pas de code exécuté sur le serveur, pas de plugin oublié. Il n'y a tout simplement rien à attaquer — et aucune mise à jour de sécurité à courir.</p>
-                    <div class="service-details">
-                        <span data-i18n="home.svc_prod_d1">Pas de base de données</span>
-                        <span data-i18n="home.svc_prod_d2">Pas de PHP, pas de plugin</span>
-                        <span data-i18n="home.svc_prod_d3">Réglages importés jamais exécutés</span>
-                        <span data-i18n="home.svc_prod_d4">Comptes et droits site par site</span>
-                    </div>
+                    <ul class="list">
+                        <li data-i18n="home.svc_prod_d1">Pas de base de données</li>
+                        <li data-i18n="home.svc_prod_d2">Pas de PHP, pas de plugin</li>
+                        <li data-i18n="home.svc_prod_d3">Réglages importés jamais exécutés</li>
+                        <li data-i18n="home.svc_prod_d4">Comptes et droits site par site</li>
+                    </ul>
                 </article>
-                <article class="grid-item" style="--span:5; --i:1">
-                    <p class="grid-tag"><b data-i18n="home.svc_log_tag">Écologie</b></p>
+                <article>
+                    <span class="label" data-i18n="home.svc_log_tag">Écologie</span>
                     <h3 data-i18n="home.svc_log_title">Sobre <span class="accent">pour de vrai</span></h3>
                     <p data-i18n="home.svc_log_desc">Une visite, c'est un fichier lu et envoyé. Pas de page recalculée, pas de base interrogée, pas de scripts tiers. CSS réduit au strict nécessaire, polices servies par votre site : moins de calcul, moins de données transférées, un petit serveur suffit.</p>
                 </article>
-                <article class="grid-item" style="--span:12; --i:2; min-height:0">
-                    <p class="grid-tag"><b data-i18n="home.svc_safe_tag">Durabilité</b></p>
+                <article>
+                    <span class="label" data-i18n="home.svc_safe_tag">Durabilité</span>
                     <h3 data-i18n="home.svc_safe_title">Fait <span class="accent">pour durer</span></h3>
-                    <div class="service-details" style="grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); border-top: 0; padding-top: 0;">
-                        <span data-i18n="home.svc_safe_d1">Du HTML, lisible dans vingt ans</span>
-                        <span data-i18n="home.svc_safe_d2">Installable, marche hors ligne</span>
-                        <span data-i18n="home.svc_safe_d3">Aucun traceur, rien ne fuit</span>
-                        <span data-i18n="home.svc_safe_d4">Vos fichiers, sur votre serveur</span>
-                    </div>
+                    <ul class="list">
+                        <li data-i18n="home.svc_safe_d1">Du HTML, lisible dans vingt ans</li>
+                        <li data-i18n="home.svc_safe_d2">Installable, marche hors ligne</li>
+                        <li data-i18n="home.svc_safe_d3">Aucun traceur, rien ne fuit</li>
+                        <li data-i18n="home.svc_safe_d4">Vos fichiers, sur votre serveur</li>
+                    </ul>
                 </article>
-                <a href="/debate" class="grid-item debate-link" style="--span:12; --i:3; min-height:0">
-                    <p class="grid-tag"><b data-i18n="home.debate_tag">Le débat</b><span data-i18n="home.debate_meta">chiffres réels, mis à jour en continu</span></p>
+            </div>
+
+            <a href="/debate" class="debate-link">
+                <div>
+                    <span class="label" data-i18n="home.debate_tag">Le débat</span>
                     <h3 data-i18n="home.debate_title">Nos chiffres, <span class="accent">en direct</span></h3>
                     <p data-i18n="home.debate_desc">Ce que l'IA consomme, ce que le statique économise : nos mesures réelles et les hypothèses pour les lire. À vous de juger.</p>
-                    <span class="debate-cta" data-i18n="home.debate_cta">Voir le débat →</span>
-                </a>
-            </div>
+                </div>
+                <span class="debate-cta" data-i18n="home.debate_cta">Voir le débat →</span>
+            </a>
         </section>
 
-        <!-- 4. OPEN SOURCE -->
+        <!-- 4. OPEN SOURCE : deux colonnes, un index -->
         <section id="tab-network">
-            <p class="kicker" data-i18n="home.os_kicker">Logiciel libre · licence DWTFYW</p>
             <h2 class="display-text" data-i18n="home.os_title">On partage <span class="accent">l'outil</span></h2>
             <p class="section-intro" data-i18n="home.network_intro">On agit par nos choix, et on partage la méthode et l'outil. Le code est libre (licence DWTFYW, compatible MIT) : utilisez-le, modifiez-le, hébergez-le chez vous. Plus bas, des sites déjà publiés avec NADAPROD.</p>
 
-            <div class="grid-container">
-                <article class="grid-item" style="--span:8; --i:0">
-                    <p class="grid-tag"><b data-i18n="home.newsletter_tag">Liste d'attente</b></p>
+            <div class="duo">
+                <div>
+                    <span class="label" data-i18n="home.newsletter_tag">Liste d'attente</span>
                     <h3 data-i18n="home.newsletter_title">Accès <span class="accent">sur invitation</span></h3>
                     <p data-i18n="home.newsletter_sub">L'instance publique ouvre par vagues. Laissez votre e-mail, ou installez NADAPROD chez vous dès ce soir : le code est libre.</p>
                     <form class="signal-form" onsubmit="joinWaitlist(event)">
                         <input type="email" required placeholder="email@artist.com" aria-label="Email">
-                        <button type="submit" aria-label="Envoyer" data-i18n-aria-label="home.send">→</button>
+                        <button type="submit" data-i18n="home.send">Envoyer</button>
                     </form>
-                    <a href="/waiting-list" style="font: .78rem var(--font-mono); color: var(--text-main); opacity: .65;" data-i18n="home.newsletter_more">Ou remplir le formulaire complet</a>
-                </article>
-                <article class="grid-item" style="--span:4; --i:1">
-                    <p class="grid-tag"><b data-i18n="home.who_tag">Contact</b></p>
-                    <a href="mailto:contact@nadaprod.com" class="mail">CONTACT@<br>NADAPROD.COM</a>
-                </article>
+                    <a href="/waiting-list" class="text-link" style="font-size: .9rem; justify-self: start;" data-i18n="home.newsletter_more">Ou remplir le formulaire complet</a>
+                </div>
+                <div>
+                    <span class="label" data-i18n="home.who_tag">Contact</span>
+                    <a href="mailto:contact@nadaprod.com" class="mail">contact@nadaprod.com</a>
+                </div>
             </div>
+
             <ul class="link-list">
-                <li><a href="https://clh.do" target="_blank" rel="noopener">CLH <span class="hidden">DESIGN & DÉVELOPPEMENT</span></a></li>
-                <li><a href="https://ideeschauves.com" target="_blank" rel="noopener">Idées Chauves <span class="hidden">CRÉATION</span></a></li>
-                <li><a href="https://modular-station.com/" target="_blank" rel="noopener">Modular Station <span class="hidden">WEBRADIO</span></a></li>
-                <li><a href="https://modulisme.com/" target="_blank" rel="noopener">Modulisme <span class="hidden">LABEL</span></a></li>
-                <li><a href="https://oliver-night.com" target="_blank" rel="noopener">Oliver Night <span class="hidden">ARTISTE</span></a></li>
-                <li><a href="https://philippepetit.nadaprod.com" target="_blank" rel="noopener">Philippe Petit <span class="hidden">ARTISTE</span></a></li>
+                <li><a href="https://clh.do" target="_blank" rel="noopener">CLH <span>design & développement</span></a></li>
+                <li><a href="https://ideeschauves.com" target="_blank" rel="noopener">Idées Chauves <span>création</span></a></li>
+                <li><a href="https://modular-station.com/" target="_blank" rel="noopener">Modular Station <span>webradio</span></a></li>
+                <li><a href="https://modulisme.com/" target="_blank" rel="noopener">Modulisme <span>label</span></a></li>
+                <li><a href="https://oliver-night.com" target="_blank" rel="noopener">Oliver Night <span>artiste</span></a></li>
+                <li><a href="https://philippepetit.nadaprod.com" target="_blank" rel="noopener">Philippe Petit <span>artiste</span></a></li>
             </ul>
         </section>
     </main>
@@ -329,34 +329,16 @@
     <script>
         const TABS = ['home', 'app', 'services', 'network'];
         const calm = matchMedia('(prefers-reduced-motion: reduce)');
-        let msgIndex = 0;
 
-        // Héro : la première ligne en accent italique, la seconde en condensé.
-        const HERO_COUNT = 3;
-        const heroHTML = () => `<span class="accent">${t('home.hero' + (msgIndex + 1) + 'Top')}</span><br>${t('home.hero' + (msgIndex + 1) + 'Bot')}`;
-        const heroTitle = document.getElementById('hero-title');
-
-        // Ce que data-i18n ne couvre pas : héro animé, marquee (thème, langue et
-        // bouton de compte : /static/brand.js).
+        // Ce que data-i18n ne couvre pas : le héros (deux clés) et le bandeau
+        // (thème, langue et bouton de compte : /static/brand.js).
         function applyDynamicTexts() {
-            heroTitle.innerHTML = heroHTML();
+            document.getElementById('hero-title').innerHTML = `<span class="accent">${t('home.hero1Top')}</span><br>${t('home.hero1Bot')}`;
             document.querySelectorAll('.marquee-content').forEach(el => { el.textContent = t('home.marquee'); });
         }
         I18N.onChange(applyDynamicTexts);
 
-        setInterval(() => {
-            if (calm.matches || document.hidden || !document.getElementById('tab-home').classList.contains('active')) return;
-            msgIndex = (msgIndex + 1) % HERO_COUNT;
-            heroTitle.style.opacity = '0';
-            heroTitle.style.transform = 'translateY(12px)';
-            setTimeout(() => {
-                heroTitle.innerHTML = heroHTML();
-                heroTitle.style.opacity = '1';
-                heroTitle.style.transform = 'none';
-            }, 500);
-        }, 5000);
-
-        // Le Signal → liste d'attente (POST /waiting-list, stockée côté serveur)
+        // Liste d'attente → POST /waiting-list (stockée côté serveur)
         function joinWaitlist(event) {
             event.preventDefault();
             const form = event.target;
@@ -367,7 +349,10 @@
                 body: JSON.stringify({ email: email, message: 'Le Signal — inscription depuis la page d\'accueil', website: '' })
             }).then(r => {
                 if (!r.ok) throw new Error();
-                form.innerHTML = '<p style="padding: 1rem 0; font: 900 1.6rem var(--font-display); color: var(--text-main);">✓ OK</p>';
+                const done = document.createElement('p');
+                done.style.cssText = 'padding: .9rem 0; font-weight: 600; color: var(--text-main);';
+                done.textContent = '✓ ' + t('home.sent');
+                form.replaceWith(done);
             }).catch(() => alert(t('home.sendError')));
         }
 

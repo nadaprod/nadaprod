@@ -85,8 +85,6 @@ export const requestAudit = () => send({ type: 'np:audit' });
 export function renderViewport() {
   document.querySelectorAll('.vp-btn').forEach((btn) => {
     const active = btn.dataset.vp === S.viewport;
-    btn.classList.toggle('bg-ink-700', active);
-    btn.classList.toggle('text-ink-100', active);
     btn.setAttribute('aria-pressed', String(active));
   });
   const el = $('#frameShell');
@@ -139,7 +137,7 @@ ${cfg ? `<script>tailwind.config = ${JSON.stringify(cfg).replace(/</g, '\\u003c'
 
 /* Vignette : iframe 1280 px mise à l'échelle dans son conteneur. */
 export function thumb(html, { width = 1280, height = 720 } = {}) {
-  return `<div class="np-thumb relative w-full overflow-hidden rounded-lg bg-white" style="aspect-ratio:${width}/${height}">
+  return `<div class="np-thumb relative w-full overflow-hidden border border-ink-700 bg-white" style="aspect-ratio:${width}/${height}">
     <iframe sandbox="allow-scripts" tabindex="-1" loading="lazy" title="" class="absolute top-0 left-0 origin-top-left border-0"
       style="width:${width}px;height:${height}px" srcdoc="${esc(blockDoc(html))}"></iframe></div>`;
 }

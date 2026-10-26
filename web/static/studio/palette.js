@@ -44,16 +44,16 @@ export function openPalette() {
   const m = openModal({
     title: t('studio.paletteTitle'), size: 'sm',
     body: `<input data-q autofocus role="combobox" aria-expanded="true" aria-controls="cmdList" placeholder="${esc(t('studio.palettePh'))}"
-        class="w-full h-11 rounded-xl bg-ink-800 border border-ink-600 focus:border-vio-500 focus:ring-1 focus:ring-vio-500 outline-none text-sm px-3 select-text">
-      <div id="cmdList" role="listbox" class="mt-3 max-h-[50vh] overflow-y-auto scrollbar-thin space-y-0.5"></div>`,
+        class="field w-full h-11 text-sm select-text">
+      <div id="cmdList" role="listbox" class="mt-3 max-h-[50vh] overflow-y-auto scrollbar-thin"></div>`,
   });
   const input = m.el.querySelector('[data-q]'), listEl = m.el.querySelector('#cmdList');
   const draw = () => {
     listEl.innerHTML = shown.length ? shown.map((c, i) => `
-      <button data-i="${i}" role="option" aria-selected="${i === active}" class="w-full flex items-center gap-2.5 rounded-lg px-3 h-9 text-sm text-left ${i === active ? 'bg-vio-500/15 text-ink-100' : 'text-ink-300 hover:bg-ink-800'}">
-        <span class="text-vio-400 w-4">${c.icon ? icon(c.icon) : ''}</span><span class="flex-1 truncate">${esc(c.label)}</span>
-        ${c.hint ? `<kbd class="text-[10px] font-mono text-ink-400">${esc(c.hint)}</kbd>` : ''}</button>`).join('')
-      : `<p class="px-3 py-4 text-sm text-ink-400">${esc(t('studio.paletteNone'))}</p>`;
+      <button data-i="${i}" role="option" aria-selected="${i === active}" class="relative w-full flex items-center gap-2.5 px-3 h-9 text-sm text-left ${i === active ? 'bg-ink-800 text-ink-100 shadow-[inset_2px_0_0_rgb(var(--acc-fg))]' : 'text-ink-300 hover:bg-ink-800'}">
+        <span class="text-ink-300 w-4">${c.icon ? icon(c.icon) : ''}</span><span class="flex-1 truncate">${esc(c.label)}</span>
+        ${c.hint ? `<kbd>${esc(c.hint)}</kbd>` : ''}</button>`).join('')
+      : `<p class="px-3 py-4 text-sm text-ink-300">${esc(t('studio.paletteNone'))}</p>`;
     listEl.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: 'nearest' });
   };
   const run = (c) => { if (!c) return; closeModal(); c.run(); };

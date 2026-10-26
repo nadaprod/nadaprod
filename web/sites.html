@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" class="h-full" style="color-scheme: dark">
+<html lang="fr" class="h-full">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,20 +13,6 @@
 <script src="/static/sites-explorer.js"></script>
 <script src="/static/sites-app.js"></script>
 <style>
-  /* HUD : coins en équerre, trame fine. Rien qui bouge, rien qui pèse. */
-  .hud-corners { position: relative; }
-  .hud-corners::before, .hud-corners::after {
-    content: ""; position: absolute; width: 7px; height: 7px; pointer-events: none;
-    border-color: rgba(34, 211, 238, .55); border-style: solid;
-  }
-  .hud-corners::before { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
-  .hud-corners::after { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
-  .hud-grid {
-    background-image:
-      linear-gradient(rgba(138, 148, 168, .045) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(138, 148, 168, .045) 1px, transparent 1px);
-    background-size: 32px 32px;
-  }
   /* En édition, l'en-tête cède sa place aux commandes : rien ne passe à la ligne. */
   header[data-editing] .hide-editing { display: none; }
   #editControls button, #editRight button { white-space: nowrap; }
@@ -39,67 +25,72 @@
 
 <div class="h-full flex flex-col">
 
-  <header class="h-12 shrink-0 flex items-center gap-3 px-3 border-b border-ink-700 bg-ink-950">
-    <a href="/sites" class="flex items-center hover:opacity-90 shrink-0"><img src="/gfx/logo.png" class="h-8" alt="NADAPROD"></a>
+  <header class="h-12 shrink-0 flex items-center gap-2 px-3 border-b border-ink-700 bg-ink-900">
+    <a href="/sites" class="flex items-center hover:opacity-80 shrink-0 mr-1"><img src="/gfx/logo.png" class="h-7" alt="NADAPROD"></a>
     <div data-slot="project"></div>
-    <a href="/editor" class="hide-editing h-9 px-3 rounded-md flex items-center text-[11px] font-mono uppercase tracking-[0.12em] text-ink-300 hover:text-cyan-300 hover:bg-ink-850 shrink-0" data-i18n="sites.navStudio">Studio</a>
+    <a href="/editor" class="hide-editing btn btn-ghost shrink-0" data-i18n="sites.navStudio">Studio</a>
     <div data-slot="editControls"></div>
     <div data-slot="userBox"></div>
   </header>
 
   <!-- Vue liste -->
-  <main id="viewList" class="hud-grid flex-1 min-h-0 overflow-y-auto px-6 py-8">
-    <div class="max-w-4xl mx-auto space-y-5 pb-16">
+  <main id="viewList" class="flex-1 min-h-0 overflow-y-auto px-6">
+    <div class="max-w-4xl mx-auto pt-12 pb-20">
 
-      <!-- Bandeau de télémétrie -->
-      <section class="hud-corners flex flex-wrap items-end justify-between gap-4 border border-ink-700 bg-ink-950/80 px-5 py-4">
-        <div>
-          <h1 class="font-display text-2xl font-semibold tracking-tight mt-1" data-i18n="sites.hudTitle">Sites</h1>
+      <!-- Titre + chiffres -->
+      <div class="flex flex-wrap items-end justify-between gap-x-10 gap-y-4 pb-6">
+        <h1 class="font-display text-5xl leading-tight" data-i18n="sites.hudTitle">Sites</h1>
+        <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
+          <!-- Les chiffres sont les filtres (?filtre=live|drafts) -->
+          <div id="siteFilter" class="seg" role="radiogroup" aria-label="Filtrer les sites" data-i18n-aria-label="sites.filterLabel">
+            <button type="button" role="radio" data-filter="all" aria-checked="true" tabindex="0"><span data-i18n="sites.filterAll">Tous</span><span data-count="sites" class="tnum text-ink-300">–</span></button>
+            <button type="button" role="radio" data-filter="live" aria-checked="false" tabindex="-1"><span class="h-2 w-2 rounded-full bg-ink-100" aria-hidden="true"></span><span data-i18n="sites.filterLive">En ligne</span><span data-count="live" class="tnum text-ink-300">–</span></button>
+            <button type="button" role="radio" data-filter="drafts" aria-checked="false" tabindex="-1"><span class="h-2 w-2 rounded-full border border-ink-300" aria-hidden="true"></span><span data-i18n="sites.filterDrafts">Brouillons</span><span data-count="drafts" class="tnum text-ink-300">–</span></button>
+          </div>
+          <!-- KPI : pages des sites affichés (suit le filtre) — un fait, pas un bouton -->
+          <p id="pagesTotal" class="text-sm border-l border-ink-700 pl-5 h-8 flex items-center gap-1.5" aria-live="polite"><span data-pages-n class="tnum font-semibold text-ink-100">–</span><span data-pages-label class="text-ink-300">pages</span></p>
+          <!-- Tri (?tri=az|edit|pages|creation) — dans le filtre courant -->
+          <div class="flex items-center gap-2.5 border-l border-ink-700 pl-5">
+            <span class="label" id="sortLabel" data-i18n="sites.sortLabel">Trier</span>
+            <div id="siteSort" class="seg" role="radiogroup" aria-labelledby="sortLabel">
+              <button type="button" role="radio" data-sort="az" aria-checked="true" tabindex="0" data-i18n="sites.sortAz">A→Z</button>
+              <button type="button" role="radio" data-sort="edit" aria-checked="false" tabindex="-1" data-i18n="sites.sortEdit">Dernière édition</button>
+              <button type="button" role="radio" data-sort="pages" aria-checked="false" tabindex="-1" data-i18n="sites.sortPages">Pages</button>
+              <button type="button" role="radio" data-sort="creation" aria-checked="false" tabindex="-1" data-i18n="sites.sortCreation">Création</button>
+            </div>
+          </div>
         </div>
-        <dl class="flex gap-6 font-mono">
-          <div><dt class="text-[9px] uppercase tracking-[0.18em] text-ink-400" data-i18n="sites.hudSites">sites</dt><dd data-count="sites" class="text-xl tabular-nums text-ink-100">--</dd></div>
-          <div><dt class="text-[9px] uppercase tracking-[0.18em] text-ink-400 flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full bg-cyan-400"></span><span data-i18n="sites.hudLive">en ligne</span></dt><dd data-count="live" class="text-xl tabular-nums text-cyan-300">--</dd></div>
-          <div><dt class="text-[9px] uppercase tracking-[0.18em] text-ink-400 flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full border border-amber-400/80"></span><span data-i18n="sites.hudDrafts">brouillons</span></dt><dd data-count="drafts" class="text-xl tabular-nums text-amber-200">--</dd></div>
-          <div><dt class="text-[9px] uppercase tracking-[0.18em] text-ink-400" data-i18n="sites.hudPages">pages</dt><dd data-count="pages" class="text-xl tabular-nums text-ink-100">--</dd></div>
-        </dl>
-      </section>
+      </div>
 
       <!-- Actions root : import + nouveau site -->
-      <div data-root class="hidden grid sm:grid-cols-[1fr_auto] gap-3">
-        <label for="fileInput" id="dropzone" class="flex items-center gap-3 border border-dashed border-ink-600 hover:border-cyan-400/50 bg-ink-950/70 px-4 py-3 cursor-pointer transition-colors">
-          <svg class="h-4 w-4 text-cyan-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4m0 0 4 4m-4-4-4 4M4 17v1a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div data-root class="hidden flex flex-wrap items-stretch gap-3 pb-6">
+        <label for="fileInput" id="dropzone" class="flex-1 min-w-64 flex items-center gap-3 border border-dashed border-ink-600 hover:border-ink-400 px-4 py-3 cursor-pointer transition-colors">
+          <svg class="h-4 w-4 text-ink-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4m0 0 4 4m-4-4-4 4M4 17v1a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span class="min-w-0">
-            <span class="text-[11px] font-mono uppercase tracking-[0.12em] text-ink-100 block" data-i18n="sites.dropTitle">Importer un site</span>
-            <span class="text-xs text-ink-400 block" data-i18n="sites.dropDesc">Déposez un <span class="font-mono text-ink-300">.zip</span> ou <span class="font-mono text-ink-300">.tar.gz</span> — n'importe quelle stack, du moment que ce sont des fichiers HTML.</span>
-            <span id="uploadStatus" class="text-[11px] font-mono text-cyan-300 mt-1 hidden"></span>
+            <span class="text-sm font-semibold text-ink-100 block" data-i18n="sites.dropTitle">Importer un site</span>
+            <span class="text-xs text-ink-300 block" data-i18n="sites.dropDesc">Déposez un <span class="font-mono text-ink-300">.zip</span> ou <span class="font-mono text-ink-300">.tar.gz</span> — n'importe quelle stack, du moment que ce sont des fichiers HTML.</span>
+            <span id="uploadStatus" class="text-xs font-mono text-ink-200 mt-1 hidden"></span>
           </span>
           <input id="fileInput" type="file" accept=".zip,.gz,.tgz,application/zip,application/gzip" class="hidden">
         </label>
-        <button id="btnNewSite" class="h-full min-h-11 px-4 text-[11px] font-mono uppercase tracking-[0.12em] font-semibold btn-primary" data-i18n="sites.newSite">+ Nouveau site (studio)</button>
+        <button id="btnNewSite" class="btn-primary px-5 min-h-11" data-i18n="sites.newSite">+ Nouveau site (studio)</button>
       </div>
 
       <!-- Liste A→Z -->
-      <div class="hud-corners border border-ink-700 bg-ink-950/80">
-        <div class="grid grid-cols-[auto_1fr_auto] gap-4 px-4 py-2 border-b border-ink-700 text-[9px] font-mono uppercase tracking-[0.18em] text-ink-400">
-          <span class="w-2"></span><span data-i18n="sites.colSite">site · domaine · pages</span><span>A→Z</span>
-        </div>
-        <div id="siteList"></div>
-      </div>
+      <div id="siteList" class="border-t border-ink-700"></div>
 
       <!-- Administration (root uniquement) : comptes + liste d'attente -->
-      <div id="accountsCard" class="hidden hud-corners border border-ink-700 bg-ink-950/80 p-5 space-y-5">
-        <p class="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-400" data-i18n="sites.accTitle">Comptes</p>
-        <div id="userList" class="space-y-3"></div>
-        <div class="flex flex-wrap items-center gap-2 border-t border-ink-700 pt-4">
-          <input id="nuEmail" type="email" placeholder="email@exemple.fr" data-i18n-placeholder="sites.accEmailPh" class="h-9 flex-1 min-w-40 rounded-md bg-ink-850 border border-ink-700 text-xs font-mono px-3 outline-none focus:border-cyan-400/60 select-text">
-          <input id="nuPass" type="password" placeholder="mot de passe (8+)" data-i18n-placeholder="sites.accPassPh" autocomplete="new-password" class="h-9 w-44 rounded-md bg-ink-850 border border-ink-700 text-xs font-mono px-3 outline-none focus:border-cyan-400/60 select-text">
-          <button id="nuAdd" class="h-9 px-4 rounded-md text-[11px] font-mono uppercase tracking-[0.08em] font-semibold btn-primary" data-i18n="sites.accCreate">Créer le compte</button>
+      <section id="accountsCard" class="hidden mt-16 space-y-6">
+        <h2 class="label pb-3 border-b border-ink-700" data-i18n="sites.accTitle">Comptes</h2>
+        <div id="userList"></div>
+        <div class="flex flex-wrap items-center gap-2">
+          <input id="nuEmail" type="email" placeholder="email@exemple.fr" data-i18n-placeholder="sites.accEmailPh" class="field flex-1 min-w-40 select-text">
+          <input id="nuPass" type="password" placeholder="mot de passe (8+)" data-i18n-placeholder="sites.accPassPh" autocomplete="new-password" class="field w-44 select-text">
+          <button id="nuAdd" class="btn" data-i18n="sites.accCreate">Créer le compte</button>
         </div>
-        <div class="border-t border-ink-700 pt-4">
-          <p class="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-400 mb-3" data-i18n="sites.accWlTitle">Liste d'attente</p>
-          <div id="waitList" class="space-y-2"></div>
-        </div>
-      </div>
+        <h2 class="label pt-6 pb-3 border-b border-ink-700" data-i18n="sites.accWlTitle">Liste d'attente</h2>
+        <div id="waitList"></div>
+      </section>
     </div>
   </main>
 
