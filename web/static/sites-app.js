@@ -102,7 +102,7 @@ const MARKUP = {
           <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4l1.5 4L18 9.5 13.5 11 12 15l-1.5-4L6 9.5 10.5 8 12 4Z" stroke-linejoin="round"/></svg><span class="hidden xl:inline" data-i18n="sites.modeVisual">Visuel · IA</span>
         </button>
       </div>
-      <button id="btnSave" class="btn-primary h-9 px-4" data-i18n="sites.save">Enregistrer la page</button>
+      <button id="btnSave" class="btn-primary h-9 px-4 ml-2" data-i18n="sites.save">Enregistrer la page</button>
       <span id="dirtyDot" class="hidden h-2 w-2 rounded-full bg-amber-400" title="Modifications non enregistrées" data-i18n-title="sites.dirtyTitle"></span>
     </div>
 
@@ -118,7 +118,7 @@ const MARKUP = {
         <button id="btnSettings" title="Réglages de publication" data-i18n-title="sites.settingsBtn" aria-label="Réglages de publication" data-i18n-aria-label="sites.settingsBtn" aria-expanded="false" class="btn btn-icon">
           <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.56-1.11 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.08A1.7 1.7 0 0 0 10.1 4.1V4a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56h.08a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.08a1.7 1.7 0 0 0 1.56 1.03H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.56 1.03Z" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
-        <div id="settingsPanel" class="hidden absolute right-0 top-11 w-80 border border-ink-700 bg-ink-900 p-4 space-y-4 z-50">
+        <div id="settingsPanel" class="mk-cap hidden absolute right-0 top-11 w-80 border border-ink-700 bg-ink-900 p-4 space-y-4 z-50">
           <p class="label" data-i18n="sites.settingsTitle">Publication</p>
           <label class="flex items-start gap-3 cursor-pointer">
             <input type="checkbox" data-setting="compile" class="mt-0.5 h-4 w-4 accent-vio-500">
@@ -208,7 +208,7 @@ const MARKUP = {
   </dialog>
 
   <!-- Palette : tous les sites A→Z, recherche instantanée -->
-  <dialog id="palette" aria-label="Projets" data-i18n-aria-label="sites.current" class="mt-[12vh] w-full max-w-xl border border-ink-700 bg-ink-900 text-ink-100 p-0">
+  <dialog id="palette" aria-label="Projets" data-i18n-aria-label="sites.current" class="mk-cap mt-[12vh] w-full max-w-xl border border-ink-700 bg-ink-900 text-ink-100 p-0">
     <div class="flex items-center gap-2.5 px-4 border-b border-ink-700">
       <span class="text-ink-300">${ICON.search}</span>
       <input id="paletteInput" type="text" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="paletteList" aria-autocomplete="list"

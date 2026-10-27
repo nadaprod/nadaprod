@@ -9,6 +9,7 @@
 
     <link href="/static/fonts.css" rel="stylesheet">
     <link href="/static/tokens.css" rel="stylesheet">
+    <link href="/static/marker.css" rel="stylesheet">
     <link href="/static/brand.css" rel="stylesheet">
     <script src="/static/i18n.js"></script>
     <script src="/static/theme.js"></script>
@@ -109,20 +110,29 @@
         @media (max-width: 420px) { .figs { grid-template-columns: 1fr; } }
     </style>
 </head>
-<body>
+<body data-page="debate">
 
     <header>
-        <a href="/" class="header-logo" aria-label="NADAPROD — accueil" data-i18n-aria-label="debate.homeLink">
+        <a href="/" class="header-logo" data-nav="home" aria-label="NADAPROD — accueil" data-i18n-aria-label="debate.homeLink">
             <img src="/gfx/logo.png" alt="NADAPROD" class="logo-img">
         </a>
-        <div class="header-controls">
-            <a href="/login" id="auth-btn" class="icon-btn" aria-label="Connexion" data-i18n-aria-label="home.nav_login">
-                <svg class="auth-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-                <span class="auth-label" data-i18n="home.nav_login">Connexion</span>
-            </a>
-            <button class="icon-btn" onclick="toggleLanguage()" id="lang-btn" aria-label="Langue / Language">FR</button>
-            <button class="icon-btn" onclick="toggleTheme()" aria-label="Thème clair / sombre" data-i18n-aria-label="home.themeToggle">◐</button>
-        </div>
+        <nav class="site-nav" id="site-nav" aria-label="Navigation principale" data-i18n-aria-label="home.navLabel">
+            <ul class="nav-links">
+                <li><a href="/" data-nav="home" data-i18n="home.nav_home">Accueil</a></li>
+                <li><a href="/#app" data-nav="app" data-i18n="home.nav_app">L'outil</a></li>
+                <li><a href="/#services" data-nav="services" data-i18n="home.nav_services">Le statique</a></li>
+                <li><a href="/#network" data-nav="network" data-i18n="home.nav_network">Open source</a></li>
+                <li><a href="/debate" data-nav="debate" data-i18n="home.nav_debate">Le débat</a></li>
+            </ul>
+            <div class="nav-tools">
+                <a href="/login" id="auth-btn" class="nav-tool"><span class="auth-label" data-i18n="home.nav_login">Connexion</span></a>
+                <button type="button" class="nav-tool" onclick="toggleLanguage()" id="lang-btn" aria-label="Langue / Language">FR</button>
+                <button type="button" class="nav-tool" onclick="toggleTheme()" aria-label="Thème clair / sombre" data-i18n-aria-label="home.themeToggle">◐<span class="tool-label" data-i18n="common.theme">Thème clair / sombre</span></button>
+            </div>
+        </nav>
+        <button type="button" class="nav-toggle" aria-controls="site-nav" aria-expanded="false" aria-label="Menu" data-i18n-aria-label="home.menu">
+            <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><path class="i-open" d="M3 7.5c6-.6 14-.4 20 .2M3.2 13c5.8-.4 13.6-.2 19.6.1M3 18.6c6.2-.5 13.8-.3 20 .3" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path class="i-close" d="M5.5 5.8c4.6 4.4 9.6 9.4 15 14.6M20.4 5.6c-4.8 4.6-10 9.8-15 14.8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
+        </button>
     </header>
 
     <main>

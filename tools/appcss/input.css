@@ -63,14 +63,50 @@
   }
   .tnum { font-variant-numeric: tabular-nums; }
 
-  /* Groupe segmenté (modes, onglets compacts) : l'état courant est surligné. */
-  .seg { display: inline-flex; border: 1px solid rgb(var(--ink-700)); border-radius: 2px; }
-  .seg > button { height: 2rem; padding: 0 .75rem; font: 500 13px/1 Archivo, system-ui, sans-serif; color: rgb(var(--ink-300)); display: inline-flex; align-items: center; gap: .375rem; }
-  .seg > button + button { border-left: 1px solid rgb(var(--ink-700)); }
+  /* Groupe segmenté (modes, filtres, tri, onglets compacts) : sans bordure,
+     comme la barre du landing ; l'état courant est surligné au feutre. */
+  .seg { display: inline-flex; align-items: center; gap: .125rem; }
+  .seg > button { height: 2rem; padding: 0 .65rem; font: 500 13px/1 Archivo, system-ui, sans-serif; color: rgb(var(--ink-300)); display: inline-flex; align-items: center; gap: .375rem; }
   .seg > button:hover { color: rgb(var(--ink-100)); }
-  .seg > button[aria-pressed="true"], .seg > button[aria-checked="true"] { color: rgb(var(--ink-100)); background: rgb(var(--ink-800)); box-shadow: inset 0 -2px 0 rgb(var(--acc-fg)); }
 
-  .seg > button[aria-checked="true"] .tnum { color: rgb(var(--ink-100)); }
+  /* Le surligneur (même geste que la rubrique courante du landing) : une bande
+     vert acide derrière le mot, texte noir. États courants seulement. */
+  .hl,
+  .seg > button[aria-pressed="true"], .seg > button[aria-checked="true"],
+  .tab-btn[aria-selected="true"] {
+    color: #000;
+    background: linear-gradient(transparent 18%, rgb(var(--acc-fill)) 18%, rgb(var(--acc-fill)) 88%, transparent 88%);
+  }
+  .seg > button[aria-pressed="true"] *, .seg > button[aria-checked="true"] *, .tab-btn[aria-selected="true"] * { color: #000; }
+  .tab-btn[aria-selected="true"]:hover { color: #000; }
+  .seg > button[aria-checked="true"] [aria-hidden="true"].rounded-full { border-color: #000; }
+  .seg > button[aria-checked="true"] .bg-ink-100 { background: #000; }
+
+  /* Éléments de barre : sans bordure, comme .nav-tool du landing ; le survol
+     souligne au vert. Le bouton principal (.btn-primary) et les champs gardent leur forme. */
+  .navbtn, header .btn {
+    border-color: transparent; background: transparent; color: rgb(var(--ink-100));
+  }
+  .navbtn:hover:not(:disabled), header .btn:hover:not(:disabled) {
+    border-color: transparent; text-decoration: underline; text-decoration-thickness: 2px;
+    text-decoration-color: rgb(var(--acc-fg)); text-underline-offset: .3em;
+  }
+  header .btn[aria-pressed="true"] { background: transparent; border-color: transparent; }
+
+  /* Traits au marqueur (static/marker.css) : la structure seulement — bord de
+     barre, tête et pied de liste, séparation de sections. Les lignes à
+     l'intérieur des listes, arbres, tableaux et éditeurs restent des filets nets. */
+  .mk-t { border-top: 5px solid; border-image: var(--mk) 12 round; }
+  .mk-b { border-bottom: 5px solid; border-image: var(--mk) 12 round; }
+  .mk-tb { border-top: 5px solid; border-bottom: 5px solid; border-image: var(--mk) 12 round; }
+  .mk-t-soft { border-top: 4px solid; border-image: var(--mk-soft) 12 round; }
+  .mk-b-soft { border-bottom: 4px solid; border-image: var(--mk-soft) 12 round; }
+  .mk-l-soft { border-left: 4px solid; border-image: var(--mk-soft) 12 round; }
+  .mk-r-soft { border-right: 4px solid; border-image: var(--mk-soft) 12 round; }
+  .mk-list > :last-child { border-bottom-width: 0; }
+  /* Fenêtre ou panneau flottant : un trait de marqueur posé sur le bord haut. */
+  /* (l'élément doit déjà être positionné : absolute, fixed ou <dialog>.) */
+  .mk-cap::before { content: ""; position: absolute; left: -1px; right: -1px; top: -1px; border-top: 5px solid; border-image: var(--mk) 12 round; pointer-events: none; }
 
   /* Champ : la seule boîte avec le bouton. */
   .field {

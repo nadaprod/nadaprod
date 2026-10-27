@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title data-i18n="editor.docTitle">NADAPROD — Éditeur de blocs Tailwind</title>
 <link href="/static/tokens.css" rel="stylesheet">
+<link href="/static/marker.css" rel="stylesheet">
 <link href="/static/tw.css" rel="stylesheet">
 <link href="/static/fonts.css" rel="stylesheet">
 <script src="/static/theme.js"></script>
@@ -20,7 +21,7 @@
 <div class="h-full flex flex-col">
 
   <!-- ══════════ Barre supérieure ══════════ -->
-  <header class="h-12 shrink-0 flex items-center gap-2 px-3 border-b border-ink-700 bg-ink-900">
+  <header class="h-12 shrink-0 flex items-center gap-2 px-3 mk-b-soft bg-ink-900">
     <a href="/sites" class="shrink-0 hover:opacity-80 mr-1"><img src="/gfx/logo.png" alt="NADAPROD" class="h-7"></a>
 
     <!-- Projet courant -->
@@ -60,7 +61,7 @@
         <button id="btnExport" aria-haspopup="menu" aria-expanded="false" class="btn-primary h-9 px-4">
           <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="studio.exportBtn">Exporter</span>
         </button>
-        <div id="exportMenu" role="menu" class="hidden absolute right-0 top-11 z-30 w-72 border border-ink-700 bg-ink-900 py-1">
+        <div id="exportMenu" role="menu" class="mk-cap hidden absolute right-0 top-11 z-30 w-72 border border-ink-700 bg-ink-900 py-1">
           <button role="menuitem" data-export="site" class="w-full text-left px-4 py-2 hover:bg-ink-850">
             <span class="block text-sm font-medium" data-i18n="studio.siteTitle">Enregistrer dans un site…</span>
             <span class="block text-xs text-ink-300 mt-0.5" data-i18n="studio.siteDesc">Devient une page d'un site importé, publiée par NADAPROD.</span></button>
@@ -93,7 +94,7 @@
 
     <!-- ══════════ Rail gauche : blocs + structure ══════════ -->
     <aside class="w-64 shrink-0 border-r border-ink-700 bg-ink-900 flex flex-col min-h-0">
-      <div class="p-3 border-b border-ink-700 max-h-[46%] overflow-y-auto scrollbar-thin">
+      <div class="p-3 mk-b-soft max-h-[46%] overflow-y-auto scrollbar-thin">
         <p class="label mb-2.5" data-i18n="editor.addBlock">Ajouter un bloc</p>
         <div id="palette" class="grid grid-cols-2 gap-px bg-ink-700 border border-ink-700"><!-- rempli via /api/blocks --></div>
       </div>
@@ -124,12 +125,12 @@
     <!-- ══════════ Panneau droit ══════════ -->
     <aside id="rightPanel" class="w-[24rem] shrink-0 border-l border-ink-700 bg-ink-900 flex flex-col min-h-0 transition-all duration-300">
       <div class="shrink-0 flex border-b border-ink-700" role="tablist">
-        <button role="tab" data-tab="generate" class="tab-btn flex-1 h-11 text-[12px] font-medium text-ink-300 hover:text-ink-100 border-b-2 border-transparent aria-selected:text-ink-100 aria-selected:border-acc-fg" data-i18n="editor.tabGenerate">Générer</button>
-        <button role="tab" data-tab="code" class="tab-btn flex-1 h-11 text-[12px] font-medium text-ink-300 hover:text-ink-100 border-b-2 border-transparent aria-selected:text-ink-100 aria-selected:border-acc-fg" data-i18n="editor.tabCode">Code</button>
-        <button role="tab" data-tab="history" class="tab-btn flex-1 h-11 text-[12px] font-medium text-ink-300 hover:text-ink-100 border-b-2 border-transparent aria-selected:text-ink-100 aria-selected:border-acc-fg" data-i18n="studio.tabHistory">Historique</button>
-        <button role="tab" data-tab="quality" class="tab-btn flex-1 h-11 text-[12px] font-medium text-ink-300 hover:text-ink-100 border-b-2 border-transparent aria-selected:text-ink-100 aria-selected:border-acc-fg" data-i18n="studio.tabQuality">Qualité</button>
-        <button role="tab" data-tab="i18n" class="tab-btn flex-1 h-11 text-[12px] font-medium text-ink-300 hover:text-ink-100 border-b-2 border-transparent aria-selected:text-ink-100 aria-selected:border-acc-fg" data-i18n="tr.tab">Traduction</button>
-        <button role="tab" data-tab="brand" class="tab-btn flex-1 h-11 text-[12px] font-medium text-ink-300 hover:text-ink-100 border-b-2 border-transparent aria-selected:text-ink-100 aria-selected:border-acc-fg" data-i18n="editor.tabBrand">Marque</button>
+        <button role="tab" data-tab="generate" class="tab-btn flex-1 h-11 text-[12px] font-medium text-ink-300 hover:text-ink-100" data-i18n="editor.tabGenerate">Générer</button>
+        <button role="tab" data-tab="code" class="tab-btn flex-1 h-11 text-[12px] font-medium text-ink-300 hover:text-ink-100" data-i18n="editor.tabCode">Code</button>
+        <button role="tab" data-tab="history" class="tab-btn flex-1 h-11 text-[12px] font-medium text-ink-300 hover:text-ink-100" data-i18n="studio.tabHistory">Historique</button>
+        <button role="tab" data-tab="quality" class="tab-btn flex-1 h-11 text-[12px] font-medium text-ink-300 hover:text-ink-100" data-i18n="studio.tabQuality">Qualité</button>
+        <button role="tab" data-tab="i18n" class="tab-btn flex-1 h-11 text-[12px] font-medium text-ink-300 hover:text-ink-100" data-i18n="tr.tab">Traduction</button>
+        <button role="tab" data-tab="brand" class="tab-btn flex-1 h-11 text-[12px] font-medium text-ink-300 hover:text-ink-100" data-i18n="editor.tabBrand">Marque</button>
       </div>
 
       <div class="flex-1 min-h-0 overflow-y-auto scrollbar-thin">
