@@ -6,7 +6,7 @@
 set -euo pipefail
 cd "$(dirname "$(readlink -f "$0")")/.."
 
-HOTFIX=(static/tokens.css) # 2026-10-26 : commentaire CSS non fermé qui effaçait le vert des boutons
+HOTFIX=(static/marker.css home.html debate.html solutions.html static/brand.css) # 2026-10-27 : lien Oliver Night → olivernight.nadaprod.com (+ traits de marqueur dans marker.css)
 FILES=("${@:-${HOTFIX[@]}}")
 
 for f in "${FILES[@]}"; do
