@@ -6,7 +6,7 @@ claires), comme un trait tiré au marqueur. Utilisée en `border-image` avec une
 découpe de 12 px : n'importe quelle combinaison de bords (haut, gauche…) se
 dessine avec la même image, la couleur suit le thème (variables par thème).
 
-    python3 tools/marker/gen.py > (bloc à coller dans web/static/brand.css)
+    python3 tools/marker/gen.py > web/static/marker.css   (lu par les pages publiques ET l'app)
 """
 import math, random, urllib.parse
 
