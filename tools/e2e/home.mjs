@@ -2,7 +2,7 @@
 import { harness } from './lib.mjs';
 
 const h = await harness({ width: 1440 });
-const { ev, nav, shot, check, sleep, viewport, send, noExceptions } = h;
+const { ev, nav, shot, check, sleep, viewport, send, key, noExceptions } = h;
 
 try {
   await nav('/'); await sleep(1500);
@@ -17,10 +17,12 @@ try {
   check('pas de clé i18n brute', !(await ev(`/\\bhome\\.[a-z][A-Za-z0-9_]+/.test(document.body.innerText)`)));
   await shot('h-01-home-light');
 
-  await ev(`document.querySelectorAll('.nav-item')[1].click()`); await sleep(900);
+  check('une seule barre : pas de barre flottante en bas', await ev(`!document.querySelector('nav[aria-label=Sections], .nav-item') && !!document.querySelector('header .site-nav')`));
+  check('boutons de la barre sans bordure', await ev(`[...document.querySelectorAll('header .nav-tool, header .nav-links a')].every(b => getComputedStyle(b).borderTopWidth === '0px')`));
+  await ev(`document.querySelector('.nav-links [data-nav=app]').click()`); await sleep(900);
   check('onglet Outil + ancre : 5 rangées', (await ev(`location.hash + '|' + document.querySelectorAll('#tab-app .row').length`)) === '#app|5');
   check('épuré : ni texture, ni étiquette numérotée, ni badge', await ev(`!document.querySelector('.texture-overlay, .badge-new, .kicker') && ![...document.querySelectorAll('#tab-app .label')].some(l => /^\\d/.test(l.textContent))`));
-  check('le vert ne marque que l\'onglet actif ici', await ev(`getComputedStyle(document.querySelector('.nav-item.active')).backgroundColor === 'rgb(204, 255, 0)' && getComputedStyle(document.querySelectorAll('.nav-item')[0]).backgroundColor !== 'rgb(204, 255, 0)'`));
+  check('le vert surligne seulement la rubrique courante', await ev(`(() => { const cur = [...document.querySelectorAll('.nav-links a[aria-current=page]')]; return cur.length === 1 && cur[0].dataset.nav === 'app' && getComputedStyle(cur[0]).backgroundImage.includes('204, 255, 0'); })()`));
   await shot('h-02-app');
 
   await nav('/#services'); await sleep(1200);
@@ -39,7 +41,18 @@ try {
   await viewport(390, 844);
   await nav('/'); await sleep(1500);
   check('mobile : pas de défilement horizontal', await ev(`document.querySelector('main').scrollWidth <= innerWidth + 1`));
+  check('mobile : logo + bouton menu seulement', await ev(`getComputedStyle(document.querySelector('.site-nav')).display === 'none' && getComputedStyle(document.querySelector('.nav-toggle')).display !== 'none'`));
   await shot('h-05-mobile');
+  await ev(`document.querySelector('.nav-toggle').click()`); await sleep(400);
+  const lines = await ev(`[...document.querySelectorAll('.site-nav.open .nav-links a, .site-nav.open .nav-tool')].map(a => Math.round(a.getBoundingClientRect().top))`);
+  check('menu plein écran : un élément par ligne', lines.length === 8 && lines.every((y, i) => !i || y > lines[i - 1]), JSON.stringify(lines));
+  check('menu : aria-expanded + focus dedans', await ev(`document.querySelector('.nav-toggle').getAttribute('aria-expanded') === 'true' && document.querySelector('.site-nav').contains(document.activeElement)`));
+  await shot('h-06-mobile-menu');
+  await key('Escape', 'Escape', { vk: 27 });
+  check('Échap referme le menu', await ev(`!document.querySelector('.site-nav').classList.contains('open') && document.activeElement.classList.contains('nav-toggle')`));
+  await ev(`document.querySelector('.nav-toggle').click()`); await sleep(300);
+  await ev(`document.querySelector('.site-nav [data-nav=services]').click()`); await sleep(800);
+  check('une rubrique ouvre l\'onglet et ferme le menu', await ev(`location.hash === '#services' && !document.querySelector('.site-nav').classList.contains('open')`));
 
   await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
   await nav('/#services'); await sleep(800);

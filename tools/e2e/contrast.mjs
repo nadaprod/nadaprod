@@ -13,7 +13,11 @@ const AUDIT = `(() => {
   const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + .05) / (y + .05); };
   const bgOf = (el) => {
     for (let n = el; n; n = n.parentElement) {
-      const c = rgb(getComputedStyle(n).backgroundColor);
+      const cs = getComputedStyle(n);
+      // Surlignage en dégradé (rubrique courante) : la couleur pleine du dégradé est le fond du texte.
+      const g = [...cs.backgroundImage.matchAll(/rgba?\\([^)]*\\)/g)].map((m) => rgb(m[0])).filter((c) => (c[3] ?? 1) > 0.5);
+      if (g.length) return g[0];
+      const c = rgb(cs.backgroundColor);
       if ((c[3] ?? 1) > 0.5) return c;
     }
     return rgb(getComputedStyle(document.documentElement).backgroundColor);
