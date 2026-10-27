@@ -35,15 +35,15 @@
         .cta-row .text-link { font-size: .95rem; }
         /* NADA PROD : la phrase qui annonce les chiffres juste dessous. */
         .nada { margin-top: 4.5rem; font: 400 clamp(1.6rem, 3.2vw, 2.6rem)/1.1 var(--font-display); font-synthesis: none; color: var(--text-main); }
-        .proof { margin-top: 1.25rem; display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--text-main); }
+        .proof { margin-top: 1.25rem; display: grid; grid-template-columns: repeat(4, 1fr); border-top: 5px solid; border-image: var(--mk) 12 round; }
         .proof div { padding: 1.25rem 1.5rem 0 0; }
-        .proof div + div { padding-left: 1.5rem; border-left: 1px solid var(--border); }
+        .proof div + div { padding-left: 1.5rem; border-left: 4px solid; border-image: var(--mk-soft) 12 round; }
         .proof b { display: block; font: 400 clamp(2.6rem, 5vw, 4.2rem)/1 var(--font-display); font-synthesis: none; color: var(--text-main); font-variant-numeric: tabular-nums; }
         .proof span { display: block; margin-top: .6rem; font-size: .9rem; line-height: 1.4; color: var(--text-secondary); max-width: 13rem; }
 
         /* L'outil : des rangées — l'étiquette et le titre à gauche, le texte à droite. */
-        .rows { list-style: none; border-bottom: 1px solid var(--border); }
-        .row { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 1rem 3rem; padding: 2.75rem 0; border-top: 1px solid var(--border); }
+        .rows { list-style: none; border-bottom: 4px solid; border-image: var(--mk-soft) 12 round; }
+        .row { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 1rem 3rem; padding: 2.75rem 0; border-top: 4px solid; border-image: var(--mk-soft) 12 round; }
         .row h3 { margin-top: .7rem; }
         .row > div:last-child { display: grid; gap: 1.25rem; align-content: start; }
         .row > div:last-child > p { max-width: 40rem; }
@@ -70,22 +70,22 @@
         .pipe span:last-child { color: var(--text-main); font-weight: 500; }
         .pipe i { font-style: normal; color: var(--text-dim); }
 
-        .args { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--text-main); }
+        .args { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 5px solid; border-image: var(--mk) 12 round; }
         .args article { padding: 1.5rem 2rem 0 0; display: grid; gap: 1rem; align-content: start; }
-        .args article + article { padding-left: 2rem; border-left: 1px solid var(--border); }
+        .args article + article { padding-left: 2rem; border-left: 4px solid; border-image: var(--mk-soft) 12 round; }
         .args h3 { font-size: clamp(1.3rem, 1.9vw, 1.6rem); }
         .args p { font-size: .98rem; }
 
-        .debate-link { margin-top: 5rem; display: flex; justify-content: space-between; align-items: flex-end; gap: 2rem; padding: 2rem 0; border-block: 1px solid var(--text-main); text-decoration: none; color: inherit; }
+        .debate-link { margin-top: 5rem; display: flex; justify-content: space-between; align-items: flex-end; gap: 2rem; padding: 2rem 0; border-block: 5px solid; border-image: var(--mk) 12 round; text-decoration: none; color: inherit; }
         .debate-link h3 { margin: .7rem 0 .5rem; }
         .debate-link p { max-width: 36rem; }
         .debate-cta { flex: none; font-weight: 600; color: var(--text-main); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .25em; }
         .debate-link:hover .debate-cta { text-decoration-thickness: 2px; text-decoration-color: rgb(var(--acc-fg)); }
 
         /* Open source : deux colonnes, puis l'index des sites publiés. */
-        .duo { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 3rem; border-top: 1px solid var(--border); padding-top: 2rem; }
+        .duo { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 3rem; border-top: 4px solid; border-image: var(--mk-soft) 12 round; padding-top: 2rem; }
         .duo > div { display: grid; gap: 1rem; align-content: start; }
-        .signal-form { display: flex; border-bottom: 1px solid var(--text-main); margin-top: .5rem; }
+        .signal-form { display: flex; border-bottom: 5px solid; border-image: var(--mk) 12 round; margin-top: .5rem; }
         .signal-form input { flex: 1; min-width: 0; border: 0; background: transparent; padding: .9rem 0; font: 1.1rem var(--font-body); color: var(--text-main); outline: none; }
         .signal-form input::placeholder { color: var(--text-secondary); }
         .signal-form button { background: transparent; border: 0; color: var(--text-main); font: 600 1rem var(--font-body); cursor: pointer; padding: 0 .25rem 0 1rem; }
@@ -93,8 +93,8 @@
         .mail { font: 600 clamp(1.3rem, 2.2vw, 1.75rem)/1.2 var(--font-body); letter-spacing: -.02em; color: var(--text-main); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .2em; overflow-wrap: anywhere; }
         .mail:hover { text-decoration-thickness: 2px; text-decoration-color: rgb(var(--acc-fg)); }
 
-        .link-list { list-style: none; margin-top: 5rem; border-top: 1px solid var(--text-main); }
-        .link-list li { border-bottom: 1px solid var(--border); }
+        .link-list { list-style: none; margin-top: 5rem; border-top: 5px solid; border-image: var(--mk) 12 round; }
+        .link-list li { border-bottom: 4px solid; border-image: var(--mk-soft) 12 round; }
         .link-list a { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: 1.15rem 0; text-decoration: none; color: var(--text-main); font: 600 clamp(1.25rem, 2.4vw, 1.75rem)/1.1 var(--font-body); letter-spacing: -.02em; }
         .link-list a span { font: 400 .9rem var(--font-body); letter-spacing: 0; color: var(--text-secondary); }
         .link-list a:hover { text-decoration: underline; text-decoration-thickness: 2px; text-decoration-color: rgb(var(--acc-fg)); text-underline-offset: .2em; }
@@ -117,13 +117,13 @@
         @media (max-width: 900px) {
             section { padding: 6vh 1.1rem 8rem; }
             .proof { grid-template-columns: 1fr 1fr; margin-top: 4.5rem; border-top: 0; }
-            .proof div, .proof div + div { padding: 1rem 0 1.25rem; border-left: 0; border-top: 1px solid var(--text-main); }
-            .proof div:nth-child(even) { padding-left: 1rem; border-left: 1px solid var(--border); }
+            .proof div, .proof div + div { padding: 1rem 0 1.25rem; border-left: 0; border-top: 5px solid; border-image: var(--mk) 12 round; }
+            .proof div:nth-child(even) { padding-left: 1rem; border-left: 4px solid; border-image: var(--mk-soft) 12 round; }
             .row, .duo { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
             .row h3 { margin-top: .5rem; }
             .args { grid-template-columns: minmax(0, 1fr); }
             .args article, .args article + article { padding: 1.5rem 0; border-left: 0; }
-            .args article + article { border-top: 1px solid var(--border); }
+            .args article + article { border-top: 4px solid; border-image: var(--mk-soft) 12 round; }
             .debate-link { flex-direction: column; align-items: flex-start; gap: 1rem; }
             .ide { grid-template-columns: 1fr; } .ide .tree { display: none; }
             nav { width: calc(100% - 1.5rem); justify-content: space-between; bottom: 1rem; }

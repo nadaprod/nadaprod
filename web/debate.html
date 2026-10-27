@@ -31,7 +31,7 @@
         .early { margin-top: 1.75rem; padding-left: 1rem; border-left: 2px solid var(--text-main); max-width: 44rem; font-size: .98rem; color: var(--text-main); }
 
         /* Chiffres : Big Shoulders sur filet, légende en Archivo. */
-        .fig { border-top: 1px solid var(--border); padding-top: .9rem; min-width: 0; }
+        .fig { border-top: 4px solid; border-image: var(--mk-soft) 12 round; padding-top: .9rem; min-width: 0; }
         .fig b { display: block; font: 400 clamp(2rem, 3.6vw, 3rem)/1.05 var(--font-display); font-synthesis: none; font-variant-numeric: tabular-nums; color: var(--text-main); overflow-wrap: anywhere; }
         .fig b small { font: 500 .9rem var(--font-mono); margin-left: .3rem; color: var(--text-secondary); }
         .fig span { display: block; margin-top: .5rem; font-size: .88rem; line-height: 1.4; color: var(--text-secondary); }
@@ -39,9 +39,9 @@
         .note { font-size: .82rem; line-height: 1.5; color: var(--text-secondary); }
 
         /* Face à face : deux colonnes, un filet entre elles. */
-        .versus { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); border-top: 1px solid var(--text-main); }
+        .versus { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); border-top: 5px solid; border-image: var(--mk) 12 round; }
         .side { padding: 1.75rem 2.5rem 0 0; display: grid; gap: 1.5rem; align-content: start; min-width: 0; }
-        .side + .side { padding: 1.75rem 0 0 2.5rem; border-left: 1px solid var(--border); }
+        .side + .side { padding: 1.75rem 0 0 2.5rem; border-left: 4px solid; border-image: var(--mk-soft) 12 round; }
         .figs { display: grid; grid-template-columns: 1fr 1fr; gap: 1.75rem 1.5rem; }
 
         /* L'outil en chiffres */
@@ -66,16 +66,16 @@
         details.table th:first-child, details.table td:first-child { text-align: left; padding-left: 0; }
 
         /* Bilan : les hypothèses à gauche, le résultat à droite — le surligneur sur l'équilibre. */
-        .balance { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); border-top: 1px solid var(--text-main); }
+        .balance { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); border-top: 5px solid; border-image: var(--mk) 12 round; }
         .hyps { padding: 1.75rem 2.5rem 0 0; display: grid; gap: 1.6rem; align-content: start; }
         .hyp label { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; font-weight: 600; font-size: .95rem; color: var(--text-main); }
         .hyp label > span { min-width: 0; }
         .hyp output { font: 500 .85rem var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--text-main); }
         .hyp small { display: block; margin-top: .4rem; font-size: .82rem; line-height: 1.45; color: var(--text-secondary); }
         .hyp input[type=range] { width: 100%; margin-top: .6rem; accent-color: var(--text-main); }
-        .hyp.measured { border-top: 1px solid var(--border); padding-top: 1.2rem; }
-        .result { padding: 1.75rem 0 0 2.5rem; border-left: 1px solid var(--border); display: grid; gap: 1.25rem; align-content: start; }
-        .result .row { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; border-bottom: 1px solid var(--border); padding-bottom: .75rem; }
+        .hyp.measured { border-top: 4px solid; border-image: var(--mk-soft) 12 round; padding-top: 1.2rem; }
+        .result { padding: 1.75rem 0 0 2.5rem; border-left: 4px solid; border-image: var(--mk-soft) 12 round; display: grid; gap: 1.25rem; align-content: start; }
+        .result .row { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; border-bottom: 4px solid; border-image: var(--mk-soft) 12 round; padding-bottom: .75rem; }
         .result .row span { font-size: .92rem; color: var(--text-secondary); }
         .result .row b { font: 400 1.7rem/1.05 var(--font-display); font-synthesis: none; font-variant-numeric: tabular-nums; color: var(--text-main); text-align: right; }
         .breakeven { padding: .5rem 0 .25rem; }
@@ -85,13 +85,13 @@
         .breakeven b.none { background: none; color: var(--text-dim); padding: 0; } /* rien à surligner tant qu'il n'y a pas de résultat */
         .breakeven span { display: block; margin-top: .6rem; font-size: .92rem; color: var(--text-secondary); }
         .verdict { font-size: 1.05rem; line-height: 1.5; color: var(--text-main); }
-        .formula { font: .8rem/1.8 var(--font-mono); color: var(--text-secondary); padding: .2rem 0 .2rem 1rem; border-left: 1px solid var(--border); overflow-x: auto; white-space: pre; }
+        .formula { font: .8rem/1.8 var(--font-mono); color: var(--text-secondary); padding: .2rem 0 .2rem 1rem; border-left: 4px solid; border-image: var(--mk-soft) 12 round; overflow-x: auto; white-space: pre; }
         .formula .k { color: var(--text-main); font-weight: 500; }
 
         /* Méthode : trois colonnes, des listes à filets. */
-        .method { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--text-main); }
+        .method { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 5px solid; border-image: var(--mk) 12 round; }
         .method > div { padding: 1.5rem 2rem 0 0; display: grid; gap: .9rem; align-content: start; }
-        .method > div + div { padding-left: 2rem; border-left: 1px solid var(--border); }
+        .method > div + div { padding-left: 2rem; border-left: 4px solid; border-image: var(--mk-soft) 12 round; }
         .method a { color: var(--text-main); text-decoration-thickness: 1px; text-underline-offset: .2em; }
         .method a:hover { text-decoration-thickness: 2px; text-decoration-color: rgb(var(--acc-fg)); }
 
@@ -102,7 +102,7 @@
             .block { margin-top: 4.5rem; }
             .versus, .balance, .method, .charts { grid-template-columns: minmax(0, 1fr); }
             .side, .side + .side, .hyps, .result, .method > div, .method > div + div { padding: 1.5rem 0 0; border-left: 0; }
-            .side + .side, .result, .method > div + div { margin-top: 1.5rem; border-top: 1px solid var(--border); }
+            .side + .side, .result, .method > div + div { margin-top: 1.5rem; border-top: 4px solid; border-image: var(--mk-soft) 12 round; }
             .facts { grid-template-columns: 1fr 1fr; }
             .charts { gap: 2rem; }
         }

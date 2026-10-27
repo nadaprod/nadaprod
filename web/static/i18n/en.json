@@ -283,6 +283,7 @@
   "sites.domainDetach": "Detach",
   "sites.domainDetachConfirm": "Detach {domain}? The site will no longer be served on this domain.",
   "sites.domainLabel": "Domain",
+  "sites.domainNoIndex": "{domain} is attached. This site has no index.html: the domain root will stay empty.",
   "sites.domainOff": "Domain detached",
   "sites.domainOn": "Domain attached: {domain}",
   "sites.domainOpen": "Open",

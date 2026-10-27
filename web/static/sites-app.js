@@ -653,7 +653,9 @@ async function attachDomain() {
     const data = await api('/api/sites/' + S.siteId + '/domain', 'PUT', { domain });
     S.domain = data.domain;
     renderDomain();
-    toast(domain ? t('sites.domainOn', { domain: data.domain }) : t('sites.domainOff'));
+    // Sans index.html, la racine du domaine est vide (choix d'auteur possible) : on le dit, sans alarme.
+    const home = pagesOf(currentSite()).includes('index.html');
+    toast(!domain ? t('sites.domainOff') : t(home ? 'sites.domainOn' : 'sites.domainNoIndex', { domain: data.domain }));
     loadSites(); // compteurs et filtres de la liste
   } catch (err) { toast(err.message, false); }
 }

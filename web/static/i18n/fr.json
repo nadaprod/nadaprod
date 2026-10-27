@@ -283,6 +283,7 @@
   "sites.domainDetach": "Débrancher",
   "sites.domainDetachConfirm": "Débrancher {domain} ? Le site ne sera plus servi sur ce domaine.",
   "sites.domainLabel": "Domaine",
+  "sites.domainNoIndex": "{domain} est branché. Ce site n'a pas d'index.html : la racine du domaine restera vide.",
   "sites.domainOff": "Domaine débranché",
   "sites.domainOn": "Domaine branché : {domain}",
   "sites.domainOpen": "Ouvrir",
